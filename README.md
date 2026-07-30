@@ -7,8 +7,8 @@
     <!-- PRIMARY METADATA & INSTITUTIONAL SEO -->
     <title>Vidyarthi Nagrik Jan Chetna Manch | People & Youth | peopleandyouth.org</title>
     <meta name="title" content="Vidyarthi Nagrik Jan Chetna Manch | People & Youth">
-    <meta name="description" content="Leading Youth Towards Praxis. India's premier youth-led digital institution for civic participation, constitutional literacy, public policy research, and institutional accountability.">
-    <meta name="keywords" content="VNJCM, People and Youth, Vidyarthi Nagrik Jan Chetna Manch, Dissent Dias, Policy Renaissance, Constitutional Academy, Civic Observatory, RTI India, Public Policy Think Tank, Educational Transparency, Swaraj Shandilya">
+    <meta name="description" content="Leading Youth Towards Praxis. India's premier youth-led digital institution for civic participation, constitutional literacy, public policy research, and institutional accountability. Founded by Swaraj Shandilya.">
+    <meta name="keywords" content="VNJCM, Swaraj Shandilya, People and Youth, Vidyarthi Nagrik Jan Chetna Manch, Dissent Dias, Policy Renaissance, Constitutional Academy, Civic Observatory, RTI India, Public Policy Think Tank, Educational Transparency">
     <meta name="author" content="Vidyarthi Nagrik Jan Chetna Manch">
     <meta name="theme-color" content="#020617">
 
@@ -74,7 +74,6 @@
             font-weight: 700;
         }
 
-        /* Custom Scrollbar for Inner Portals */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -106,12 +105,12 @@
                 
                 <!-- Mega Navigation Desktop -->
                 <div class="hidden lg:flex items-center space-x-5 text-xs font-medium">
+                    <a href="#founder" class="text-amber-400 hover:text-amber-300 font-semibold transition">Founder's Desk</a>
+                    <a href="#publications" class="text-slate-300 hover:text-amber-400 transition">Publications & Papers</a>
                     <a href="#forest" class="text-slate-300 hover:text-amber-400 transition">The Forest</a>
                     <a href="#dissent-dias" class="text-slate-300 hover:text-amber-400 transition">Dissent Dias</a>
                     <a href="#policy-renaissance" class="text-slate-300 hover:text-amber-400 transition">Policy Renaissance</a>
                     <a href="#think-tank" class="text-slate-300 hover:text-amber-400 transition">Think Tank</a>
-                    <a href="#academy" class="text-slate-300 hover:text-amber-400 transition">Academy</a>
-                    <a href="#observatory" class="text-slate-300 hover:text-amber-400 transition">Observatory</a>
                     <a href="#cmp" class="text-amber-400 hover:text-amber-300 transition font-semibold">CMP Charter</a>
                     <a href="#connect" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-md shadow-orange-500/20 transition">Join Platform</a>
                 </div>
@@ -126,13 +125,14 @@
 
             <!-- Mobile Drawer -->
             <div id="mobile-nav-drawer" class="hidden lg:hidden pt-4 pb-2 border-t border-slate-800 mt-3 space-y-2 text-xs font-medium">
+                <a href="#founder" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-semibold">👤 From the Founder's Desk</a>
+                <a href="#publications" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📚 Publications & Policy Papers</a>
                 <a href="#forest" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🌲 The Forest of Civic Renaissance</a>
                 <a href="#dissent-dias" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🎙️ Dissent Dias Platform</a>
                 <a href="#policy-renaissance" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📜 Policy Renaissance Journals</a>
                 <a href="#think-tank" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🏛️ VNJCM Think Tank</a>
                 <a href="#academy" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🎓 Constitutional Academy</a>
                 <a href="#observatory" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">👁️ Civic Observatory & Data Lab</a>
-                <a href="#services-campaigns" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">💼 Services & Campaigns</a>
                 <a href="#cmp" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-semibold">📜 CMP Charter (IIFT Representation)</a>
                 <a href="#gallery" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📸 Field Evidences</a>
                 <a href="#connect" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-bold">🤝 Join Manch / Apply</a>
@@ -159,19 +159,19 @@
 
                 <!-- Strategic Quick Portal Shortcuts -->
                 <div class="pt-4 flex flex-wrap justify-center gap-2 text-xs font-mono text-slate-300">
+                    <a href="#founder" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition text-amber-300">👤 Founder's Profile</a>
+                    <a href="#publications" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">📚 Selected Essays & Audits</a>
                     <a href="#forest" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">🌲 15 Knowledge Mountains</a>
                     <a href="#dissent-dias" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">🎙️ Dissent Dias</a>
-                    <a href="#policy-renaissance" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">📜 23 Renaissance Journals</a>
-                    <a href="#observatory" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">👁️ Civic Observatory</a>
                     <a href="#cmp" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-lg transition">📜 CMP Charter</a>
                 </div>
 
                 <div class="pt-6 flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="#forest" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition duration-200">
-                        Explore Knowledge Ecosystem
+                    <a href="#publications" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition duration-200">
+                        Read Policy Essays & Audits
                     </a>
-                    <a href="#connect" class="glass-card hover:bg-slate-800/60 text-slate-200 font-semibold px-8 py-4 rounded-xl transition duration-200">
-                        Apply for Fellowship / Membership
+                    <a href="#founder" class="glass-card hover:bg-slate-800/60 text-slate-200 font-semibold px-8 py-4 rounded-xl transition duration-200">
+                        Explore Founder's Desk
                     </a>
                 </div>
             </div>
@@ -179,8 +179,277 @@
 
     </div>
 
-    <!-- 3. STRATEGIC PILLARS SECTION -->
-    <section id="pillars" class="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
+    <!-- 3. NEW SECTION: FROM THE FOUNDER'S DESK (SWARAJ SHANDILYA) -->
+    <!-- Architectural Purpose: Establishing Institutional Leadership, Vision, Modesty, and Policy Rigor -->
+    <section id="founder" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
+        <div class="max-w-6xl mx-auto space-y-12">
+            
+            <div class="text-center space-y-3">
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
+                    Institutional Leadership
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">From the Founder's Desk</h2>
+                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
+                    Bridging empirical rigor, legal due diligence, and grassroots democratic consciousness.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 items-center">
+                
+                <!-- Founder Bio & Philosophy -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="space-y-2">
+                        <span class="text-xs font-mono text-amber-400 uppercase tracking-widest">Founder & Managing Trustee</span>
+                        <h3 class="text-3xl font-extrabold font-serif text-white">Swaraj Shandilya</h3>
+                        <p class="text-xs font-mono text-slate-400">Researcher • Legal & Institutional Auditor • Policy Strategist</p>
+                    </div>
+
+                    <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                        <p>
+                            "A democracy without critical youth inquiry risks decaying into scripted formalism. When institutions cease to be accountable to the public they were built to serve, civic participation can no longer remain a passive ideal—it must evolve into active <strong class="text-amber-400">Praxis</strong>."
+                        </p>
+                        <p>
+                            Driven by a commitment to educational equity, statutory compliance, and constitutional literacy, Swaraj Shandilya established <strong class="text-slate-100">Vidyarthi Nagrik Jan Chetna Manch (VNJCM)</strong> to provide Indian youth with a structured, non-partisan platform for institutional auditing and public policy dialogue.
+                        </p>
+                        <p class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-slate-300 italic">
+                            From pioneering investigative RTI filings regarding satellite campus readiness at premier institutes like IIFT GIFT City to analyzing parliamentary discourse and cognitive barriers in public debate, Swaraj’s work focuses on converting individual dissent into evidence-based policy reform.
+                        </p>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap gap-3 text-xs font-mono">
+                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">⚖️ Institutional Auditing</span>
+                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">📜 RTI Due Diligence</span>
+                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">🎓 Campus Equity Advocate</span>
+                    </div>
+                </div>
+
+                <!-- Founder Highlights Card -->
+                <div class="lg:col-span-5 glass-card p-8 rounded-3xl space-y-6 border border-slate-800">
+                    <h4 class="text-lg font-bold font-serif text-white border-b border-slate-800 pb-3">Core Contributions & Advocacy</h4>
+                    
+                    <ul class="space-y-4 text-xs text-slate-300">
+                        <li class="flex items-start gap-3">
+                            <span class="text-amber-400 text-base">📌</span>
+                            <div>
+                                <strong class="text-white block">IIFT GIFT City Campus Investigation</strong>
+                                <p class="text-slate-400 text-[11px] mt-0.5">Author of the Common Minimum Programme (CMP) submitted to administrative and Ministry authorities demanding placement parity, fee rationalization, and infrastructure readiness.</p>
+                            </div>
+                        </li>
+
+                        <li class="flex items-start gap-3">
+                            <span class="text-amber-400 text-base">📌</span>
+                            <div>
+                                <strong class="text-white block">Critical Democratic Thought</strong>
+                                <p class="text-slate-400 text-[11px] mt-0.5">Published extensive essays on democratic consciousness, parliamentary accountability, and cognitive dissonance in higher education.</p>
+                            </div>
+                        </li>
+
+                        <li class="flex items-start gap-3">
+                            <span class="text-amber-400 text-base">📌</span>
+                            <div>
+                                <strong class="text-white block">Architect of VNJCM Ecosystem</strong>
+                                <p class="text-slate-400 text-[11px] mt-0.5">Designed the 15-Mountain Knowledge Architecture and Dissent Dias publishing house to mentor youth across 22 Scheduled Languages.</p>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div class="pt-2 border-t border-slate-800">
+                        <a href="https://www.linkedin.com/in/swarajshandilya896" target="_blank" rel="noopener noreferrer" class="block text-center bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold text-xs py-2.5 rounded-xl transition font-mono">
+                            🔗 Connect with Swaraj Shandilya on LinkedIn
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 4. NEW SECTION: CURATED PUBLICATIONS & POLICY ENGINEERING PAPERS -->
+    <!-- Architectural Purpose: Showcasing All Provided Links in a High-Aesthetic Policy Journal Grid -->
+    <section id="publications" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div class="space-y-12">
+            
+            <div class="text-center space-y-3">
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
+                    Published Dispatches & Policy Essays
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Policy Engineering & Research Repository</h2>
+                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
+                    A curated archive of investigative posts, philosophical critiques, and policy representations published by Swaraj Shandilya and VNJCM.
+                </p>
+            </div>
+
+            <!-- Grid of 8 Provided Links Organized Categorically -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Item 1: Essay -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Philosophical Essay</span>
+                            <span class="text-slate-500">Pulse Article</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Democracy or Moronocracy? Indian Parliament as a Scripted Show
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            An analytical critique of modern legislative proceedings, examining the decline of substantive debate and the rise of theatrical politics in democratic institutions.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
+                        <a href="https://www.linkedin.com/pulse/democracy-moronocracy-indian-parliament-scripted-show-shandilya-jauxc" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 2: Satirical Policy Critique -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Institutional Satire</span>
+                            <span class="text-slate-500">Pulse Article</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Institute of Frodium & Tramania
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            A sharp policy satire dissecting institutional bloat, superficial branding, and administrative jargon in modern higher education frameworks.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
+                        <a href="https://www.linkedin.com/pulse/institute-frodium-tramania-swaraj-shandilya-ps8mc" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 3: Youth Consciousness -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Civic Consciousness</span>
+                            <span class="text-slate-500">Pulse Article</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Apolitical Youth: Failure of Democratic Consciousness
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Exploring how political apathy among educated youth compromises constitutional health and why civic indifference is a systemic vulnerability.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
+                        <a href="https://www.linkedin.com/pulse/apolitical-youth-failure-democratic-consciousness-swaraj-shandilya-whnac" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 4: Investigative Audit -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-red-400 bg-red-500/10 px-2 py-0.5 rounded">Investigative Audit</span>
+                            <span class="text-slate-500">Campus Watch</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            A Paper Campus Built on Forgery: The Registrar & Campus Audit
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            An investigative expose revealing administrative lapses, statutory non-compliance, and infrastructure discrepancies in university governance.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">Investigative Dispatch</span>
+                        <a href="https://www.linkedin.com/posts/swarajshandilya896_a-paper-campus-built-on-forgery-the-registrar-activity-7453488076544438274-NbTF" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Statement ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 5: IIFT Audit Representation -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Policy Representation</span>
+                            <span class="text-slate-500">Ministry Audit</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            IIFT GIFT City & Ministry of Education Representation
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Official policy representation highlighting placement parity, fee rationalization, and infrastructure gaps submitted to institute authorities and Ministry bodies.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">Swaraj Shandilya</span>
+                        <a href="https://www.linkedin.com/posts/swarajshandilya896_iift-iiftgiftcity-ministryofeducation-activity-7440429722309828608-b3n0" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Audit Post ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 6: Cognitive Dissonance & Meta-cognition -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Cognitive Policy</span>
+                            <span class="text-slate-500">VNJCM Post</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Cognitive Dissonance & Linguistic Barriers in Public Debate
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Examining metacognition, linguistic inequality, and cognitive barriers that prevent marginalized youth from participating in high-level policy dialogue.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">VNJCM Desk</span>
+                        <a href="https://www.linkedin.com/posts/vidyarthi-nagrik-jan-chetna-manch_cognitivedissonance-linguisticbarriers-metacognition-activity-7486924551180845056-8ZJo" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Analysis ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 7: VNJCM Platform Vision -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Platform Manifesto</span>
+                            <span class="text-slate-500">Official Launch</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Vidyarthi Nagrik Jan Chetna Manch Platform Vision
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            The founding manifesto outlining VNJCM's mission to bridge student advocacy, statutory compliance, and constitutional education across India.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">Platform Release</span>
+                        <a href="https://www.linkedin.com/posts/swarajshandilya896_vidyarthi-nagrik-jan-chetna-manch-linkedin-activity-7479874499589615616-2Ql4" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Manifesto ↗</a>
+                    </div>
+                </div>
+
+                <!-- Item 8: Praxis Dispatch -->
+                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between md:col-span-2 lg:col-span-2">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-[11px] font-mono">
+                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Praxis & Civic Action</span>
+                            <span class="text-slate-500">Short Dispatch</span>
+                        </div>
+                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
+                            Praxis Dispatch: From Student Grievance to Systemic Policy Reform
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            A strategic note on transforming individual student hardship into structured institutional representations, legal RTI queries, and public accountability frameworks.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                        <span class="text-[11px] font-mono text-slate-400">Swaraj Shandilya Note</span>
+                        <a href="https://lnkd.in/p/dUak3y32" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Open LinkedIn Link ↗</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 5. STRATEGIC PILLARS SECTION -->
+    <section id="pillars" class="py-16 px-4 sm:px-6 max-w-7xl mx-auto border-t border-slate-900">
         <div class="text-center space-y-3 mb-12">
             <h2 class="text-3xl font-bold font-serif text-white tracking-wide">Our Strategic Pillars</h2>
             <p class="text-slate-400 text-sm max-w-xl mx-auto">Transforming passive grievance into evidence-based public action and democratic accountability.</p>
@@ -210,8 +479,7 @@
         </div>
     </section>
 
-    <!-- 4. MODULE: THE FOREST OF CIVIC RENAISSANCE (MOUNTAINS & KNOWLEDGE CAVES) -->
-    <!-- Architectural Purpose: Master Navigation Ecosystem organizing 15 Policy Domains into Expandable Knowledge Portals -->
+    <!-- 6. MODULE: THE FOREST OF CIVIC RENAISSANCE (MOUNTAINS & KNOWLEDGE CAVES) -->
     <section id="forest" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
         <div class="max-w-7xl mx-auto space-y-12">
             
@@ -358,8 +626,7 @@
         </div>
     </section>
 
-    <!-- 5. MODULE: DISSENT DIAS (DISCOURSE PLATFORM) -->
-    <!-- Architectural Purpose: India's Premier Youth Civic Discourse Ecosystem -->
+    <!-- 7. MODULE: DISSENT DIAS (DISCOURSE PLATFORM) -->
     <section id="dissent-dias" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
         <div class="space-y-10">
             
@@ -394,7 +661,7 @@
                     <div class="space-y-3">
                         <div class="flex justify-between text-[11px] font-mono text-slate-400">
                             <span>Opinion • Long Essay</span>
-                            <span class="text-amber-400">July 2026</span>
+                            <span class="text-amber-400">2026</span>
                         </div>
                         <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
                             The Cost of Institutional Silence: Why Satellite Campuses Deserve Parity
@@ -414,7 +681,7 @@
                     <div class="space-y-3">
                         <div class="flex justify-between text-[11px] font-mono text-slate-400">
                             <span>Campus Watch</span>
-                            <span class="text-amber-400">June 2026</span>
+                            <span class="text-amber-400">2026</span>
                         </div>
                         <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
                             RTI as an Instrument of Academic Auditing
@@ -434,7 +701,7 @@
                     <div class="space-y-3">
                         <div class="flex justify-between text-[11px] font-mono text-slate-400">
                             <span>Policy Debate</span>
-                            <span class="text-amber-400">May 2026</span>
+                            <span class="text-amber-400">2026</span>
                         </div>
                         <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
                             Zero-Stipend Internships and the Normalization of Unpaid Labour
@@ -486,8 +753,7 @@
         </div>
     </section>
 
-    <!-- 6. MODULE: POLICY RENAISSANCE & RENAISSANCE PUBLISHING HOUSE -->
-    <!-- Architectural Purpose: Parent Publishing House housing 23 Specialized Academic Journals -->
+    <!-- 8. MODULE: POLICY RENAISSANCE & RENAISSANCE PUBLISHING HOUSE -->
     <section id="policy-renaissance" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
         <div class="max-w-7xl mx-auto space-y-10">
             
@@ -532,7 +798,7 @@
         </div>
     </section>
 
-    <!-- 7. MODULE: VNJCM THINK TANK & RESEARCH DIVISION -->
+    <!-- 9. MODULE: VNJCM THINK TANK & RESEARCH DIVISION -->
     <section id="think-tank" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
         <div class="grid md:grid-cols-12 gap-8 items-center">
             
@@ -588,156 +854,7 @@
         </div>
     </section>
 
-    <!-- 8. MODULE: CONSTITUTIONAL ACADEMY -->
-    <section id="academy" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto space-y-12">
-            
-            <div class="text-center space-y-4">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Executive Education & Youth School
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Constitutional Academy</h2>
-                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    Training the next generation of public leaders through practical workshops in legislative drafting, RTI advocacy, policy writing, and youth parliament simulations.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-4 gap-6">
-                <!-- Course 1 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-mono bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">Certificate Series</span>
-                        <h3 class="text-base font-bold text-white">Practical RTI Drafting & Advocacy</h3>
-                        <p class="text-xs text-slate-400">Mastering Section 6(1) drafting, first appeals, and navigating state information commission portals.</p>
-                    </div>
-                    <a href="#connect" class="text-xs text-amber-400 hover:underline font-semibold">Enroll in Batch →</a>
-                </div>
-
-                <!-- Course 2 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-mono bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">Certificate Series</span>
-                        <h3 class="text-base font-bold text-white">Legislative Drafting & Bill Analysis</h3>
-                        <p class="text-xs text-slate-400">Understanding statutory language, drafting amendments, and reviewing parliamentary committee reports.</p>
-                    </div>
-                    <a href="#connect" class="text-xs text-amber-400 hover:underline font-semibold">Enroll in Batch →</a>
-                </div>
-
-                <!-- Course 3 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-mono bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">Simulations</span>
-                        <h3 class="text-base font-bold text-white">Youth Parliament & Model Cabinet</h3>
-                        <p class="text-xs text-slate-400">Evidence-based parliamentary debate, question hour simulations, and policy defense exercises.</p>
-                    </div>
-                    <a href="#connect" class="text-xs text-amber-400 hover:underline font-semibold">Apply for Simulation →</a>
-                </div>
-
-                <!-- Course 4 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-mono bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">Reading Circle</span>
-                        <h3 class="text-base font-bold text-white">Constitutional Assembly Debates</h3>
-                        <p class="text-xs text-slate-400">Deep reading of Dr. B.R. Ambedkar's speeches, foundational rights debates, and basic structure doctrine.</p>
-                    </div>
-                    <a href="#connect" class="text-xs text-amber-400 hover:underline font-semibold">Join Reading Circle →</a>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 9. MODULE: CIVIC OBSERVATORY & PEOPLE'S DATA LAB -->
-    <section id="observatory" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div class="space-y-10">
-            
-            <div class="text-center space-y-4">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Open Data & Monitoring
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Civic Observatory & Data Lab</h2>
-                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    Real-time institutional trackers, open policy datasets, public budget visualizations, and centralized RTI response repositories.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Tracker 1 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3">
-                    <div class="text-2xl">👁️</div>
-                    <h3 class="text-lg font-bold text-white">University & Campus Governance Tracker</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">Tracking campus infrastructure readiness, library functionality, computer lab setup, guest faculty vetting, and student fee utilization across institutions.</p>
-                    <span class="inline-block text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">Live Monitoring</span>
-                </div>
-
-                <!-- Tracker 2 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3">
-                    <div class="text-2xl">📁</div>
-                    <h3 class="text-lg font-bold text-white">Open RTI Repository</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">A searchable public database of RTI responses obtained from UGC, Ministry of Education, IIFT, and state universities regarding fees and infrastructure.</p>
-                    <span class="inline-block text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">100+ Documents Indexed</span>
-                </div>
-
-                <!-- Tracker 3 -->
-                <div class="glass-card p-6 rounded-2xl space-y-3">
-                    <div class="text-2xl">📊</div>
-                    <h3 class="text-lg font-bold text-white">Public Finance & Budget Visualizer</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">Interactive infographics and data dashboards breaking down higher education allocations, skill development budgets, and CAG audit findings.</p>
-                    <span class="inline-block text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">Interactive Datasets</span>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 10. MODULE: INSTITUTIONAL SERVICES & NATIONAL CAMPAIGNS -->
-    <section id="services-campaigns" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto space-y-12">
-            
-            <div class="grid md:grid-cols-2 gap-10">
-                <!-- Services Wing -->
-                <div class="space-y-6">
-                    <span class="text-xs font-mono uppercase text-amber-400">Institutional Services</span>
-                    <h2 class="text-3xl font-bold font-serif text-white">Services & Advisory Support</h2>
-                    <p class="text-xs text-slate-400 leading-relaxed">Assisting student bodies, academic groups, and civic organizations with institutional due diligence, audits, and policy writing.</p>
-                    
-                    <ul class="space-y-3 text-xs text-slate-300">
-                        <li class="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
-                            <strong>• Campus Governance Audits:</strong> Independent evaluation of academic infrastructure, library resources, and statutory compliance.
-                        </li>
-                        <li class="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
-                            <strong>• RTI Drafting Assistance:</strong> Technical support for formulating legally sound information requests and appeals.
-                        </li>
-                        <li class="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
-                            <strong>• White Paper & Memorandum Development:</strong> Structuring formal representations for Directors, BoGs, and Ministry officials.
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Campaigns Wing -->
-                <div class="space-y-6">
-                    <span class="text-xs font-mono uppercase text-amber-400">National Campaigns</span>
-                    <h2 class="text-3xl font-bold font-serif text-white">Active Civic Campaigns</h2>
-                    <p class="text-xs text-slate-400 leading-relaxed">Mobilizing youth around concrete democratic, academic, and constitutional goals.</p>
-
-                    <div class="space-y-3">
-                        <div class="p-4 glass-card rounded-xl">
-                            <h3 class="text-sm font-bold text-white">Campaign 01: Campus Parity & Fee Ethics</h3>
-                            <p class="text-xs text-slate-400 mt-1">Advocating for unified placement drives, mandatory stipends, and fee transparency across all satellite campuses in India.</p>
-                        </div>
-                        <div class="p-4 glass-card rounded-xl">
-                            <h3 class="text-sm font-bold text-white">Campaign 02: Constitution First</h3>
-                            <p class="text-xs text-slate-400 mt-1">Promoting constitutional literacy, fundamental duties awareness, and democratic engagement in high schools and colleges.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 11. COMMON MINIMUM PROGRAMME (CMP) PORTAL -->
-    <!-- Architectural Purpose: Preserved & Integrated IIFT Representation & Campus Governance Charter -->
+    <!-- 10. COMMON MINIMUM PROGRAMME (CMP) PORTAL -->
     <section id="cmp" class="py-20 px-4 sm:px-6 bg-slate-900/40 border-y border-slate-800">
         <div class="max-w-6xl mx-auto space-y-10">
             
@@ -942,7 +1059,7 @@
         </div>
     </section>
 
-    <!-- 12. CAMPAIGNS IN ACTION GALLERY (All 10 Snapshots Preserved Verbatim) -->
+    <!-- 11. CAMPAIGNS IN ACTION GALLERY (All 10 Snapshots Preserved Verbatim) -->
     <section id="gallery" class="py-20 bg-slate-950 px-4 sm:px-6 border-t border-slate-900">
         <div class="max-w-7xl mx-auto space-y-12">
             <div class="text-center space-y-3">
@@ -1026,8 +1143,7 @@
         </div>
     </section>
 
-    <!-- 13. MEMBER JOIN, FELLOWSHIP & CIVIC REGISTRATION FORM SECTION -->
-    <!-- Architectural Purpose: Preserved Google Apps Script Form with Expanded Tiers -->
+    <!-- 12. MEMBER JOIN, FELLOWSHIP & CIVIC REGISTRATION FORM SECTION -->
     <section id="connect" class="py-20 px-4 sm:px-6 border-t border-slate-900 bg-slate-950/50">
         <div class="max-w-3xl mx-auto glass-card p-8 sm:p-12 rounded-3xl shadow-2xl relative">
             <div class="text-center space-y-3 mb-10">
@@ -1087,7 +1203,7 @@
         </div>
     </section>
 
-    <!-- 14. DIGITAL ENGAGEMENT DASHBOARD (QR Codes Preserved Verbatim) -->
+    <!-- 13. DIGITAL ENGAGEMENT DASHBOARD (QR Codes Preserved Verbatim) -->
     <section class="py-20 px-4 sm:px-6 bg-slate-950 border-t border-slate-900">
         <div class="max-w-5xl mx-auto text-center space-y-12">
             <div class="space-y-3">
@@ -1124,7 +1240,7 @@
         </div>
     </section>
 
-    <!-- 15. OFFICIAL INSTITUTIONAL SECRETARIAT FOOTER -->
+    <!-- 14. OFFICIAL INSTITUTIONAL SECRETARIAT FOOTER -->
     <footer class="bg-slate-950 text-white py-16 px-4 sm:px-6 border-t border-slate-900 text-sm">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
             
@@ -1141,12 +1257,12 @@
             <div class="space-y-3 text-slate-300">
                 <p class="text-sm font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Institutional Wings</p>
                 <ul class="space-y-2 text-xs text-slate-400">
+                    <li><a href="#founder" class="hover:text-amber-400 transition">From the Founder's Desk</a></li>
+                    <li><a href="#publications" class="hover:text-amber-400 transition">Policy Papers & Dispatches</a></li>
                     <li><a href="#forest" class="hover:text-amber-400 transition">The Forest of Civic Renaissance</a></li>
                     <li><a href="#dissent-dias" class="hover:text-amber-400 transition">Dissent Dias Discourse Portal</a></li>
                     <li><a href="#policy-renaissance" class="hover:text-amber-400 transition">Policy Renaissance Publishing</a></li>
                     <li><a href="#think-tank" class="hover:text-amber-400 transition">VNJCM Think Tank & Research</a></li>
-                    <li><a href="#academy" class="hover:text-amber-400 transition">Constitutional Academy</a></li>
-                    <li><a href="#observatory" class="hover:text-amber-400 transition">Civic Observatory & Data Lab</a></li>
                 </ul>
             </div>
 
@@ -1177,9 +1293,8 @@
         </div>
     </footer>
 
-    <!-- 16. MODULAR JAVASCRIPT LOGIC ENGINE -->
+    <!-- 15. MODULAR JAVASCRIPT LOGIC ENGINE -->
     <script>
-        // Mobile Navigation Drawer Toggle
         function toggleMobileNav() {
             const drawer = document.getElementById('mobile-nav-drawer');
             if (drawer) {
@@ -1187,7 +1302,6 @@
             }
         }
 
-        // The Forest: Mountain Panel Switcher
         function openMountain(mountainId) {
             const mPanels = ['const-lit', 'edu-ref', 'pub-pol', 'econ-dev', 'dem-part', 'inst-acc', 'tech-inn', 'law-jus'];
             mPanels.forEach(p => {
@@ -1209,7 +1323,6 @@
             }
         }
 
-        // Dissent Dias: Tab Switcher
         function openDissentTab(tabId) {
             const dTabs = ['editorial', 'campus-watch', 'dialogue', 'data-stories', 'ethics'];
             dTabs.forEach(t => {
@@ -1231,7 +1344,6 @@
             }
         }
 
-        // CMP Cave Tier Switching Logic
         function openCaveTier(tierName) {
             const tiers = ['tier-cat-a', 'tier-cat-b', 'tier-preamble'];
             const btns = ['btn-cat-a', 'btn-cat-b', 'btn-preamble'];
@@ -1255,7 +1367,6 @@
             }
         }
 
-        // Accordion Toggle for Deep Mandate Details
         function toggleAccordion(id) {
             const acc = document.getElementById(id);
             const icon = document.getElementById('icon-' + id);
@@ -1270,7 +1381,6 @@
             }
         }
 
-        // Form Submission Logic (Preserved Google Apps Script Handler)
         document.addEventListener('DOMContentLoaded', () => {
             const contactForm = document.getElementById('citizen-entry-form');
             const formResponse = document.getElementById('form-response-toast');
