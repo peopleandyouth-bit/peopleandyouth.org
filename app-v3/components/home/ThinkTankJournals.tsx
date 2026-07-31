@@ -1,4 +1,5 @@
 ﻿import { JournalTopic } from "@/types";
+import Link from "next/link";
 
 export default function ThinkTankJournals() {
   const journals: JournalTopic[] = [
@@ -56,16 +57,26 @@ export default function ThinkTankJournals() {
   return (
     <section id="think-tank" className="py-24 relative z-10 bg-slate-950/60 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs font-mono font-semibold tracking-wider text-cyan-400 uppercase mb-2 block">
-            Research Repository
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
-            7 Sovereign Policy Journals
-          </h2>
-          <p className="text-slate-400 text-base sm:text-lg">
-            Peer-reviewed research and evidence-backed papers published by People & Youth scholars.
-          </p>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
+          <div className="text-center md:text-left max-w-2xl">
+            <span className="text-xs font-mono font-semibold tracking-wider text-cyan-400 uppercase mb-2 block">
+              Research Repository
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
+              7 Sovereign Policy Journals
+            </h2>
+            <p className="text-slate-400 text-base">
+              Peer-reviewed research and evidence-backed papers published by People & Youth scholars.
+            </p>
+          </div>
+
+          <Link
+            href="/submit-paper"
+            className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center space-x-2"
+          >
+            <span>Submit Research Paper</span>
+            <span>&rarr;</span>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -90,7 +101,9 @@ export default function ThinkTankJournals() {
               </div>
 
               <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-semibold text-cyan-400">
-                <span>View Papers</span>
+                <Link href="/submit-paper" className="hover:underline">
+                  Submit to Journal
+                </Link>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </div>
