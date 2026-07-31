@@ -5,32 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- PRIMARY METADATA & INSTITUTIONAL SEO -->
-    <title>Vidyarthi Nagrik Jan Chetna Manch | People & Youth | peopleandyouth.org</title>
-    <meta name="title" content="Vidyarthi Nagrik Jan Chetna Manch | People & Youth">
-    <meta name="description" content="Leading Youth Towards Praxis. India's premier youth-led digital institution for civic participation, constitutional literacy, public policy research, and institutional accountability. Founded by Swaraj Shandilya.">
-    <meta name="keywords" content="VNJCM, Swaraj Shandilya, People and Youth, Vidyarthi Nagrik Jan Chetna Manch, Dissent Dias, Policy Renaissance, Constitutional Academy, Civic Observatory, RTI India, Public Policy Think Tank, Educational Transparency">
+    <title>People & Youth | Vidyarthi Nagrik Jan Chetna Manch | peopleandyouth.org</title>
+    <meta name="title" content="People & Youth | Vidyarthi Nagrik Jan Chetna Manch (VNJCM)">
+    <meta name="description" content="At the Heart of Change 💙. Building a generation that questions responsibly, dreams fearlessly, and transforms society through informed dialogue, entrepreneurship, innovation, and public policy. Founded by Swaraj Shandilya.">
+    <meta name="keywords" content="People and Youth, VNJCM, Swaraj Shandilya, Dissent Dias, Public Policy Think Tank, Rural India, Constitutional Literacy, Youth Leadership, IIFT, Higher Education Transparency">
     <meta name="author" content="Vidyarthi Nagrik Jan Chetna Manch">
-    <meta name="theme-color" content="#020617">
+    <meta name="theme-color" content="#030712">
 
     <!-- OPEN GRAPH / SOCIAL MEDIA PREVIEW TAGS -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://peopleandyouth.org/">
-    <meta property="og:site_name" content="People & Youth | Vidyarthi Nagrik Jan Chetna Manch">
-    <meta property="og:title" content="Vidyarthi Nagrik Jan Chetna Manch (VNJCM)">
-    <meta property="og:description" content="Leading Youth Towards Praxis. Empowering Youth, Demanding Educational Transparency & Civic Action.">
-    <meta property="og:image" content="https://i.postimg.cc/CL5Q1FYW/VNJCM-003.jpg">
+    <meta property="og:site_name" content="People & Youth | VNJCM">
+    <meta property="og:title" content="PEOPLE & YOUTH — At the Heart of Change 💙">
+    <meta property="og:description" content="India's premier youth-led digital institution for public policy research, civic action, and constitutional literacy.">
+    <meta property="og:image" content="https://i.postimg.cc/hvTgs1fT/Profile-head.jpg">
 
     <!-- TWITTER CARD TAGS -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://peopleandyouth.org/">
-    <meta name="twitter:title" content="Vidyarthi Nagrik Jan Chetna Manch (VNJCM)">
-    <meta name="twitter:description" content="Leading Youth Towards Praxis. A hybrid Think Tank, Policy School, and Civic Innovation Platform.">
-    <meta name="twitter:image" content="https://i.postimg.cc/CL5Q1FYW/VNJCM-003.jpg">
+    <meta name="twitter:title" content="PEOPLE & YOUTH — At the Heart of Change 💙">
+    <meta name="twitter:description" content="Leading Youth Towards Praxis. Empowering Rural India, Civic Action, and Public Policy Innovation.">
+    <meta name="twitter:image" content="https://i.postimg.cc/hvTgs1fT/Profile-head.jpg">
 
     <!-- FAVICON -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
 
-    <!-- GOOGLE ANALYTICS (G-CTY4XCVCS3) -->
+    <!-- GOOGLE ANALYTICS -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CTY4XCVCS3"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -43,223 +43,459 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #020617;
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #030712;
+            color: #f1f5f9;
         }
         .font-serif { font-family: 'Playfair Display', serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-        .ambient-glow {
-            background: radial-gradient(circle at 50% -10%, rgba(245, 158, 11, 0.15), transparent 70%);
+        /* OCEANIC GLOW & GLASSMORPHISM */
+        .ocean-bg {
+            background: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.18), rgba(2, 132, 199, 0.05) 50%, transparent 80%),
+                        radial-gradient(circle at 90% 60%, rgba(6, 182, 212, 0.1), transparent 50%);
         }
 
         .glass-card {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(51, 65, 85, 0.6);
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .glass-card:hover {
-            border-color: rgba(245, 158, 11, 0.4);
-            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 20px 40px -15px rgba(14, 165, 233, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .apple-wallet-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.6) 50%, rgba(14, 165, 233, 0.4) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(186, 230, 253, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(2, 132, 199, 0.35);
         }
 
         .tab-btn.active {
-            background: linear-gradient(to right, #f59e0b, #ea580c);
-            color: #020617;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: #ffffff;
             font-weight: 700;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #020617;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-slate-950 min-h-screen flex flex-col justify-between antialiased">
+<body class="ocean-bg min-h-screen flex flex-col justify-between antialiased selection:bg-sky-500 selection:text-slate-950">
 
-    <!-- MASTER AMBIENT GLOW -->
-    <div class="ambient-glow">
-        
-        <!-- 1. INSTITUTIONAL NAVIGATION BAR -->
-        <nav class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-6 py-3.5 transition-all">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <a href="#" class="text-xl sm:text-2xl font-extrabold font-serif text-amber-400 tracking-wide hover:opacity-90 transition">VNJCM</a>
-                    <span class="hidden md:inline-block text-xs text-slate-400 border-l border-slate-800 ml-2 pl-3 font-mono">People & Youth • peopleandyouth.org</span>
+    <!-- 1. NAVIGATION BAR -->
+    <nav class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-sky-900/30 px-4 sm:px-8 py-4 transition-all">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            
+            <a href="#" class="flex items-center space-x-3 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-cyan-400 flex items-center justify-center font-extrabold text-slate-950 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition">
+                    P&Y
                 </div>
-                
-                <!-- Mega Navigation Desktop -->
-                <div class="hidden lg:flex items-center space-x-5 text-xs font-medium">
-                    <a href="#founder" class="text-amber-400 hover:text-amber-300 font-semibold transition">Founder's Desk</a>
-                    <a href="#publications" class="text-slate-300 hover:text-amber-400 transition">Publications & Papers</a>
-                    <a href="#forest" class="text-slate-300 hover:text-amber-400 transition">The Forest</a>
-                    <a href="#dissent-dias" class="text-slate-300 hover:text-amber-400 transition">Dissent Dias</a>
-                    <a href="#policy-renaissance" class="text-slate-300 hover:text-amber-400 transition">Policy Renaissance</a>
-                    <a href="#think-tank" class="text-slate-300 hover:text-amber-400 transition">Think Tank</a>
-                    <a href="#cmp" class="text-amber-400 hover:text-amber-300 transition font-semibold">CMP Charter</a>
-                    <a href="#connect" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-md shadow-orange-500/20 transition">Join Platform</a>
+                <div>
+                    <span class="text-lg font-extrabold tracking-tight text-white block leading-none">PEOPLE & YOUTH</span>
+                    <span class="text-[10px] text-sky-400 font-mono tracking-widest uppercase">At the Heart of Change 💙</span>
                 </div>
+            </a>
 
-                <!-- Mobile Menu Button -->
-                <div class="lg:hidden">
-                    <button onclick="toggleMobileNav()" class="text-slate-300 hover:text-amber-400 p-2 text-sm font-mono border border-slate-800 rounded-lg">
-                        ☰ Menu
-                    </button>
-                </div>
+            <!-- Desktop Nav -->
+            <div class="hidden lg:flex items-center space-x-6 text-xs font-semibold">
+                <a href="#about" class="text-slate-300 hover:text-sky-400 transition">About</a>
+                <a href="#founder" class="text-slate-300 hover:text-sky-400 transition">Founder's Story</a>
+                <a href="#dissent-dias" class="text-sky-400 hover:text-sky-300 transition">Dissent Dias</a>
+                <a href="#think-tank" class="text-slate-300 hover:text-sky-400 transition">Think Tank</a>
+                <a href="#rural-india" class="text-slate-300 hover:text-sky-400 transition">Rural Ecosystem</a>
+                <a href="#constitution" class="text-slate-300 hover:text-sky-400 transition">Constitution</a>
+                <a href="#cmp" class="text-slate-300 hover:text-sky-400 transition">CMP Charter</a>
+                <a href="#connect" class="bg-gradient-to-r from-sky-500 to-cyan-500 hover:brightness-110 text-slate-950 font-bold px-5 py-2.5 rounded-full shadow-lg shadow-sky-500/25 transition">Join Platform</a>
             </div>
 
-            <!-- Mobile Drawer -->
-            <div id="mobile-nav-drawer" class="hidden lg:hidden pt-4 pb-2 border-t border-slate-800 mt-3 space-y-2 text-xs font-medium">
-                <a href="#founder" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-semibold">👤 From the Founder's Desk</a>
-                <a href="#publications" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📚 Publications & Policy Papers</a>
-                <a href="#forest" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🌲 The Forest of Civic Renaissance</a>
-                <a href="#dissent-dias" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🎙️ Dissent Dias Platform</a>
-                <a href="#policy-renaissance" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📜 Policy Renaissance Journals</a>
-                <a href="#think-tank" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🏛️ VNJCM Think Tank</a>
-                <a href="#academy" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">🎓 Constitutional Academy</a>
-                <a href="#observatory" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">👁️ Civic Observatory & Data Lab</a>
-                <a href="#cmp" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-semibold">📜 CMP Charter (IIFT Representation)</a>
-                <a href="#gallery" onclick="toggleMobileNav()" class="block py-2 text-slate-300 hover:text-amber-400">📸 Field Evidences</a>
-                <a href="#connect" onclick="toggleMobileNav()" class="block py-2 text-amber-400 font-bold">🤝 Join Manch / Apply</a>
+            <!-- Mobile Toggle -->
+            <button onclick="toggleMobileNav()" class="lg:hidden p-2 text-slate-300 hover:text-sky-400">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div id="mobile-nav-drawer" class="hidden lg:hidden pt-4 pb-2 border-t border-slate-800/80 mt-3 space-y-2 text-xs font-medium">
+            <a href="#about" onclick="toggleMobileNav()" class="block py-2 text-slate-300">🌊 About Platform</a>
+            <a href="#founder" onclick="toggleMobileNav()" class="block py-2 text-slate-300">👤 Founder's Story</a>
+            <a href="#dissent-dias" onclick="toggleMobileNav()" class="block py-2 text-sky-400 font-bold">🎙️ Dissent Dias Forum</a>
+            <a href="#think-tank" onclick="toggleMobileNav()" class="block py-2 text-slate-300">🏛️ VNJCM Think Tank</a>
+            <a href="#rural-india" onclick="toggleMobileNav()" class="block py-2 text-slate-300">🌾 Rural Ecosystem</a>
+            <a href="#constitution" onclick="toggleMobileNav()" class="block py-2 text-slate-300">📜 Members' Constitution</a>
+            <a href="#cmp" onclick="toggleMobileNav()" class="block py-2 text-slate-300">📄 IIFT CMP Charter</a>
+            <a href="#connect" onclick="toggleMobileNav()" class="block py-2 text-sky-400 font-bold">🤝 Join the Movement</a>
+        </div>
+    </nav>
+
+    <!-- 2. HERO SECTION -->
+    <section id="about" class="pt-16 pb-20 px-4 sm:px-6 text-center relative overflow-hidden">
+        <div class="max-w-5xl mx-auto space-y-8">
+            
+            <div class="inline-flex items-center space-x-2 bg-sky-500/10 border border-sky-500/30 px-4 py-1.5 rounded-full text-xs font-mono font-semibold text-sky-300 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                <span>Vidyarthi Nagrik Jan Chetna Manch (VNJCM)</span>
             </div>
-        </nav>
 
-        <!-- 2. INSTITUTIONAL HERO SECTION -->
-        <section id="about" class="py-20 px-4 sm:px-6 text-center">
-            <div class="max-w-5xl mx-auto space-y-6">
-                
-                <div class="inline-flex items-center space-x-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono font-semibold uppercase tracking-wider shadow-inner">
-                    <span>Vidyarthi Nagrik Jan Chetna Manch</span>
-                    <span>•</span>
-                    <span class="italic text-slate-300 font-sans">"Leading Youth Towards Praxis."</span>
-                </div>
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight">
+                PEOPLE & YOUTH<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500">At the Heart of Change 💙</span>
+            </h1>
 
-                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold font-serif text-white leading-tight tracking-tight">
-                    Building India's Ecosystem for <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500">Civic Action & Policy Praxis</span>
-                </h1>
+            <p class="text-slate-300 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto font-normal leading-relaxed">
+                Building a generation that questions responsibly, dreams fearlessly, and transforms society through informed dialogue, entrepreneurship, innovation, and public policy.
+            </p>
 
-                <p class="text-slate-300 text-sm sm:text-base lg:text-lg max-w-3xl mx-auto leading-relaxed">
-                    A hybrid Think Tank, Research Institute, Policy School, Digital Publishing House, and Civic Observatory bridging student dialogue, institutional accountability, constitutional literacy, and public policy debate across India.
+            <div class="pt-4 flex flex-wrap justify-center gap-3 sm:gap-4 font-semibold text-xs sm:text-sm">
+                <a href="#connect" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-7 py-3.5 rounded-full shadow-lg shadow-sky-500/25 hover:scale-105 active:scale-95 transition duration-200 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Become a Member
+                </a>
+                <a href="#think-tank" class="glass-card text-sky-300 hover:text-white px-7 py-3.5 rounded-full transition duration-200 flex items-center gap-2">
+                    <i data-lucide="shield" class="w-4 h-4"></i> Join the Think Tank
+                </a>
+                <a href="#dissent-dias" class="glass-card text-slate-200 hover:text-sky-300 px-7 py-3.5 rounded-full transition duration-200 flex items-center gap-2">
+                    <i data-lucide="message-square" class="w-4 h-4"></i> Explore Dissent Dias
+                </a>
+                <a href="#publications" class="bg-slate-900/80 border border-slate-800 text-slate-300 hover:border-sky-500/40 px-6 py-3.5 rounded-full transition duration-200">
+                    Read Policy Essays
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 3. AUTO-ROTATING TAGLINE BANNER -->
+    <section class="py-6 bg-slate-950/90 border-y border-sky-900/30 text-center px-4">
+        <div class="max-w-4xl mx-auto flex items-center justify-center space-x-3">
+            <span class="text-sky-400 text-lg">✨</span>
+            <p id="rotating-tagline" class="text-xs sm:text-sm md:text-base font-serif italic text-sky-200 transition-all duration-700">
+                "Dream dreams so high that they demolish the walls of the cage."
+            </p>
+        </div>
+    </section>
+
+    <!-- 4. FOUNDER'S STORY (MULTILAYER INTERACTIVE PROFILE) -->
+    <section id="founder" class="py-24 px-4 sm:px-6 max-w-7xl mx-auto border-b border-slate-900">
+        <div class="space-y-12">
+            
+            <div class="text-center space-y-3">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
+                    Institutional Leadership
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">From the Founder's Desk</h2>
+                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
+                    A story of curiosity, academic rigor, enterprise discipline, and grassroots empowerment.
                 </p>
-
-                <p class="text-xs font-mono text-amber-400 tracking-wide">
-                    peopleandyouth - at the heart of change 💙
-                </p>
-
-                <div class="pt-6 flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="#publications" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition duration-200">
-                        Read Policy Essays & Audits
-                    </a>
-                    <a href="#founder" class="glass-card hover:bg-slate-800/60 text-slate-200 font-semibold px-8 py-4 rounded-xl transition duration-200">
-                        Explore Founder's Desk
-                    </a>
-                </div>
             </div>
-        </section>
 
-        <!-- 3. FROM THE FOUNDER'S DESK (SWARAJ SHANDILYA) -->
-        <section id="founder" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
-            <div class="max-w-7xl mx-auto space-y-12">
+            <!-- Interactive Layer Selector Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 text-xs font-mono max-w-3xl mx-auto">
+                <button onclick="openFounderLayer('layer-1')" id="fl-btn-1" class="tab-btn active px-4 py-2.5 rounded-full border border-sky-800 transition">Layer 1: The Dreamer</button>
+                <button onclick="openFounderLayer('layer-2')" id="fl-btn-2" class="tab-btn px-4 py-2.5 rounded-full border border-slate-800 text-slate-400 hover:text-white transition">Layer 2: The Student</button>
+                <button onclick="openFounderLayer('layer-3')" id="fl-btn-3" class="tab-btn px-4 py-2.5 rounded-full border border-slate-800 text-slate-400 hover:text-white transition">Layer 3: The Professional</button>
+                <button onclick="openFounderLayer('layer-4')" id="fl-btn-4" class="tab-btn px-4 py-2.5 rounded-full border border-slate-800 text-slate-400 hover:text-white transition">Layer 4: Institution Builder</button>
+                <button onclick="openFounderLayer('layer-5')" id="fl-btn-5" class="tab-btn px-4 py-2.5 rounded-full border border-slate-800 text-slate-400 hover:text-white transition">Layer 5: The Visionary</button>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 items-center glass-card p-6 sm:p-10 rounded-3xl border border-sky-900/30">
                 
-                <div class="text-center space-y-3">
-                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                        Institutional Leadership
-                    </span>
-                    <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">From the Founder's Desk</h2>
-                    <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                        Bridging empirical rigor, legal due diligence, and grassroots democratic consciousness.
-                    </p>
+                <!-- Founder Photo Column -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="w-64 h-80 sm:w-72 sm:h-96 rounded-3xl overflow-hidden border-2 border-sky-500/40 shadow-2xl relative group">
+                        <img id="founder-photo" src="https://i.postimg.cc/hvTgs1fT/Profile-head.jpg" alt="Swaraj Shandilya - Founder" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
                 </div>
 
-                <div class="grid lg:grid-cols-12 gap-10 items-center">
+                <!-- Founder Story Content Column -->
+                <div class="lg:col-span-7 space-y-6">
                     
-                    <!-- FOUNDER PORTRAIT CARD -->
-                    <div class="lg:col-span-4 flex justify-center">
-                        <div class="w-64 h-80 sm:w-72 sm:h-96 rounded-3xl overflow-hidden border-2 border-amber-500/40 glass-card shadow-2xl p-2 relative group">
-                            <img src="https://i.postimg.cc/5trwWrvV/profile-picture.jpg" alt="Swaraj Shandilya - Founder" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition duration-500">
-                        </div>
+                    <div class="space-y-1">
+                        <span class="text-xs font-mono text-sky-400 uppercase tracking-widest">Founder & Managing Trustee</span>
+                        <h3 class="text-3xl font-extrabold font-serif text-white">Swaraj Shandilya</h3>
+                        <p class="text-xs font-mono text-slate-400">Indian Institute of Foreign Trade • Researcher • Policy Strategist</p>
                     </div>
 
-                    <!-- FOUNDER BIO & PHILOSOPHY -->
-                    <div class="lg:col-span-8 space-y-6">
-                        <div class="space-y-2">
-                            <span class="text-xs font-mono text-amber-400 uppercase tracking-widest">Founder & Managing Trustee</span>
-                            <h3 class="text-3xl font-extrabold font-serif text-white">Swaraj Shandilya</h3>
-                            <p class="text-xs font-mono text-slate-400">Researcher • Legal & Institutional Auditor • Policy Strategist</p>
-                        </div>
+                    <!-- LAYER 1 -->
+                    <div id="fl-panel-layer-1" class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                        <h4 class="text-lg font-bold text-sky-300 font-serif">Layer 1 — The Dreamer</h4>
+                        <p>
+                            A boy who believed that ideas can change civilizations. From questioning local governance in quiet towns to studying complex global systems, Swaraj learned early that progress begins when young minds stop accepting the status quo as permanent.
+                        </p>
+                        <p class="italic text-slate-400 border-l-2 border-sky-500 pl-4 py-1">
+                            "When individual dissent is guided by evidence and constitutional courtesy, it ceases to be noise—it becomes institutional evolution."
+                        </p>
+                    </div>
 
-                        <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                            <p>
-                                "A democracy without critical youth inquiry risks decaying into scripted formalism. When institutions cease to be accountable to the public they were built to serve, civic participation can no longer remain a passive ideal—it must evolve into active <strong class="text-amber-400">Praxis</strong>."
-                            </p>
-                            <p>
-                                Driven by a commitment to educational equity, statutory compliance, and constitutional literacy, Swaraj Shandilya established <strong class="text-slate-100">Vidyarthi Nagrik Jan Chetna Manch (VNJCM)</strong> to provide Indian youth with a structured, non-partisan platform for institutional auditing and public policy dialogue.
-                            </p>
-                            <p class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-slate-300 italic">
-                                From pioneering investigative RTI filings regarding satellite campus readiness at premier institutes like IIFT GIFT City to analyzing parliamentary discourse and cognitive barriers in public debate, Swaraj’s work focuses on converting individual dissent into evidence-based policy reform.
-                            </p>
-                        </div>
+                    <!-- LAYER 2 -->
+                    <div id="fl-panel-layer-2" class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans hidden">
+                        <h4 class="text-lg font-bold text-sky-300 font-serif">Layer 2 — The Student</h4>
+                        <p>
+                            Pursuing MBA in International Business at the **Indian Institute of Foreign Trade (IIFT)**, Swaraj's academic research spans the intersection of International Trade, Public Policy, Rural Economics, Marketing Strategy, Artificial Intelligence, and Governance.
+                        </p>
+                        <p>
+                            His time studying global trade dynamics reinforced a deep conviction: international competitiveness is inseparable from domestic grassroots equity and institutional transparency.
+                        </p>
+                    </div>
 
-                        <div class="pt-2 flex flex-wrap gap-3 text-xs font-mono">
-                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">⚖️ Institutional Auditing</span>
-                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">📜 RTI Due Diligence</span>
-                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">🎓 Campus Equity Advocate</span>
-                        </div>
+                    <!-- LAYER 3 -->
+                    <div id="fl-panel-layer-3" class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans hidden">
+                        <h4 class="text-lg font-bold text-sky-300 font-serif">Layer 3 — The Professional</h4>
+                        <p>
+                            Grounded in enterprise IT operations and systems engineering at HCL Technologies, Swaraj brings structured problem-solving, operational discipline, and analytical rigor to civic and policy interventions.
+                        </p>
+                        <p>
+                            He views complex public administration challenges through the lens of enterprise architecture—identifying bottlenecks, streamlining workflows, and building durable frameworks.
+                        </p>
+                    </div>
+
+                    <!-- LAYER 4 -->
+                    <div id="fl-panel-layer-4" class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans hidden">
+                        <h4 class="text-lg font-bold text-sky-300 font-serif">Layer 4 — The Institution Builder</h4>
+                        <p>
+                            Founder of **People & Youth** and **Vidyarthi Nagrik Jan Chetna Manch (VNJCM)**. Built as an enduring digital institution to bridge student dialogue, statutory audits, RTI advocacy, and youth participation in public policy across India.
+                        </p>
+                        <p>
+                            Focusing on creating self-sustaining platforms—such as 23 specialized peer-reviewed journals and civic observatories—rather than transient personalities.
+                        </p>
+                    </div>
+
+                    <!-- LAYER 5 -->
+                    <div id="fl-panel-layer-5" class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans hidden">
+                        <h4 class="text-lg font-bold text-sky-300 font-serif">Layer 5 — The Visionary</h4>
+                        <p>
+                            Swaraj strongly believes that **India's next economic revolution will emerge from its villages.** Rural India is not merely a market waiting to be exploited; it is an ecosystem waiting to be empowered.
+                        </p>
+                        <p>
+                            His academic journey in International Business reinforces his conviction that rural value chains represent one of the greatest opportunities for inclusive, sustainable, and dignified national growth.
+                        </p>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap gap-2 text-[11px] font-mono">
+                        <span class="bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1 rounded-full">🏛️ Public Policy</span>
+                        <span class="bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1 rounded-full">🌐 International Trade</span>
+                        <span class="bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1 rounded-full">🌾 Rural Ecosystems</span>
+                        <span class="bg-slate-900 border border-slate-800 text-sky-400 px-3 py-1 rounded-full">📜 Statutory Auditing</span>
                     </div>
 
                 </div>
 
             </div>
-        </section>
 
-                <!-- Founder Highlights Card -->
-                <div class="lg:col-span-5 glass-card p-8 rounded-3xl space-y-6 border border-slate-800">
-                    <h4 class="text-lg font-bold font-serif text-white border-b border-slate-800 pb-3">Core Contributions & Advocacy</h4>
+        </div>
+    </section>
+
+    <!-- 5. INTERCONNECTED DOMAINS OF INTEREST -->
+    <section class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-12">
+            <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">Ecosystem Pillars</span>
+            <h2 class="text-3xl font-bold font-serif text-white">Interconnected Domains of Knowledge</h2>
+            <p class="text-slate-400 text-sm max-w-xl mx-auto">Bridging interdisciplinary research with grassroots execution.</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 text-xs font-medium text-center">
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="scale" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Public Policy</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="globe" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">International Trade</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="trending-up" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Marketing & Strategy</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="cpu" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Artificial Intelligence</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="database" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Data Analytics</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="line-chart" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Economics</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="compass" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Geopolitics</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="brain" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Psychology</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="book-open" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Indian Philosophy</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="sprout" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Rural Development</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="landmark" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Governance</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="rocket" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Entrepreneurship</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="scroll" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Constitutional Studies</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="graduation-cap" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Educational Equity</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="lightbulb" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Social Innovation</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl space-y-2 hover:border-sky-400">
+                <i data-lucide="users" class="w-5 h-5 mx-auto text-sky-400"></i>
+                <span class="block text-slate-200">Civic Praxis</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. RURAL INDIA VISION -->
+    <section id="rural-india" class="py-20 px-4 sm:px-6 bg-slate-950/70 border-y border-slate-900">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-12 gap-10 items-center">
+            
+            <div class="md:col-span-7 space-y-6">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">
+                    Grassroots Ecosystem
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white leading-tight">
+                    The Next Billion Opportunities Begin in Rural India.
+                </h2>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    True economic transformation cannot occur in urban isolation. Inclusive growth requires decentralized innovation, rural entrepreneurship, modern agricultural supply chains, digital literacy, and equitable market access.
+                </p>
+                
+                <div class="grid sm:grid-cols-2 gap-4 text-xs text-slate-300 font-medium">
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-400 shrink-0"></i>
+                        <span>Empowering Local Enterprise</span>
+                    </div>
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-400 shrink-0"></i>
+                        <span>Rural Market Outreach</span>
+                    </div>
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-400 shrink-0"></i>
+                        <span>Digital & Agricultural Policy</span>
+                    </div>
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-400 shrink-0"></i>
+                        <span>Community Governance Labs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-5 glass-card p-6 rounded-3xl space-y-4 text-center">
+                <div class="aspect-[4/3] rounded-2xl overflow-hidden border border-slate-800">
+                    <img src="https://i.postimg.cc/02mj98tb/VNJCM011.jpg" alt="Rural Outreach" class="w-full h-full object-cover">
+                </div>
+                <p class="text-xs text-slate-400 font-mono">Grassroots Civic Action & Dialogue in Rural Bihar</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 7. DISSENT DIAS & APPLE WALLET MEMBERSHIP CARD -->
+    <section id="dissent-dias" class="py-24 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div class="space-y-12">
+            
+            <div class="text-center space-y-4">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
+                    India's Youth Discussion Forum
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Dissent Dias</h2>
+                <p class="text-slate-300 text-sm max-w-2xl mx-auto">
+                    A structured discourse ecosystem. Dissent Dias encourages evidence-based public dialogue, evaluates effective governance policies, identifies implementation challenges, and proposes constructive solutions without hostility or noise.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-10 items-center">
+                
+                <!-- APPLE WALLET MEMBERSHIP CARD -->
+                <div class="lg:col-span-6 flex justify-center">
+                    <div class="apple-wallet-card p-8 rounded-3xl w-full max-w-md space-y-6 text-white relative overflow-hidden group">
+                        
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-mono tracking-widest uppercase text-sky-200">Official Access Pass</span>
+                                <h3 class="text-2xl font-bold font-serif tracking-tight">Dissent Dias Pass</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center font-mono font-bold text-sky-300 border border-white/20">
+                                💙
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-xs text-slate-300 font-mono">Special Launch Membership</span>
+                            <div class="flex items-baseline space-x-3">
+                                <span class="text-4xl font-extrabold font-mono text-white">₹499</span>
+                                <span class="text-sm font-mono text-slate-300 line-through">₹1,000</span>
+                                <span class="text-[10px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded font-mono">50% Off</span>
+                            </div>
+                        </div>
+
+                        <ul class="space-y-2 text-xs text-slate-200 font-medium">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-sky-300"></i> Access to members-only policy roundtables</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-sky-300"></i> Exclusive monthly research briefs & reports</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-sky-300"></i> Priority registration for workshops & summits</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-sky-300"></i> Digital Membership Certificate & publishing rights</li>
+                        </ul>
+
+                        <div class="pt-4 border-t border-white/10 space-y-3">
+                            <button onclick="toggleUPIModal()" class="w-full bg-white text-slate-950 font-bold py-3 rounded-2xl hover:bg-sky-100 transition shadow-lg text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i> Claim Membership (UPI / Scan)
+                            </button>
+                            <p class="text-[10px] text-center text-slate-300 font-mono">Direct organization payment gateway launching soon.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- DISCOURSE HIGHLIGHTS & ESSAYS LINK REPOSITORY -->
+                <div class="lg:col-span-6 space-y-6">
+                    <h3 class="text-xl font-bold text-white border-b border-slate-800 pb-3">Curated Dispatches & Published Essays</h3>
                     
-                    <ul class="space-y-4 text-xs text-slate-300">
-                        <li class="flex items-start gap-3">
-                            <span class="text-amber-400 text-base">📌</span>
-                            <div>
-                                <strong class="text-white block">IIFT GIFT City Campus Investigation</strong>
-                                <p class="text-slate-400 text-[11px] mt-0.5">Author of the Common Minimum Programme (CMP) submitted to administrative and Ministry authorities demanding placement parity, fee rationalization, and infrastructure readiness.</p>
-                            </div>
-                        </li>
+                    <div class="space-y-3">
+                        <a href="https://www.linkedin.com/pulse/democracy-moronocracy-indian-parliament-scripted-show-shandilya-jauxc" target="_blank" rel="noopener noreferrer" class="glass-card p-4 rounded-2xl block hover:border-sky-400 transition">
+                            <span class="text-[10px] font-mono text-sky-400">Philosophical Essay</span>
+                            <h4 class="text-sm font-bold text-white mt-1">Democracy or Moronocracy? Indian Parliament as a Scripted Show</h4>
+                            <p class="text-xs text-slate-400 mt-1">An analytical critique of modern legislative proceedings and substantive debate. ↗</p>
+                        </a>
 
-                        <li class="flex items-start gap-3">
-                            <span class="text-amber-400 text-base">📌</span>
-                            <div>
-                                <strong class="text-white block">Critical Democratic Thought</strong>
-                                <p class="text-slate-400 text-[11px] mt-0.5">Published extensive essays on democratic consciousness, parliamentary accountability, and cognitive dissonance in higher education.</p>
-                            </div>
-                        </li>
+                        <a href="https://www.linkedin.com/pulse/apolitical-youth-failure-democratic-consciousness-swaraj-shandilya-whnac" target="_blank" rel="noopener noreferrer" class="glass-card p-4 rounded-2xl block hover:border-sky-400 transition">
+                            <span class="text-[10px] font-mono text-sky-400">Civic Consciousness</span>
+                            <h4 class="text-sm font-bold text-white mt-1">Apolitical Youth: Failure of Democratic Consciousness</h4>
+                            <p class="text-xs text-slate-400 mt-1">Exploring how indifference compromises constitutional health and democratic decision-making. ↗</p>
+                        </a>
 
-                        <li class="flex items-start gap-3">
-                            <span class="text-amber-400 text-base">📌</span>
-                            <div>
-                                <strong class="text-white block">Architect of VNJCM Ecosystem</strong>
-                                <p class="text-slate-400 text-[11px] mt-0.5">Designed the 15-Mountain Knowledge Architecture and Dissent Dias publishing house to mentor youth across 22 Scheduled Languages.</p>
-                            </div>
-                        </li>
-                    </ul>
-
-                    <div class="pt-2 border-t border-slate-800">
-                        <a href="https://www.linkedin.com/in/swarajshandilya896" target="_blank" rel="noopener noreferrer" class="block text-center bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold text-xs py-2.5 rounded-xl transition font-mono">
-                            🔗 Connect with Swaraj Shandilya on LinkedIn
+                        <a href="https://www.linkedin.com/posts/swarajshandilya896_a-paper-campus-built-on-forgery-the-registrar-activity-7453488076544438274-NbTF" target="_blank" rel="noopener noreferrer" class="glass-card p-4 rounded-2xl block hover:border-sky-400 transition">
+                            <span class="text-[10px] font-mono text-red-400">Investigative Audit</span>
+                            <h4 class="text-sm font-bold text-white mt-1">A Paper Campus Built on Forgery: Campus Governance Expose</h4>
+                            <p class="text-xs text-slate-400 mt-1">Investigating infrastructure readiness and statutory compliance in higher education. ↗</p>
                         </a>
                     </div>
                 </div>
@@ -269,1167 +505,372 @@
         </div>
     </section>
 
-    <!-- 4. NEW SECTION: CURATED PUBLICATIONS & POLICY ENGINEERING PAPERS -->
-    <!-- Architectural Purpose: Showcasing All Provided Links in a High-Aesthetic Policy Journal Grid -->
-    <section id="publications" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div class="space-y-12">
-            
-            <div class="text-center space-y-3">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Published Dispatches & Policy Essays
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Policy Engineering & Research Repository</h2>
-                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    A curated archive of investigative posts, philosophical critiques, and policy representations published by Swaraj Shandilya and VNJCM.
-                </p>
-            </div>
-
-            <!-- Grid of 8 Provided Links Organized Categorically -->
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <!-- Item 1: Essay -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Philosophical Essay</span>
-                            <span class="text-slate-500">Pulse Article</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Democracy or Moronocracy? Indian Parliament as a Scripted Show
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            An analytical critique of modern legislative proceedings, examining the decline of substantive debate and the rise of theatrical politics in democratic institutions.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
-                        <a href="https://www.linkedin.com/pulse/democracy-moronocracy-indian-parliament-scripted-show-shandilya-jauxc" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 2: Satirical Policy Critique -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Institutional Satire</span>
-                            <span class="text-slate-500">Pulse Article</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Institute of Frodium & Tramania
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            A sharp policy satire dissecting institutional bloat, superficial branding, and administrative jargon in modern higher education frameworks.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
-                        <a href="https://www.linkedin.com/pulse/institute-frodium-tramania-swaraj-shandilya-ps8mc" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 3: Youth Consciousness -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Civic Consciousness</span>
-                            <span class="text-slate-500">Pulse Article</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Apolitical Youth: Failure of Democratic Consciousness
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Exploring how political apathy among educated youth compromises constitutional health and why civic indifference is a systemic vulnerability.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">By Swaraj Shandilya</span>
-                        <a href="https://www.linkedin.com/pulse/apolitical-youth-failure-democratic-consciousness-swaraj-shandilya-whnac" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Article ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 4: Investigative Audit -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-red-400 bg-red-500/10 px-2 py-0.5 rounded">Investigative Audit</span>
-                            <span class="text-slate-500">Campus Watch</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            A Paper Campus Built on Forgery: The Registrar & Campus Audit
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            An investigative expose revealing administrative lapses, statutory non-compliance, and infrastructure discrepancies in university governance.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">Investigative Dispatch</span>
-                        <a href="https://www.linkedin.com/posts/swarajshandilya896_a-paper-campus-built-on-forgery-the-registrar-activity-7453488076544438274-NbTF" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Statement ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 5: IIFT Audit Representation -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Policy Representation</span>
-                            <span class="text-slate-500">Ministry Audit</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            IIFT GIFT City & Ministry of Education Representation
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Official policy representation highlighting placement parity, fee rationalization, and infrastructure gaps submitted to institute authorities and Ministry bodies.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">Swaraj Shandilya</span>
-                        <a href="https://www.linkedin.com/posts/swarajshandilya896_iift-iiftgiftcity-ministryofeducation-activity-7440429722309828608-b3n0" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Audit Post ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 6: Cognitive Dissonance & Meta-cognition -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Cognitive Policy</span>
-                            <span class="text-slate-500">VNJCM Post</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Cognitive Dissonance & Linguistic Barriers in Public Debate
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Examining metacognition, linguistic inequality, and cognitive barriers that prevent marginalized youth from participating in high-level policy dialogue.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">VNJCM Desk</span>
-                        <a href="https://www.linkedin.com/posts/vidyarthi-nagrik-jan-chetna-manch_cognitivedissonance-linguisticbarriers-metacognition-activity-7486924551180845056-8ZJo" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">View Analysis ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 7: VNJCM Platform Vision -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Platform Manifesto</span>
-                            <span class="text-slate-500">Official Launch</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Vidyarthi Nagrik Jan Chetna Manch Platform Vision
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            The founding manifesto outlining VNJCM's mission to bridge student advocacy, statutory compliance, and constitutional education across India.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">Platform Release</span>
-                        <a href="https://www.linkedin.com/posts/swarajshandilya896_vidyarthi-nagrik-jan-chetna-manch-linkedin-activity-7479874499589615616-2Ql4" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Read Manifesto ↗</a>
-                    </div>
-                </div>
-
-                <!-- Item 8: Praxis Dispatch -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between md:col-span-2 lg:col-span-2">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center text-[11px] font-mono">
-                            <span class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Praxis & Civic Action</span>
-                            <span class="text-slate-500">Short Dispatch</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white leading-snug">
-                            Praxis Dispatch: From Student Grievance to Systemic Policy Reform
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            A strategic note on transforming individual student hardship into structured institutional representations, legal RTI queries, and public accountability frameworks.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center">
-                        <span class="text-[11px] font-mono text-slate-400">Swaraj Shandilya Note</span>
-                        <a href="https://lnkd.in/p/dUak3y32" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-semibold font-mono">Open LinkedIn Link ↗</a>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 5. STRATEGIC PILLARS SECTION -->
-    <section id="pillars" class="py-16 px-4 sm:px-6 max-w-7xl mx-auto border-t border-slate-900">
-        <div class="text-center space-y-3 mb-12">
-            <h2 class="text-3xl font-bold font-serif text-white tracking-wide">Our Strategic Pillars</h2>
-            <p class="text-slate-400 text-sm max-w-xl mx-auto">Transforming passive grievance into evidence-based public action and democratic accountability.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass-card p-6 rounded-2xl space-y-3 transition duration-300">
-                <div class="text-amber-400 text-3xl">📜</div>
-                <h3 class="text-lg font-bold text-white">Educational Transparency</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Driving institutional due diligence, auditing campus infrastructure, and exercising the Right to Information (RTI) Act.</p>
-            </div>
-            <div class="glass-card p-6 rounded-2xl space-y-3 transition duration-300">
-                <div class="text-amber-400 text-3xl">🎙️</div>
-                <h3 class="text-lg font-bold text-white">Dissent Dias</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Creating safe, rigorous academic spaces for critical dialogue, policy debate, and fearless intellectual inquiry.</p>
-            </div>
-            <div class="glass-card p-6 rounded-2xl space-y-3 transition duration-300">
-                <div class="text-amber-400 text-3xl">🏛️</div>
-                <h3 class="text-lg font-bold text-white">Civic Accountability</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Monitoring public expenditure, analyzing government audit reports, and advocating for grassroots governance reform.</p>
-            </div>
-            <div class="glass-card p-6 rounded-2xl space-y-3 transition duration-300">
-                <div class="text-amber-400 text-3xl">🌐</div>
-                <h3 class="text-lg font-bold text-white">Youth Leadership</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Cultivating a network of campus ambassadors and informed citizens who question fearlessly and act responsibly.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- 6. MODULE: THE FOREST OF CIVIC RENAISSANCE (MOUNTAINS & KNOWLEDGE CAVES) -->
-    <section id="forest" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
+    <!-- 8. THINK TANK SECTION -->
+    <section id="think-tank" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
         <div class="max-w-7xl mx-auto space-y-12">
             
-            <div class="text-center space-y-4">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Master Knowledge Architecture
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">The Forest of Civic Renaissance</h2>
-                <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto">
-                    An interactive institutional hierarchy. Explore 15 Mountains of Knowledge and deep-dive into specialized Knowledge Caves containing research, explainers, and policy tools.
-                </p>
-            </div>
-
-            <!-- Mountain Selector Tabs -->
-            <div class="flex flex-wrap justify-center gap-2 max-w-5xl mx-auto">
-                <button onclick="openMountain('const-lit')" id="m-btn-const-lit" class="tab-btn active px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 transition">⛰️ Constitutional Literacy</button>
-                <button onclick="openMountain('edu-ref')" id="m-btn-edu-ref" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Educational Reform</button>
-                <button onclick="openMountain('pub-pol')" id="m-btn-pub-pol" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Public Policy</button>
-                <button onclick="openMountain('econ-dev')" id="m-btn-econ-dev" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Economic Development</button>
-                <button onclick="openMountain('dem-part')" id="m-btn-dem-part" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Democratic Participation</button>
-                <button onclick="openMountain('inst-acc')" id="m-btn-inst-acc" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Institutional Accountability</button>
-                <button onclick="openMountain('tech-inn')" id="m-btn-tech-inn" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Technology & Innovation</button>
-                <button onclick="openMountain('law-jus')" id="m-btn-law-jus" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-mono border border-slate-800 text-slate-400 hover:text-white transition">⛰️ Law & Justice</button>
-            </div>
-
-            <!-- MOUNTAIN PANELS CONTAINING KNOWLEDGE CAVES -->
-            <div class="glass-card p-6 sm:p-10 rounded-3xl relative border border-slate-800">
-                
-                <!-- MOUNTAIN 1: CONSTITUTIONAL LITERACY -->
-                <div id="m-panel-const-lit" class="space-y-6">
-                    <div class="border-b border-slate-800 pb-4">
-                        <span class="text-xs font-mono text-amber-400 uppercase">Mountain Ecosystem #01</span>
-                        <h3 class="text-2xl font-bold font-serif text-white mt-1">Mountain of Constitutional Literacy</h3>
-                        <p class="text-xs text-slate-400 mt-1">Democratizing rights, fundamental duties, and constitutional jurisprudence for youth leaders.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <!-- Cave 1 -->
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 01</span>
-                                <span class="text-[10px] bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded">Active Portal</span>
-                            </div>
-                            <h4 class="text-base font-bold text-white">Constitution Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Interactive Article explainer repository, landmark judgements, fundamental rights toolkits, and Preamble studies.</p>
-                            <a href="#connect" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Access Documents & Study Guides →</a>
-                        </div>
-
-                        <!-- Cave 2 -->
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 02</span>
-                                <span class="text-[10px] bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded">Active Portal</span>
-                            </div>
-                            <h4 class="text-base font-bold text-white">RTI Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Practical guide to drafting Section 6(1) requests, Section 19 First Appeals, and CIC precedent case files.</p>
-                            <a href="#connect" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Download RTI Application Templates →</a>
-                        </div>
-
-                        <!-- Cave 3 -->
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 03</span>
-                                <span class="text-[10px] bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded">Active Portal</span>
-                            </div>
-                            <h4 class="text-base font-bold text-white">Parliament Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Legislative drafting archives, Private Member Bill trackers, Committee Report summaries, and Hansard analyses.</p>
-                            <a href="#connect" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Explore Legislative Briefs →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MOUNTAIN 2: EDUCATIONAL REFORM -->
-                <div id="m-panel-edu-ref" class="space-y-6 hidden">
-                    <div class="border-b border-slate-800 pb-4">
-                        <span class="text-xs font-mono text-amber-400 uppercase">Mountain Ecosystem #02</span>
-                        <h3 class="text-2xl font-bold font-serif text-white mt-1">Mountain of Educational Reform</h3>
-                        <p class="text-xs text-slate-400 mt-1">Auditing higher education infrastructure, fee structures, accreditation standards, and campus democracy.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 04</span>
-                            <h4 class="text-base font-bold text-white">University Governance Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">UGC/AICTE compliance audits, fee structure breakdowns, hostel infrastructure benchmarks, and student grievance frameworks.</p>
-                            <a href="#cmp" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">View IIFT GIFT City Audit & CMP →</a>
-                        </div>
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 05</span>
-                            <h4 class="text-base font-bold text-white">Education Policy Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">NEP implementation tracking, national scholarship disbursement data, and public expenditure analysis in higher education.</p>
-                            <a href="#connect" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Access NEP Tracker →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MOUNTAIN 3: PUBLIC POLICY -->
-                <div id="m-panel-pub-pol" class="space-y-6 hidden">
-                    <div class="border-b border-slate-800 pb-4">
-                        <span class="text-xs font-mono text-amber-400 uppercase">Mountain Ecosystem #03</span>
-                        <h3 class="text-2xl font-bold font-serif text-white mt-1">Mountain of Public Policy</h3>
-                        <p class="text-xs text-slate-400 mt-1">Evaluating public health, welfare schemes, public administration efficiency, and regulatory frameworks.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 06</span>
-                            <h4 class="text-base font-bold text-white">Budget & Public Finance Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Union and State budget breakdowns, CAG audit summaries, fiscal deficit tracking, and public expenditure reviews.</p>
-                            <a href="#observatory" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Open Budget Visualizations →</a>
-                        </div>
-                        <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                            <span class="text-xs font-mono text-amber-400 font-bold">Knowledge Cave 07</span>
-                            <h4 class="text-base font-bold text-white">Urban & Rural Governance Cave</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">73rd & 74th Constitutional Amendment implementation, local body finances, municipal performance, and panchayat raj dashboards.</p>
-                            <a href="#connect" class="inline-block text-xs text-amber-400 hover:underline font-semibold pt-1">Explore Local Datasets →</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MOUNTAIN PANELS (Econ, Dem, Inst, Tech, Law - Dyn Loaded) -->
-                <div id="m-panel-econ-dev" class="space-y-4 hidden">
-                    <h3 class="text-xl font-bold text-white">Mountain of Economic Development & Trade</h3>
-                    <p class="text-xs text-slate-400">Trade policy, WTO regulations, FIEO benchmarks, manufacturing ecosystems, and sustainable economic growth models.</p>
-                </div>
-                <div id="m-panel-dem-part" class="space-y-4 hidden">
-                    <h3 class="text-xl font-bold text-white">Mountain of Democratic Participation</h3>
-                    <p class="text-xs text-slate-400">Electoral reforms, voter awareness datasets, youth turnout analysis, and candidate financial disclosure trackers.</p>
-                </div>
-                <div id="m-panel-inst-acc" class="space-y-4 hidden">
-                    <h3 class="text-xl font-bold text-white">Mountain of Institutional Accountability</h3>
-                    <p class="text-xs text-slate-400">Lokpal, CVC, CBI, CAG performance indices, regulatory compliance frameworks, and whistleblower protection advocacy.</p>
-                </div>
-                <div id="m-panel-tech-inn" class="space-y-4 hidden">
-                    <h3 class="text-xl font-bold text-white">Mountain of Technology & AI Innovation</h3>
-                    <p class="text-xs text-slate-400">Responsible AI governance, DPDP Act compliance, digital public infrastructure (DPI), and cyber policy research.</p>
-                </div>
-                <div id="m-panel-law-jus" class="space-y-4 hidden">
-                    <h3 class="text-xl font-bold text-white">Mountain of Law & Judicial Reform</h3>
-                    <p class="text-xs text-slate-400">Judicial pendency trackers, legal aid accessibility, criminal law reform analysis, and constitutional litigation reviews.</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- 7. MODULE: DISSENT DIAS (DISCOURSE PLATFORM) -->
-    <section id="dissent-dias" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div class="space-y-10">
-            
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-slate-800 pb-8">
-                <div>
-                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">
-                        Powered by VNJCM
-                    </span>
-                    <h2 class="text-3xl sm:text-5xl font-extrabold font-serif text-white mt-3">Dissent Dias</h2>
-                    <p class="text-slate-400 text-sm mt-1 max-w-xl">
-                        India's premier youth civic discourse platform. Transforming disagreement into evidence-based public dialogue, campus watch reports, and policy essays.
-                    </p>
-                </div>
-                <a href="#connect" class="bg-slate-900 border border-slate-700 hover:border-amber-400 text-amber-400 font-semibold text-xs px-5 py-3 rounded-xl transition">
-                    ✍️ Submit to Editorial Desk
-                </a>
-            </div>
-
-            <!-- Dissent Dias Section Tabs -->
-            <div class="flex flex-wrap gap-2 text-xs font-mono">
-                <button onclick="openDissentTab('editorial')" id="d-btn-editorial" class="tab-btn active px-4 py-2 rounded-xl border border-slate-800">Editorial Desk</button>
-                <button onclick="openDissentTab('campus-watch')" id="d-btn-campus-watch" class="tab-btn px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white">Campus Watch</button>
-                <button onclick="openDissentTab('dialogue')" id="d-btn-dialogue" class="tab-btn px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white">Public Dialogue & Roundtables</button>
-                <button onclick="openDissentTab('data-stories')" id="d-btn-data-stories" class="tab-btn px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white">Data Stories & Fact Checks</button>
-                <button onclick="openDissentTab('ethics')" id="d-btn-ethics" class="tab-btn px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white">Editorial Ethics & AI Policy</button>
-            </div>
-
-            <!-- DISSENT DIAS CONTENT PANELS -->
-            <div id="d-panel-editorial" class="grid md:grid-cols-3 gap-6">
-                <!-- Essay 1 -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-[11px] font-mono text-slate-400">
-                            <span>Opinion • Long Essay</span>
-                            <span class="text-amber-400">2026</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
-                            The Cost of Institutional Silence: Why Satellite Campuses Deserve Parity
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            An examination of the structural disparities facing newly established higher education campuses in India, and why equal fees must command equal career opportunities.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono text-slate-400">
-                        <span>By VNJCM Research Desk</span>
-                        <span class="text-amber-400">8 min read</span>
-                    </div>
-                </div>
-
-                <!-- Essay 2 -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-[11px] font-mono text-slate-400">
-                            <span>Campus Watch</span>
-                            <span class="text-amber-400">2026</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
-                            RTI as an Instrument of Academic Auditing
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            How student-led Right to Information requests are uncovering infrastructure deficits, unfulfilled MoUs, and fee utilization gaps in central institutes.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono text-slate-400">
-                        <span>By Secretariat Desk</span>
-                        <span class="text-amber-400">6 min read</span>
-                    </div>
-                </div>
-
-                <!-- Essay 3 -->
-                <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-[11px] font-mono text-slate-400">
-                            <span>Policy Debate</span>
-                            <span class="text-amber-400">2026</span>
-                        </div>
-                        <h3 class="text-lg font-bold font-serif text-white hover:text-amber-400 transition cursor-pointer">
-                            Zero-Stipend Internships and the Normalization of Unpaid Labour
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            A constitutional and economic critique of corporate recruitment practices that exploit young professionals under the guise of exposure.
-                        </p>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono text-slate-400">
-                        <span>By Policy Fellow</span>
-                        <span class="text-amber-400">10 min read</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dissent Dias Secondary Panels -->
-            <div id="d-panel-campus-watch" class="hidden glass-card p-8 rounded-3xl space-y-4">
-                <h3 class="text-xl font-bold text-white">Campus Watch Monitor</h3>
-                <p class="text-xs text-slate-400">Investigative reports, student grievance documentations, and infrastructure audits conducted across central and state universities.</p>
-                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-300">
-                    📍 <strong>Featured Investigation:</strong> IIFT GIFT City Campus Operational Readiness Report (Refer to CMP Portal below for full representation).
-                </div>
-            </div>
-
-            <div id="d-panel-dialogue" class="hidden glass-card p-8 rounded-3xl space-y-4">
-                <h3 class="text-xl font-bold text-white">Public Dialogue & Roundtables</h3>
-                <p class="text-xs text-slate-400">Transcripts and video summaries of multi-stakeholder debates between student representatives, academic administrators, policy analysts, and legal experts.</p>
-            </div>
-
-            <div id="d-panel-data-stories" class="hidden glass-card p-8 rounded-3xl space-y-4">
-                <h3 class="text-xl font-bold text-white">Data Stories & Fact Checks</h3>
-                <p class="text-xs text-slate-400">Data-driven visualizations dissecting public spending, university budgets, placement claims, and statutory compliance data.</p>
-            </div>
-
-            <div id="d-panel-ethics" class="hidden glass-card p-8 rounded-3xl space-y-6">
-                <h3 class="text-xl font-bold text-white">Editorial Governance & Publication Ethics</h3>
-                <div class="grid md:grid-cols-2 gap-4 text-xs text-slate-300">
-                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
-                        <strong class="text-amber-400 block mb-1">Evidence-First Principle</strong>
-                        All opinion pieces and investigative reports published in Dissent Dias must be grounded in primary documents, official RTI responses, or verified datasets.
-                    </div>
-                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
-                        <strong class="text-amber-400 block mb-1">Responsible AI Usage Policy</strong>
-                        AI tools may be used for proofreading and grammatical refinement, but core editorial analysis, writing, and fact-checking remain strictly human-driven.
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 8. MODULE: POLICY RENAISSANCE & RENAISSANCE PUBLISHING HOUSE -->
-    <section id="policy-renaissance" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto space-y-10">
-            
-            <div class="text-center space-y-4">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Parent Publishing House
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Policy Renaissance</h2>
-                <p class="text-amber-400 font-serif italic text-base">"Where Ideas Become Institutions."</p>
-                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    The institutional umbrella for 23 specialized peer-reviewed journals, policy series, working papers, and annual state-of-the-nation reports.
-                </p>
-            </div>
-
-            <!-- Journal Grid Selector -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs font-mono">
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">📜 Education Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">📈 Trade Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🏛️ Governance Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">💡 Tech Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">⚖️ Judicial Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🗳️ Democracy Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🌐 Foreign Policy Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🌱 Agriculture Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🌍 Climate Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🤖 AI Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">🏙️ Urban Renaissance</div>
-                <div class="glass-card p-3 rounded-xl text-center hover:border-amber-400 cursor-pointer transition">👥 Youth Renaissance</div>
-            </div>
-
-            <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 text-center space-y-3">
-                <span class="text-xs font-mono text-amber-400">Call For Papers • Volume IV (2026)</span>
-                <h3 class="text-lg font-bold text-white">Submissions Open for Renaissance Working Paper Series</h3>
-                <p class="text-xs text-slate-400 max-w-xl mx-auto">
-                    Inviting original policy research, empirical case studies, and legislative reviews from student researchers, policy fellows, and academic scholars.
-                </p>
-                <a href="#connect" class="inline-block bg-amber-500 text-slate-950 font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-400 transition">
-                    View Submission Guidelines & Submit Paper
-                </a>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 9. MODULE: VNJCM THINK TANK & RESEARCH DIVISION -->
-    <section id="think-tank" class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div class="grid md:grid-cols-12 gap-8 items-center">
-            
-            <div class="md:col-span-6 space-y-6">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">
-                    Institutional Research Wing
-                </span>
+            <div class="text-center space-y-3">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase">Non-Partisan Research</span>
                 <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">VNJCM Think Tank</h2>
-                <p class="text-slate-300 text-sm leading-relaxed">
-                    Conducting rigorous, non-partisan research on higher education compliance, grassroots governance, constitutional literacy, and public finance.
-                </p>
-                
-                <div class="space-y-3 text-xs text-slate-400">
-                    <div class="flex items-start gap-3">
-                        <span class="text-amber-400 font-bold">📄</span>
-                        <div><strong>Working Papers:</strong> Pre-publication policy studies subjected to peer review.</div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <span class="text-amber-400 font-bold">📊</span>
-                        <div><strong>White Papers:</strong> Comprehensive institutional evaluation briefs submitted to Ministries.</div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <span class="text-amber-400 font-bold">💡</span>
-                        <div><strong>Issue Briefs:</strong> Rapid-response policy analysis for urgent legislative questions.</div>
-                    </div>
-                </div>
-
-                <div class="pt-2">
-                    <a href="#connect" class="bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 text-xs font-bold px-6 py-3 rounded-xl transition">
-                        Apply for Research Fellowship →
-                    </a>
-                </div>
-            </div>
-
-            <div class="md:col-span-6 glass-card p-8 rounded-3xl space-y-6 border border-slate-800">
-                <h3 class="text-xl font-bold text-white border-b border-slate-800 pb-3">Research Focus Areas (2026-2028)</h3>
-                
-                <div class="space-y-4 text-xs">
-                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-amber-400 font-mono font-bold block mb-0.5">Area 01</span>
-                        <strong class="text-slate-200 block">Higher Education Quality & Satellite Campus Governance</strong>
-                        <p class="text-slate-400 mt-1">Auditing parity, fee ethics, and infrastructure readiness across newly opened satellite campuses of national institutes.</p>
-                    </div>
-
-                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                        <span class="text-amber-400 font-mono font-bold block mb-0.5">Area 02</span>
-                        <strong class="text-slate-200 block">Constitutional Rights & Youth Civic Participation</strong>
-                        <p class="text-slate-400 mt-1">Measuring civic literacy levels, youth voter engagement, and the efficacy of student-led RTI applications.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 10. COMMON MINIMUM PROGRAMME (CMP) PORTAL -->
-    <section id="cmp" class="py-20 px-4 sm:px-6 bg-slate-900/40 border-y border-slate-800">
-        <div class="max-w-6xl mx-auto space-y-10">
-            
-            <div class="text-center space-y-4">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Institutional Framework • IMF Representation
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-bold font-serif text-white">Common Minimum Programme (CMP) Portal</h2>
                 <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    A non-negotiable policy framework for campus parity, academic readiness, fee rationalisation, and student dignity. Click below to enter deeper levels of the mandate.
+                    Operating a multi-layered research ecosystem where members collaboratively review public policies, government schemes, social challenges, and economic trends.
                 </p>
-
-                <!-- CAVE ENTRANCE TABS -->
-                <div class="flex flex-wrap justify-center gap-3 pt-4">
-                    <button id="btn-cat-a" onclick="openCaveTier('cat-a')" class="tab-btn active px-6 py-3 rounded-xl text-xs sm:text-sm font-medium border border-slate-700 transition">
-                        Level 1: Category A (Extremely Non-Negotiable)
-                    </button>
-                    <button id="btn-cat-b" onclick="openCaveTier('cat-b')" class="tab-btn px-6 py-3 rounded-xl text-xs sm:text-sm font-medium border border-slate-700 text-slate-400 hover:text-white transition">
-                        Level 2: Category B (Operational & Governance)
-                    </button>
-                    <button id="btn-preamble" onclick="openCaveTier('preamble')" class="tab-btn px-6 py-3 rounded-xl text-xs sm:text-sm font-medium border border-slate-700 text-slate-400 hover:text-white transition">
-                        Level 3: Preamble & Principles
-                    </button>
-                </div>
             </div>
 
-            <!-- TIER CONTENT: CATEGORY A -->
-            <div id="tier-cat-a" class="space-y-4 transition-all duration-300">
-                <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl text-xs font-mono text-amber-300 mb-6">
-                    ⚠️ <strong>EXTREMELY NON-NEGOTIABLE DIRECTIVES:</strong> Core institutional failures directly impacting academic equity, student career security, and legal promises.
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-3xl space-y-3">
+                    <span class="text-sky-400 font-mono text-xs font-bold">Paper Series 01</span>
+                    <h3 class="text-lg font-bold text-white">Working Papers</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Early-stage empirical research subjected to peer commentary across economics, AI ethics, and international trade.</p>
                 </div>
-
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- A1 Accordion Card -->
-                    <div class="glass-card p-6 rounded-2xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-amber-400 font-mono text-xs font-bold">Mandate A1</span>
-                            <span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded font-mono">Critical</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Summer Internship Programme (SIP) Parity</h3>
-                        <p class="text-xs text-slate-400 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                            <strong>Problem:</strong> Satellite campus students excluded from physical, stipend-bearing on-campus drives and forced into off-campus or unpaid roles.
-                        </p>
-                        <button onclick="toggleAccordion('acc-a1')" class="w-full text-left text-xs text-amber-400 hover:underline font-semibold flex justify-between items-center pt-2">
-                            <span>Drill Deeper Into Demands & Actions</span>
-                            <span id="icon-acc-a1">▼</span>
-                        </button>
-                        <div id="acc-a1" class="hidden text-xs text-slate-300 space-y-2 pt-2 border-t border-slate-800/80">
-                            <p>• <strong>Unified SIP Policy:</strong> One common SIP cycle with equal recruiter access across all campuses.</p>
-                            <p>• <strong>Mandatory Stipend Norm:</strong> Zero-stipend internships explicitly banned under IIFT branding.</p>
-                            <p>• <strong>Corporate Accountability:</strong> Firms unwilling to pay stipends barred from recruiting.</p>
-                            <p>• <strong>Ministry Intervention:</strong> Leverage PSU, FIEO, CII, FICCI, ASSOCHAM linkages if corporates fail.</p>
-                        </div>
-                    </div>
-
-                    <!-- A2 Accordion Card -->
-                    <div class="glass-card p-6 rounded-2xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-amber-400 font-mono text-xs font-bold">Mandate A2</span>
-                            <span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded font-mono">Critical</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Fee Rationalisation & Social Accessibility</h3>
-                        <p class="text-xs text-slate-400 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                            <strong>Problem:</strong> Fees of ₹19,67,000+ without guaranteed placement outcomes create severe financial distress for middle/lower-income students.
-                        </p>
-                        <button onclick="toggleAccordion('acc-a2')" class="w-full text-left text-xs text-amber-400 hover:underline font-semibold flex justify-between items-center pt-2">
-                            <span>Drill Deeper Into Demands & Actions</span>
-                            <span id="icon-acc-a2">▼</span>
-                        </button>
-                        <div id="acc-a2" class="hidden text-xs text-slate-300 space-y-2 pt-2 border-t border-slate-800/80">
-                            <p>• <strong>Public Cost Breakup:</strong> Publicly disclosed cost-breakup & annual audit report.</p>
-                            <p>• <strong>Outcome-Linked Fees:</strong> Fee levels must reflect actual opportunity parity, not branding.</p>
-                            <p>• <strong>Financial Waivers:</strong> Mandatory EWS fee waivers & emergency hardship grants.</p>
-                            <p>• <strong>Ministry Subsidies:</strong> Active pursuit of Ministry subsidies for tuition relief.</p>
-                        </div>
-                    </div>
-
-                    <!-- A3 Accordion Card -->
-                    <div class="glass-card p-6 rounded-2xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-amber-400 font-mono text-xs font-bold">Mandate A3</span>
-                            <span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded font-mono">Critical</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Accountability for Institutional Promises</h3>
-                        <p class="text-xs text-slate-400 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                            <strong>Problem:</strong> Official statements claim identical infrastructure and opportunities across campuses, contradicting ground reality.
-                        </p>
-                        <button onclick="toggleAccordion('acc-a3')" class="w-full text-left text-xs text-amber-400 hover:underline font-semibold flex justify-between items-center pt-2">
-                            <span>Drill Deeper Into Demands & Actions</span>
-                            <span id="icon-acc-a3">▼</span>
-                        </button>
-                        <div id="acc-a3" class="hidden text-xs text-slate-300 space-y-2 pt-2 border-t border-slate-800/80">
-                            <p>• <strong>Written Reconciliation:</strong> Formal administrative clarification reconciling promises vs reality.</p>
-                            <p>• <strong>Parity Review Committee:</strong> Admin, Faculty, and Student body quarterly reporting panel.</p>
-                            <p>• <strong>Corrective Safeguards:</strong> Institutional project compensation if recruiter parity fails.</p>
-                        </div>
-                    </div>
-
-                    <!-- A4 Accordion Card -->
-                    <div class="glass-card p-6 rounded-2xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-amber-400 font-mono text-xs font-bold">Mandate A4</span>
-                            <span class="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded font-mono">Critical</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Academic & Infrastructure Readiness</h3>
-                        <p class="text-xs text-slate-400 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-                            <strong>Problem:</strong> Delayed course books, functional library opened just 2 days before exams, and non-functional computer labs.
-                        </p>
-                        <button onclick="toggleAccordion('acc-a4')" class="w-full text-left text-xs text-amber-400 hover:underline font-semibold flex justify-between items-center pt-2">
-                            <span>Drill Deeper Into Demands & Actions</span>
-                            <span id="icon-acc-a4">▼</span>
-                        </button>
-                        <div id="acc-a4" class="hidden text-xs text-slate-300 space-y-2 pt-2 border-t border-slate-800/80">
-                            <p>• <strong>Timely Course Books:</strong> Mandatory disbursement of books at term start.</p>
-                            <p>• <strong>Functional Library:</strong> Operational year-round with qualified librarian present.</p>
-                            <p>• <strong>Computer Lab Readiness:</strong> Fully configured systems and software installed prior to term start.</p>
-                        </div>
-                    </div>
+                <div class="glass-card p-6 rounded-3xl space-y-3">
+                    <span class="text-sky-400 font-mono text-xs font-bold">Paper Series 02</span>
+                    <h3 class="text-lg font-bold text-white">White Papers</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Comprehensive institutional evaluation reports submitted to statutory bodies, Ministries, and university boards.</p>
                 </div>
-            </div>
-
-            <!-- TIER CONTENT: CATEGORY B -->
-            <div id="tier-cat-b" class="space-y-4 hidden transition-all duration-300">
-                <div class="bg-orange-500/10 border border-orange-500/30 p-4 rounded-xl text-xs font-mono text-orange-300 mb-6">
-                    🛠️ <strong>OPERATIONAL & GOVERNANCE MANDATES:</strong> Academic quality assurance, transport mobility, club budgeting, and MoU transparency.
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
-                        <span class="text-orange-400 font-mono text-xs font-bold">Mandate B1</span>
-                        <h3 class="text-base font-bold text-white">Library Resources</h3>
-                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                            <li>Official book-to-student ratio defined.</li>
-                            <li>Regular procurement cycles for updated editions.</li>
-                            <li>Permanent, qualified librarian presence.</li>
-                        </ul>
-                    </div>
-
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
-                        <span class="text-orange-400 font-mono text-xs font-bold">Mandate B2</span>
-                        <h3 class="text-base font-bold text-white">Faculty Quality Assurance</h3>
-                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                            <li>Mandatory interviews for guest faculty.</li>
-                            <li>Panel must include subject-matter experts.</li>
-                            <li>Zero compromise on teaching standards.</li>
-                        </ul>
-                    </div>
-
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
-                        <span class="text-orange-400 font-mono text-xs font-bold">Mandate B3</span>
-                        <h3 class="text-base font-bold text-white">Budget Governance</h3>
-                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                            <li>Budgeting must NOT rely solely on headcount.</li>
-                            <li>Must factor fixed operational costs.</li>
-                            <li>Transparent discussions with student body.</li>
-                        </ul>
-                    </div>
-
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
-                        <span class="text-orange-400 font-mono text-xs font-bold">Mandate B4</span>
-                        <h3 class="text-base font-bold text-white">Transport & Mobility</h3>
-                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                            <li>Regular shuttle buses between hostel & campus.</li>
-                            <li>Fixed, published, and monitored timetables.</li>
-                            <li>Transport gaps impacting attendance are unacceptable.</li>
-                        </ul>
-                    </div>
-
-                    <div class="glass-card p-6 rounded-2xl space-y-3 md:col-span-2">
-                        <span class="text-orange-400 font-mono text-xs font-bold">Mandate B5</span>
-                        <h3 class="text-base font-bold text-white">MoU Transparency & Monitoring</h3>
-                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
-                            <li>Timely written status updates on all MoUs (Hostels, Sports, Collaborations).</li>
-                            <li>Designated administrative authority held accountable for monitoring agreements.</li>
-                            <li>Students must not be admitted without operational MoUs in place.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TIER CONTENT: PREAMBLE & PRINCIPLES -->
-            <div id="tier-preamble" class="space-y-6 hidden transition-all duration-300">
-                <div class="glass-card p-8 rounded-3xl space-y-4">
-                    <span class="text-xs font-mono uppercase text-amber-400 font-semibold">Institutional Preamble</span>
-                    <h3 class="text-2xl font-bold font-serif text-white">International Management Forum (IMF) Mandate</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        The Indian Institute of Foreign Trade (IIFT), functioning as the official research institution of the Ministry of Commerce and Industry, is obligated to maintain uniform academic standards, infrastructure, student welfare, and opportunity parity across all campuses.
-                    </p>
-                    <div class="pt-4 border-t border-slate-800">
-                        <h4 class="text-sm font-bold text-white mb-3">Core Non-Negotiable Principles:</h4>
-                        <ol class="space-y-2 text-xs text-slate-300 list-decimal list-inside font-mono">
-                            <li>Campus Parity is Non-Negotiable.</li>
-                            <li>No Student Should Pay a Premium for Disadvantage.</li>
-                            <li>Public Institutions Must Remain Socially Accessible.</li>
-                            <li>Promises Made by Institutions Are Binding Commitments.</li>
-                            <li>Students Are Stakeholders, Not Consumers Without Rights.</li>
-                        </ol>
-                    </div>
+                <div class="glass-card p-6 rounded-3xl space-y-3">
+                    <span class="text-sky-400 font-mono text-xs font-bold">Paper Series 03</span>
+                    <h3 class="text-lg font-bold text-white">Issue Briefs</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Rapid-response legislative analysis translating complex bills and budget allocations into accessible briefs.</p>
                 </div>
             </div>
 
         </div>
     </section>
 
-    <!-- 11. CAMPAIGNS IN ACTION GALLERY (All 10 Snapshots Preserved Verbatim) -->
-    <section id="gallery" class="py-20 bg-slate-950 px-4 sm:px-6 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto space-y-12">
-            <div class="text-center space-y-3">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">Field Evidence</span>
-                <h3 class="text-3xl font-bold font-serif text-white">Campaigns In Action / जमीनी अभियान</h3>
-                <p class="text-sm text-slate-400 max-w-xl mx-auto">Tracing the journey of our grassroots outreach—from community engagement and RTI awareness campaigns to civic interventions that inspire informed participation.</p>
+    <!-- 9. COMMUNITY STRATEGY (CUSTOMER SEGMENTATION) -->
+    <section class="py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-12">
+            <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">Institutional Value</span>
+            <h2 class="text-3xl font-bold font-serif text-white">Who We Serve & Empower</h2>
+            <p class="text-slate-400 text-sm max-w-xl mx-auto">Tailored engagement pathways across academic and professional sectors.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">🎓</div>
+                <h3 class="text-base font-bold text-white">Students</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Leadership development, career mentorship, policy exposure, and statutory rights literacy.</p>
             </div>
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">🚀</div>
+                <h3 class="text-base font-bold text-white">Founders & Startups</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Community engagement, youth outreach, and market research across emerging and rural sectors.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">💼</div>
+                <h3 class="text-base font-bold text-white">Young Professionals</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Cross-industry peer networking, leadership forums, and public affairs skill building.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">🔬</div>
+                <h3 class="text-base font-bold text-white">Researchers</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Publication pathways in 23 specialized journals, primary datasets, and policy reviews.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">🏫</div>
+                <h3 class="text-base font-bold text-white">Educational Institutions</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Campus governance audits, knowledge partnerships, guest lectures, and youth parliament simulations.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-3">
+                <div class="text-sky-400 text-2xl">🌐</div>
+                <h3 class="text-base font-bold text-white">NGOs & Civic Bodies</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Campaign amplification, community mobilization, statutory RTI support, and grassroots research.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. MEMBERS' CONSTITUTION -->
+    <section id="constitution" class="py-20 px-4 sm:px-6 bg-slate-950/90 border-t border-slate-900">
+        <div class="max-w-6xl mx-auto space-y-12">
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                <!-- Slot 2 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/CL5Q1FYW/VNJCM-003.jpg" alt="Outreach Trail Snapshot 1" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 1</p>
+            <div class="text-center space-y-3">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase">Foundational Ethos</span>
+                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">Members' Constitution</h2>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Non-negotiable values guiding our dialogue, research, and civic action.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs text-slate-300">
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 01 — Absolute Equality</strong>
+                    <p class="text-slate-400">No discrimination on the basis of caste, religion, gender, language, region, or economic background.</p>
                 </div>
-                <!-- Slot 3 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/RZvXj4hp/RTITOIIFT.png" alt="RTI To IIFT" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 2</p>
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 02 — Courteous Disagreement</strong>
+                    <p class="text-slate-400">Respectful discourse that honors intergenerational wisdom and treats opposing viewpoints with dignity.</p>
                 </div>
-                <!-- Slot 4 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/wjbL0pm6/RTITOUGC.png" alt="RTI To UGC" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 3</p>
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 03 — Evidence Before Opinion</strong>
+                    <p class="text-slate-400">All claims, critiques, and proposals must be grounded in primary data, statutory documents, or empirical facts.</p>
                 </div>
-                <!-- Slot 5 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/CL5Q1FYW/VNJCM-003.jpg" alt="Campaign Archive" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 4</p>
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 04 — Scientific Temperament</strong>
+                    <p class="text-slate-400">Fostering inquiry, critical thinking, logic, and intellectual honesty over dogma and hysteria.</p>
                 </div>
-                <!-- Slot 6 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center p-2 text-center">
-                        <a href="https://www.linkedin.com/posts/swarajshandilya896_rti-transparency-highereducation-activity-7436851665259114497-osdH" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-mono">🔗 View LinkedIn Statement</a>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 5</p>
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 05 — Freedom with Responsibility</strong>
+                    <p class="text-slate-400">Exercising constitutional rights while recognizing our fundamental duties toward national unity and harmony.</p>
                 </div>
-                <!-- Slot 7 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center p-2 text-center">
-                        <a href="https://www.linkedin.com/posts/swarajshandilya896_iift-iiftgiftcity-ministryofeducation-activity-7440429722309828608-b3n0" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-400 hover:underline font-mono">🔗 View IIFT Audit Post</a>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 6</p>
+                <div class="glass-card p-5 rounded-2xl space-y-2">
+                    <strong class="text-sky-400 font-mono block">Principle 06 — Nation Before Ego</strong>
+                    <p class="text-slate-400">Putting collective welfare, educational equity, and democratic health above individual ambition or identity.</p>
                 </div>
-                <!-- Slot 8 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/BvfxJY5C/press-release-005.jpg" alt="Press Release 5" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 7</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 11. SUBTLE HINDI QUOTES SECTION -->
+    <section class="py-16 px-4 sm:px-6 max-w-4xl mx-auto text-center space-y-8">
+        <h3 class="text-xs font-mono uppercase text-sky-400 tracking-widest">Philosophical Reflections</h3>
+        
+        <div class="space-y-6 font-serif italic text-slate-200 text-sm sm:text-base">
+            <p class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                "सपनों की ऊँचाई वहाँ से शुरू होती है जहाँ बहाने समाप्त होते हैं।"
+            </p>
+            <p class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                "समुद्र बनने के लिए नदियों को साथ लेकर चलना पड़ता है।"
+            </p>
+            <p class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                "मोहब्बत भी वही खूबसूरत है, जो इंसान को बेहतर इंसान बना दे।"
+            </p>
+            <p class="text-xs font-mono text-sky-400 not-italic pt-2">
+                "डिग्री से नौकरी मिल सकती है, लेकिन जिज्ञासा से दिशा मिलती है।"
+            </p>
+        </div>
+    </section>
+
+    <!-- 12. IIFT COMMON MINIMUM PROGRAMME (CMP) CHARTER -->
+    <section id="cmp" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
+        <div class="max-w-6xl mx-auto space-y-8">
+            <div class="text-center space-y-3">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">IIFT Representation</span>
+                <h2 class="text-3xl font-bold font-serif text-white">Common Minimum Programme (CMP) Charter</h2>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Non-negotiable mandates for satellite campus parity, mandatory stipends, fee ethics, and infrastructure readiness.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-card p-6 rounded-2xl space-y-3">
+                    <span class="text-sky-400 font-mono text-xs font-bold">Mandate A1</span>
+                    <h3 class="text-base font-bold text-white">Summer Internship Parity</h3>
+                    <p class="text-xs text-slate-400">Equal access to on-campus stipend-bearing placements across satellite campuses. Unpaid internships banned under institutional branding.</p>
                 </div>
-                <!-- Slot 9 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/2y9QmCT3/PIB-MCI-06May-2025.png" alt="PIB Report" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 8</p>
-                </div>
-                <!-- Slot 10 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/tJNcznXw/Press-release-003.jpg" alt="Press Release 3" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 9</p>
-                </div>
-                <!-- Slot 11 -->
-                <div class="glass-card p-3 rounded-2xl transition hover:scale-[1.02]">
-                    <div class="aspect-[4/3] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                        <img src="https://i.postimg.cc/02mj98tb/VNJCM011.jpg" alt="VNJCM Field Photo" class="w-full h-full object-cover">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-3 text-center font-mono font-medium">Outreach Trail Snapshot 10</p>
+                <div class="glass-card p-6 rounded-2xl space-y-3">
+                    <span class="text-sky-400 font-mono text-xs font-bold">Mandate A2</span>
+                    <h3 class="text-base font-bold text-white">Fee Rationalisation</h3>
+                    <p class="text-xs text-slate-400">Fee levels must reflect actual ground infrastructure and placement parity. Public disclosure of audit reports and EWS waiver grants.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 12. MEMBER JOIN, FELLOWSHIP & CIVIC REGISTRATION FORM SECTION -->
-    <section id="connect" class="py-20 px-4 sm:px-6 border-t border-slate-900 bg-slate-950/50">
-        <div class="max-w-3xl mx-auto glass-card p-8 sm:p-12 rounded-3xl shadow-2xl relative">
-            <div class="text-center space-y-3 mb-10">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono font-semibold uppercase">
-                    Institutional Participation • सदस्यता एवं निवारण
+    <!-- 13. REGISTRATION / APPLICATION FORM -->
+    <section id="connect" class="py-20 px-4 sm:px-6 max-w-3xl mx-auto">
+        <div class="glass-card p-8 sm:p-12 rounded-3xl shadow-2xl relative space-y-8">
+            
+            <div class="text-center space-y-3">
+                <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-mono font-semibold uppercase">
+                    Institutional Portal
                 </span>
-                <h3 class="text-2xl sm:text-3xl font-bold font-serif text-white">Join Vidyarthi Nagrik Jan Chetna Manch</h3>
-                <p class="text-slate-400 text-sm">Apply for Fellowships, Campus Ambassador roles, Member Registration, or submit a Grievance.</p>
+                <h3 class="text-2xl sm:text-3xl font-bold font-serif text-white">Join People & Youth / VNJCM</h3>
+                <p class="text-slate-400 text-sm">Submit your member registration, fellowship application, or research proposal.</p>
             </div>
 
-            <!-- FORM START (Preserved Google Apps Script Endpoint) -->
-            <form id="citizen-entry-form" action="https://script.google.com/macros/s/AKfycbzCknbj-APZPzAM1n4aW5PLqMn092CUZKBpl4x0yINnUiZ-sLi5MmriF-XVMR_xcZ0/exec" method="POST" class="space-y-6">
+            <!-- ACTIVE GOOGLE APPS SCRIPT FORM -->
+            <form id="citizen-entry-form" action="https://script.google.com/macros/s/AKfycbzCknbj-APZPzAM1n4aW5PLqMn092CUZKBpl4x0yINnUiZ-sLi5MmriF-XVMR_xcZ0/exec" method="POST" class="space-y-5">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div class="space-y-2 text-left">
-                        <label class="text-xs font-mono uppercase text-slate-300 font-semibold">Full Name *</label>
-                        <input type="text" name="name" required placeholder="e.g. Swaraj Shandilya" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                <div class="grid sm:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-mono uppercase text-slate-300">Full Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. Swaraj Shandilya" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition text-xs">
                     </div>
-
-                    <div class="space-y-2 text-left">
-                        <label class="text-xs font-mono uppercase text-slate-300 font-semibold">Email Address *</label>
-                        <input type="email" name="email" required placeholder="yourname@domain.com" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                    <div class="space-y-2">
+                        <label class="text-xs font-mono uppercase text-slate-300">Email Address *</label>
+                        <input type="email" name="email" required placeholder="name@domain.com" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition text-xs">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div class="space-y-2 text-left">
-                        <label class="text-xs font-mono uppercase text-slate-300 font-semibold">WhatsApp Number *</label>
-                        <input type="tel" name="phone" required placeholder="+91 87090 00518" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
+                <div class="grid sm:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-xs font-mono uppercase text-slate-300">WhatsApp / Phone *</label>
+                        <input type="tel" name="phone" required placeholder="+91 87090 00518" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition text-xs">
                     </div>
-
-                    <div class="space-y-2 text-left">
-                        <label class="text-xs font-mono uppercase text-slate-300 font-semibold">Registration Category *</label>
-                        <select name="category" required class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
-                            <option value="VNJCM General Member">General Member Registration (VNJCM)</option>
-                            <option value="Policy Fellow">Research Fellow / Policy Associate</option>
-                            <option value="Student Volunteer">Student Volunteer / Campus Ambassador</option>
-                            <option value="Dissent Dias Proposal">Dissent Dias Article Submission</option>
+                    <div class="space-y-2">
+                        <label class="text-xs font-mono uppercase text-slate-300">Category *</label>
+                        <select name="category" required class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-sky-500 transition text-xs">
+                            <option value="General Member">General Member Registration</option>
+                            <option value="Research Fellow">Research Fellow / Policy Associate</option>
+                            <option value="Dissent Dias Author">Dissent Dias Article Submission</option>
+                            <option value="Campus Ambassador">Campus Ambassador / Student Leader</option>
+                            <option value="Rural Ecosystem Lead">Rural Ecosystem / District Coordinator</option>
                             <option value="RTI / Transparency Query">Educational Transparency / RTI Query</option>
-                            <option value="CMP Representation">IIFT / Campus Grievance Representation (CMP)</option>
-                            <option value="District Coordinator">District Coordinator Application</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="space-y-2 text-left">
-                    <label class="text-xs font-mono uppercase text-slate-300 font-semibold">Your Statement / Area of Interest *</label>
-                    <textarea name="message" rows="4" required placeholder="Detail your campus concern, research proposal, or area of contribution..." class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"></textarea>
+                <div class="space-y-2">
+                    <label class="text-xs font-mono uppercase text-slate-300">Statement / Proposal *</label>
+                    <textarea name="message" rows="4" required placeholder="Detail your campus concern, research proposal, or motivation..." class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 transition text-xs"></textarea>
                 </div>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold py-4 rounded-xl uppercase tracking-wider text-sm shadow-xl shadow-orange-500/10 hover:brightness-110 active:scale-[0.99] transition duration-200">
-                    Submit Application & Receive Confirmation
+                <button type="submit" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg shadow-sky-500/20 hover:brightness-110 transition">
+                    Submit Registration & Get Confirmation
                 </button>
             </form>
 
-            <div id="form-response-toast" class="hidden"></div>
+            <div id="form-toast" class="hidden"></div>
         </div>
     </section>
 
-    <!-- 13. DIGITAL ENGAGEMENT DASHBOARD (QR Codes Preserved Verbatim) -->
-    <section class="py-20 px-4 sm:px-6 bg-slate-950 border-t border-slate-900">
-        <div class="max-w-5xl mx-auto text-center space-y-12">
-            <div class="space-y-3">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono uppercase">Instant Access</span>
-                <h3 class="text-3xl font-bold font-serif text-white">Digital Engagement Dashboard</h3>
-                <p class="text-sm text-slate-400">Scan to join our comprehensive communication networks instantly.</p>
+    <!-- UPI PAYMENT MODAL -->
+    <div id="upi-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card p-8 rounded-3xl max-w-sm w-full space-y-6 text-center border border-sky-500/40 relative">
+            <button onclick="toggleUPIModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+            <div class="space-y-2">
+                <span class="text-xs font-mono text-sky-400 uppercase">Direct Membership Transfer</span>
+                <h4 class="text-lg font-bold text-white">Dissent Dias Access Pass (₹499)</h4>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                <div class="glass-card p-6 rounded-2xl flex flex-col items-center transition hover:scale-[1.02]">
-                    <div class="w-44 h-44 bg-white p-2 rounded-2xl shadow-md mb-4 overflow-hidden border border-slate-200">
-                        <img src="https://i.postimg.cc/pd7M9jTk/Insta-VNJCM.jpg" alt="Instagram QR Code" class="w-full h-full object-contain">
-                    </div>
-                    <h4 class="font-bold text-slate-200">Instagram Handle</h4>
-                    <a href="https://www.instagram.com/peopleandyouth" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-amber-400 hover:underline mt-1 font-mono">@PEOPLEANDYOUTH</a>
-                </div>
-                
-                <div class="glass-card p-6 rounded-2xl flex flex-col items-center transition hover:scale-[1.02]">
-                    <div class="w-44 h-44 bg-white p-2 rounded-2xl shadow-md mb-4 overflow-hidden border border-slate-200">
-                        <img src="https://i.postimg.cc/FHT448Qm/You-Tube-VNJCM.jpg" alt="YouTube QR Code" class="w-full h-full object-contain">
-                    </div>
-                    <h4 class="font-bold text-slate-200">YouTube Channel</h4>
-                    <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-red-400 hover:underline mt-1 font-mono">@peopleandyouth</a>
-                </div>
-                
-                <div class="glass-card p-6 rounded-2xl flex flex-col items-center transition hover:scale-[1.02]">
-                    <div class="w-44 h-44 bg-white p-2 rounded-2xl shadow-md mb-4 overflow-hidden border border-slate-200">
-                        <img src="https://i.postimg.cc/bY1fJshc/Whatsapp-VNJCM.jpg" alt="WhatsApp QR Code" class="w-full h-full object-contain">
-                    </div>
-                    <h4 class="font-bold text-slate-200">WhatsApp Network</h4>
-                    <a href="https://wa.me/918709000518" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-emerald-400 hover:underline mt-1 font-mono">Students & Citizens Forum</a>
-                </div>
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <p class="text-xs text-slate-400 font-mono">Official UPI ID</p>
+                <code class="text-sm font-bold font-mono text-sky-300 block bg-slate-950 py-2 rounded-xl border border-slate-800">8709000518@ybl</code>
             </div>
-        </div>
-    </section>
 
-    <!-- 14. OFFICIAL INSTITUTIONAL SECRETARIAT FOOTER -->
-    <footer class="bg-slate-950 text-white py-16 px-4 sm:px-6 border-t border-slate-900 text-sm">
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+                After completing the UPI payment, please attach your transaction reference in the registration form or send a screenshot on WhatsApp.
+            </p>
+
+            <p class="text-[10px] text-sky-400 font-mono">
+                * Direct institutional banking gateway integration will be active shortly.
+            </p>
+        </div>
+    </div>
+
+    <!-- 14. FOOTER -->
+    <footer class="bg-slate-950 py-16 px-4 sm:px-6 border-t border-slate-900 text-xs">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
             
-            <div class="space-y-3 md:col-span-1">
-                <p class="text-xl font-bold text-amber-400 font-serif tracking-wide">People & Youth</p>
-                <p class="text-xs font-bold text-slate-200 font-serif">Vidyarthi Nagrik Jan Chetna Manch</p>
-                <p class="text-xs text-slate-400 font-mono">विद्यार्थी-नागरिक जनचेतना मंच</p>
-                <p class="text-xs text-slate-500 leading-relaxed">
-                    India's leading youth-led digital institution for civic participation, constitutional literacy, educational transparency, and public policy research.
+            <div class="space-y-3">
+                <p class="text-base font-bold text-white font-serif">PEOPLE & YOUTH</p>
+                <p class="text-slate-400 font-mono">Vidyarthi Nagrik Jan Chetna Manch</p>
+                <p class="text-slate-500 leading-relaxed">
+                    At the Heart of Change 💙. India's youth-led digital institution for public policy, rural development, educational equity, and civic participation.
                 </p>
-                <p class="text-xs text-slate-500 pt-2">&copy; 2026 peopleandyouth.org. All rights reserved.</p>
+                <p class="text-sky-400 font-mono pt-1">&copy; 2026 peopleandyouth.org. All rights reserved.</p>
             </div>
 
-            <div class="space-y-3 text-slate-300">
-                <p class="text-sm font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Institutional Wings</p>
-                <ul class="space-y-2 text-xs text-slate-400">
-                    <li><a href="#founder" class="hover:text-amber-400 transition">From the Founder's Desk</a></li>
-                    <li><a href="#publications" class="hover:text-amber-400 transition">Policy Papers & Dispatches</a></li>
-                    <li><a href="#forest" class="hover:text-amber-400 transition">The Forest of Civic Renaissance</a></li>
-                    <li><a href="#dissent-dias" class="hover:text-amber-400 transition">Dissent Dias Discourse Portal</a></li>
-                    <li><a href="#policy-renaissance" class="hover:text-amber-400 transition">Policy Renaissance Publishing</a></li>
-                    <li><a href="#think-tank" class="hover:text-amber-400 transition">VNJCM Think Tank & Research</a></li>
+            <div class="space-y-3">
+                <p class="font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Quick Navigation</p>
+                <ul class="space-y-2 text-slate-400">
+                    <li><a href="#about" class="hover:text-sky-400 transition">About Platform</a></li>
+                    <li><a href="#founder" class="hover:text-sky-400 transition">Founder's Story</a></li>
+                    <li><a href="#dissent-dias" class="hover:text-sky-400 transition">Dissent Dias Forum</a></li>
+                    <li><a href="#think-tank" class="hover:text-sky-400 transition">VNJCM Think Tank</a></li>
+                    <li><a href="#rural-india" class="hover:text-sky-400 transition">Rural Ecosystem</a></li>
+                    <li><a href="#constitution" class="hover:text-sky-400 transition">Members' Constitution</a></li>
                 </ul>
             </div>
 
-            <div class="space-y-3 text-slate-300">
-                <p class="text-sm font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Official Secretariat</p>
-                <p class="text-xs leading-relaxed text-slate-400">
-                    📍 <strong class="text-slate-200">Address:</strong><br>
-                    C/O Swaraj Shandilya<br>
+            <div class="space-y-3">
+                <p class="font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Secretariat Desk</p>
+                <p class="text-slate-400 leading-relaxed">
+                    📍 C/O Swaraj Shandilya<br>
                     Ward No. 05, Shahpur, Sonbersa Raj,<br>
                     Saharsa, Bihar, India — 852129
                 </p>
-                <p class="text-xs">
-                    📲 <strong class="text-slate-200">WhatsApp / Contact:</strong> 
-                    <a href="https://wa.me/918709000518" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:underline">+91 87090 00518</a>
+                <p class="text-slate-400">
+                    📲 <strong>WhatsApp:</strong> <a href="https://wa.me/918709000518" class="text-sky-400 hover:underline">+91 87090 00518</a>
                 </p>
             </div>
 
-            <div class="space-y-3 text-slate-300">
-                <p class="text-sm font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Digital Network & Ethics</p>
-                <ul class="space-y-2 text-xs">
-                    <li>📧 <strong>Official Email:</strong> <a href="mailto:contact@peopleandyouth.org" class="text-amber-400 hover:underline">contact@peopleandyouth.org</a></li>
-                    <li>🔗 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/company/vidyarthi-nagrik-jan-chetna-manch/" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-white transition">VNJCM Company Page</a></li>
-                    <li>📸 <strong>Instagram:</strong> <a href="https://www.instagram.com/peopleandyouth" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-white transition">@peopleandyouth</a></li>
-                    <li>🎥 <strong>YouTube:</strong> <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-white transition">@peopleandyouth</a></li>
+            <div class="space-y-3">
+                <p class="font-bold text-white uppercase font-mono tracking-wider border-b border-slate-800 pb-2">Official Channels</p>
+                <ul class="space-y-2 text-slate-400">
+                    <li>📧 <strong>Email:</strong> <a href="mailto:contact@peopleandyouth.org" class="text-sky-400 hover:underline">contact@peopleandyouth.org</a></li>
+                    <li>🔗 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/company/vidyarthi-nagrik-jan-chetna-manch/" target="_blank" class="hover:text-white">VNJCM Page</a></li>
+                    <li>📸 <strong>Instagram:</strong> <a href="https://www.instagram.com/peopleandyouth" target="_blank" class="hover:text-white">@peopleandyouth</a></li>
+                    <li>🎥 <strong>YouTube:</strong> <a href="https://youtube.com/@peopleandyouth" target="_blank" class="hover:text-white">@peopleandyouth</a></li>
                 </ul>
             </div>
 
         </div>
     </footer>
 
-    <!-- 15. MODULAR JAVASCRIPT LOGIC ENGINE -->
+    <!-- 15. JS LOGIC ENGINE -->
     <script>
+        lucide.createIcons();
+
         function toggleMobileNav() {
-            const drawer = document.getElementById('mobile-nav-drawer');
-            if (drawer) {
-                drawer.classList.toggle('hidden');
-            }
+            document.getElementById('mobile-nav-drawer')?.classList.toggle('hidden');
         }
 
-        function openMountain(mountainId) {
-            const mPanels = ['const-lit', 'edu-ref', 'pub-pol', 'econ-dev', 'dem-part', 'inst-acc', 'tech-inn', 'law-jus'];
-            mPanels.forEach(p => {
-                const panel = document.getElementById('m-panel-' + p);
-                const btn = document.getElementById('m-btn-' + p);
-                if (panel) panel.classList.add('hidden');
-                if (btn) {
-                    btn.classList.remove('active', 'text-slate-100');
-                    btn.classList.add('text-slate-400');
-                }
-            });
-
-            const activePanel = document.getElementById('m-panel-' + mountainId);
-            const activeBtn = document.getElementById('m-btn-' + mountainId);
-            if (activePanel) activePanel.classList.remove('hidden');
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-                activeBtn.classList.remove('text-slate-400');
-            }
+        function toggleUPIModal() {
+            document.getElementById('upi-modal')?.classList.toggle('hidden');
         }
 
-        function openDissentTab(tabId) {
-            const dTabs = ['editorial', 'campus-watch', 'dialogue', 'data-stories', 'ethics'];
-            dTabs.forEach(t => {
-                const panel = document.getElementById('d-panel-' + t);
-                const btn = document.getElementById('d-btn-' + t);
-                if (panel) panel.classList.add('hidden');
-                if (btn) {
-                    btn.classList.remove('active', 'text-slate-100');
-                    btn.classList.add('text-slate-400');
-                }
-            });
-
-            const activePanel = document.getElementById('d-panel-' + tabId);
-            const activeBtn = document.getElementById('d-btn-' + tabId);
-            if (activePanel) activePanel.classList.remove('hidden');
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-                activeBtn.classList.remove('text-slate-400');
-            }
-        }
-
-        function openCaveTier(tierName) {
-            const tiers = ['tier-cat-a', 'tier-cat-b', 'tier-preamble'];
-            const btns = ['btn-cat-a', 'btn-cat-b', 'btn-preamble'];
-
-            tiers.forEach(t => document.getElementById(t)?.classList.add('hidden'));
-            btns.forEach(b => {
-                const btn = document.getElementById(b);
-                btn?.classList.remove('active', 'text-slate-100');
+        /* FOUNDER MULTI-LAYER INTERACTIVE LOGIC */
+        function openFounderLayer(layerId) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('fl-panel-layer-' + i)?.classList.add('hidden');
+                const btn = document.getElementById('fl-btn-' + i);
+                btn?.classList.remove('active', 'text-white');
                 btn?.classList.add('text-slate-400');
-            });
-
-            if (tierName === 'cat-a') {
-                document.getElementById('tier-cat-a')?.classList.remove('hidden');
-                document.getElementById('btn-cat-a')?.classList.add('active');
-            } else if (tierName === 'cat-b') {
-                document.getElementById('tier-cat-b')?.classList.remove('hidden');
-                document.getElementById('btn-cat-b')?.classList.add('active');
-            } else if (tierName === 'preamble') {
-                document.getElementById('tier-preamble')?.classList.remove('hidden');
-                document.getElementById('btn-preamble')?.classList.add('active');
             }
+
+            document.getElementById('fl-panel-' + layerId)?.classList.remove('hidden');
+            const activeNum = layerId.split('-')[1];
+            const activeBtn = document.getElementById('fl-btn-' + activeNum);
+            activeBtn?.classList.add('active');
+            activeBtn?.classList.remove('text-slate-400');
         }
 
-        function toggleAccordion(id) {
-            const acc = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            if (acc) {
-                if (acc.classList.contains('hidden')) {
-                    acc.classList.remove('hidden');
-                    if (icon) icon.innerText = '▲';
-                } else {
-                    acc.classList.add('hidden');
-                    if (icon) icon.innerText = '▼';
-                }
-            }
-        }
+        /* AUTO-ROTATING TAGLINES CAROUSEL */
+        const taglines = [
+            "\"Dream dreams so high that they demolish the walls of the cage.\"",
+            "\"Ideas are stronger than inherited identities.\"",
+            "\"The future belongs to curious minds.\"",
+            "\"Disagreement is not division. It is civilization in motion.\"",
+            "\"Dialogue is stronger than noise.\"",
+            "\"Build institutions. Not personalities.\"",
+            "\"Lead with intellect. Serve with humility.\"",
+            "\"peopleandyouth - at the heart of change 💙\""
+        ];
 
+        let taglineIdx = 0;
+        setInterval(() => {
+            const el = document.getElementById('rotating-tagline');
+            if (el) {
+                el.style.opacity = 0;
+                setTimeout(() => {
+                    taglineIdx = (taglineIdx + 1) % taglines.length;
+                    el.innerText = taglines[taglineIdx];
+                    el.style.opacity = 1;
+                }, 400);
+            }
+        }, 5000);
+
+        /* FORM SUBMISSION ENGINE */
         document.addEventListener('DOMContentLoaded', () => {
-            const contactForm = document.getElementById('citizen-entry-form');
-            const formResponse = document.getElementById('form-response-toast');
-
-            if (contactForm) {
-                contactForm.addEventListener('submit', async (e) => {
+            const form = document.getElementById('citizen-entry-form');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const submitBtn = contactForm.querySelector('button[type="submit"]');
-                    const originalBtnText = submitBtn.innerHTML;
-
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = `⏳ Submitting Application...`;
-
-                    const formData = new FormData(contactForm);
+                    const btn = form.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    btn.innerText = 'Submitting...';
 
                     try {
-                        await fetch(contactForm.action, {
-                            method: 'POST',
-                            body: formData,
-                            mode: 'no-cors'
-                        });
-
-                        showToast('✅ Success! Your application/grievance has been submitted. Check your email for confirmation.', 'success');
-                        contactForm.reset();
-                    } catch (error) {
-                        showToast('⚠️ Submission received! We will verify and reach out via WhatsApp.', 'success');
-                        contactForm.reset();
+                        await fetch(form.action, { method: 'POST', body: new FormData(form), mode: 'no-cors' });
+                        alert('✅ Success! Your application/submission has been received. Check WhatsApp/email for updates.');
+                        form.reset();
+                    } catch (err) {
+                        alert('⚠️ Received! We will reach out via WhatsApp/email shorty.');
+                        form.reset();
                     } finally {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                        btn.innerText = 'Submit Registration & Get Confirmation';
                     }
                 });
-            }
-
-            function showToast(message, type) {
-                if (!formResponse) return;
-                formResponse.innerText = message;
-                formResponse.className = `fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 text-sm font-semibold transition-all duration-500 transform translate-y-0 ${
-                    type === 'success' ? 'bg-emerald-500 text-slate-950' : 'bg-red-500 text-white'
-                }`;
-                formResponse.classList.remove('hidden');
-
-                setTimeout(() => {
-                    formResponse.classList.add('hidden');
-                }, 6000);
             }
         });
     </script>
