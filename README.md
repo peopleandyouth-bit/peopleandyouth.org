@@ -157,14 +157,9 @@
                     A hybrid Think Tank, Research Institute, Policy School, Digital Publishing House, and Civic Observatory bridging student dialogue, institutional accountability, constitutional literacy, and public policy debate across India.
                 </p>
 
-                <!-- Strategic Quick Portal Shortcuts -->
-                <div class="pt-4 flex flex-wrap justify-center gap-2 text-xs font-mono text-slate-300">
-                    <a href="#founder" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition text-amber-300">👤 Founder's Profile</a>
-                    <a href="#publications" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">📚 Selected Essays & Audits</a>
-                    <a href="#forest" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">🌲 15 Knowledge Mountains</a>
-                    <a href="#dissent-dias" class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition">🎙️ Dissent Dias</a>
-                    <a href="#cmp" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-lg transition">📜 CMP Charter</a>
-                </div>
+                <p class="text-xs font-mono text-amber-400 tracking-wide">
+                    peopleandyouth - at the heart of change 💙
+                </p>
 
                 <div class="pt-6 flex flex-col sm:flex-row justify-center gap-4">
                     <a href="#publications" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition duration-200">
@@ -177,51 +172,60 @@
             </div>
         </section>
 
-    </div>
-
-    <!-- 3. NEW SECTION: FROM THE FOUNDER'S DESK (SWARAJ SHANDILYA) -->
-    <!-- Architectural Purpose: Establishing Institutional Leadership, Vision, Modesty, and Policy Rigor -->
-    <section id="founder" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
-        <div class="max-w-6xl mx-auto space-y-12">
-            
-            <div class="text-center space-y-3">
-                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
-                    Institutional Leadership
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">From the Founder's Desk</h2>
-                <p class="text-slate-400 text-sm max-w-2xl mx-auto">
-                    Bridging empirical rigor, legal due diligence, and grassroots democratic consciousness.
-                </p>
-            </div>
-
-            <div class="grid lg:grid-cols-12 gap-10 items-center">
+        <!-- 3. FROM THE FOUNDER'S DESK (SWARAJ SHANDILYA) -->
+        <section id="founder" class="py-20 px-4 sm:px-6 bg-slate-950/80 border-t border-slate-900">
+            <div class="max-w-7xl mx-auto space-y-12">
                 
-                <!-- Founder Bio & Philosophy -->
-                <div class="lg:col-span-7 space-y-6">
-                    <div class="space-y-2">
-                        <span class="text-xs font-mono text-amber-400 uppercase tracking-widest">Founder & Managing Trustee</span>
-                        <h3 class="text-3xl font-extrabold font-serif text-white">Swaraj Shandilya</h3>
-                        <p class="text-xs font-mono text-slate-400">Researcher • Legal & Institutional Auditor • Policy Strategist</p>
-                    </div>
-
-                    <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                        <p>
-                            "A democracy without critical youth inquiry risks decaying into scripted formalism. When institutions cease to be accountable to the public they were built to serve, civic participation can no longer remain a passive ideal—it must evolve into active <strong class="text-amber-400">Praxis</strong>."
-                        </p>
-                        <p>
-                            Driven by a commitment to educational equity, statutory compliance, and constitutional literacy, Swaraj Shandilya established <strong class="text-slate-100">Vidyarthi Nagrik Jan Chetna Manch (VNJCM)</strong> to provide Indian youth with a structured, non-partisan platform for institutional auditing and public policy dialogue.
-                        </p>
-                        <p class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-slate-300 italic">
-                            From pioneering investigative RTI filings regarding satellite campus readiness at premier institutes like IIFT GIFT City to analyzing parliamentary discourse and cognitive barriers in public debate, Swaraj’s work focuses on converting individual dissent into evidence-based policy reform.
-                        </p>
-                    </div>
-
-                    <div class="pt-2 flex flex-wrap gap-3 text-xs font-mono">
-                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">⚖️ Institutional Auditing</span>
-                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">📜 RTI Due Diligence</span>
-                        <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">🎓 Campus Equity Advocate</span>
-                    </div>
+                <div class="text-center space-y-3">
+                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider">
+                        Institutional Leadership
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-bold font-serif text-white">From the Founder's Desk</h2>
+                    <p class="text-slate-400 text-sm max-w-2xl mx-auto">
+                        Bridging empirical rigor, legal due diligence, and grassroots democratic consciousness.
+                    </p>
                 </div>
+
+                <div class="grid lg:grid-cols-12 gap-10 items-center">
+                    
+                    <!-- FOUNDER PORTRAIT CARD -->
+                    <div class="lg:col-span-4 flex justify-center">
+                        <div class="w-64 h-80 sm:w-72 sm:h-96 rounded-3xl overflow-hidden border-2 border-amber-500/40 glass-card shadow-2xl p-2 relative group">
+                            <img src="https://i.postimg.cc/5trwWrvV/profile-picture.jpg" alt="Swaraj Shandilya - Founder" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition duration-500">
+                        </div>
+                    </div>
+
+                    <!-- FOUNDER BIO & PHILOSOPHY -->
+                    <div class="lg:col-span-8 space-y-6">
+                        <div class="space-y-2">
+                            <span class="text-xs font-mono text-amber-400 uppercase tracking-widest">Founder & Managing Trustee</span>
+                            <h3 class="text-3xl font-extrabold font-serif text-white">Swaraj Shandilya</h3>
+                            <p class="text-xs font-mono text-slate-400">Researcher • Legal & Institutional Auditor • Policy Strategist</p>
+                        </div>
+
+                        <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                            <p>
+                                "A democracy without critical youth inquiry risks decaying into scripted formalism. When institutions cease to be accountable to the public they were built to serve, civic participation can no longer remain a passive ideal—it must evolve into active <strong class="text-amber-400">Praxis</strong>."
+                            </p>
+                            <p>
+                                Driven by a commitment to educational equity, statutory compliance, and constitutional literacy, Swaraj Shandilya established <strong class="text-slate-100">Vidyarthi Nagrik Jan Chetna Manch (VNJCM)</strong> to provide Indian youth with a structured, non-partisan platform for institutional auditing and public policy dialogue.
+                            </p>
+                            <p class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-slate-300 italic">
+                                From pioneering investigative RTI filings regarding satellite campus readiness at premier institutes like IIFT GIFT City to analyzing parliamentary discourse and cognitive barriers in public debate, Swaraj’s work focuses on converting individual dissent into evidence-based policy reform.
+                            </p>
+                        </div>
+
+                        <div class="pt-2 flex flex-wrap gap-3 text-xs font-mono">
+                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">⚖️ Institutional Auditing</span>
+                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">📜 RTI Due Diligence</span>
+                            <span class="bg-slate-900 border border-slate-800 text-amber-400 px-3 py-1.5 rounded-lg">🎓 Campus Equity Advocate</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
 
                 <!-- Founder Highlights Card -->
                 <div class="lg:col-span-5 glass-card p-8 rounded-3xl space-y-6 border border-slate-800">
