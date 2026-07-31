@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@hookform/resolvers": "^5.5.7",
+    "@next/third-parties": "^16.2.12",
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
+    "@supabase/supabase-js": "^2.111.0",
+    "framer-motion": "^12.43.0",
+    "lucide-react": "^1.28.0",
+    "razorpay": "^2.9.8",
+    "react-hook-form": "^7.83.0",
+    "zod": "^4.4.3"
+  }
+}
