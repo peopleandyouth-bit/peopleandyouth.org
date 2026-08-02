@@ -1,4 +1,4 @@
-﻿"use client";
+﻿'use client';
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
@@ -30,7 +30,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: \/auth/callback,
+            options: {
+  data: { full_name: fullName },
+  emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+},
           },
         });
         if (error) throw error;
