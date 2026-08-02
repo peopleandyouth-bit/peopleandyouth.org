@@ -1,46 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
-const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { userId, email, fullName } = body;
+    // 1. Safe fallback values prevent build-time crashes when env variables aren't set
+    const key_id = process.env.RAZORPAY_KEY_ID || "rzp_test_dummy_key";
+    const key_secret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
 
-    if (!userId || !email) {
-      return NextResponse.json(
-        { error: "Missing required user payload" },
-        { status: 400 }
-      );
-    }
+    // 2. Initialize Razorpay inside the request handler
+    const razorpay = new Razorpay({
+      key_id: key_id,
+      key_secret: key_secret,
+    });
+
+    const body = await req.json();
+    const { amount, currency = "INR", receipt } = body;
 
     const options = {
-      amount: 49900,
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-      notes: {
-        userId,
-        email,
-        fullName,
-        membershipType: "Founding Member",
-      },
+      amount: amount ? Math.round(amount * 100) : 50000, // Amount in paise
+      currency: currency,
+      receipt: receipt || `receipt_${Date.now()}`,
     };
 
     const order = await razorpay.orders.create(options);
 
-    return NextResponse.json({
-      id: order.id,
-      currency: order.currency,
-      amount: order.amount,
-    });
+    return NextResponse.json(order);
   } catch (error: any) {
-    console.error("Razorpay Order Creation Error:", error);
+    console.error("Razorpay order creation error:", error);
     return NextResponse.json(
-      { error: "Failed to create Razorpay order" },
+      { error: error.message || "Failed to create order" },
       { status: 500 }
     );
   }
