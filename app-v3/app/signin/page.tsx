@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Country, State, City } from 'country-state-city';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 // Data Lists
 const INTEREST_OPTIONS = [
@@ -40,8 +40,6 @@ interface SupabaseUser {
 }
 
 export default function AuthPage() {
-  const supabase = createClient();
-
   const [authMode, setAuthMode] = useState<'signin' | 'register'>('register');
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
