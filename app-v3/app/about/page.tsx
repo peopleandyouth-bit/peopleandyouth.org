@@ -91,7 +91,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
       
-      {/* HEADER */}
+      {/* HEADER WITH TOP ₹499 PAYMENT BUTTON */}
       <header className="border-b border-white/10 bg-[#070b19]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
@@ -108,13 +108,22 @@ export default function AboutPage() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="#upload-research"
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/20 transition-all"
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* 499 PAYMENT LINK BUTTON */}
+            <Link
+              href="/signin?plan=passport"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5"
             >
-              Upload Research Paper
-            </a>
+              <span>💳</span>
+              <span>Claim Passport (₹499)</span>
+            </Link>
+
+            <Link
+              href="/signin"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/20 transition-all hidden sm:inline-block"
+            >
+              Build Civic Profile
+            </Link>
           </div>
         </div>
       </header>
@@ -157,6 +166,110 @@ export default function AboutPage() {
             <p>
               Every publication we produce, every research initiative we undertake, every dialogue we facilitate, every fellowship we establish, every campaign we organize, and every partnership we build is guided by one enduring conviction: <strong>institutions become stronger when informed citizens participate responsibly in public life.</strong>
             </p>
+          </div>
+        </section>
+
+        {/* 💳 FEATURED CIVIC PASSPORT CARD SYSTEM SECTION (HIGH VISIBILITY) */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/50 rounded-3xl p-8 sm:p-12 shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
+            <div>
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">OFFICIAL CIVIC CREDENTIAL SYSTEM</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1">Sovereign Civic Passport</h2>
+              <p className="text-xs text-gray-300 mt-1">Verified lifetime institutional identity for student researchers &amp; policy advocates.</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="px-4 py-2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-400/40">
+                Annual Institutional Pass: ₹499
+              </span>
+              <Link
+                href="/signin?plan=passport"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20 transition-all"
+              >
+                Get Passport Now &rarr;
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Visual Passport Mock Card */}
+            <div className="lg:col-span-6 bg-gradient-to-br from-blue-950/90 via-[#0b132e] to-cyan-950/90 border border-cyan-400/60 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-2xl backdrop-blur-xl group hover:border-cyan-300 transition-all">
+              <div className="absolute -right-12 -top-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all" />
+              
+              <div className="flex justify-between items-start mb-8 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold px-2.5 py-1 rounded-md text-sm">
+                    P&amp;Y
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white tracking-wide">PEOPLE &amp; YOUTH</p>
+                    <p className="text-[9px] text-cyan-400 font-mono uppercase tracking-widest">VERIFIED CIVIC PASSPORT</p>
+                  </div>
+                </div>
+                <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-[11px] font-mono px-3 py-1 rounded-full font-bold shadow-md shadow-cyan-500/10">
+                  PY-2026-612030
+                </span>
+              </div>
+
+              <div className="space-y-4 relative z-10">
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">Passport Holder</p>
+                  <p className="text-xl font-extrabold text-white">Swaraj Shandilya</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">Jurisdiction</p>
+                    <p className="font-semibold text-gray-200">Delhi, India</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">Institutional Role</p>
+                    <p className="font-semibold text-cyan-400">Research Fellow</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 flex justify-between items-end">
+                  <div>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-widest">Verification Status</p>
+                    <p className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1">
+                      <span>✓</span> ACTIVE MEMBER (TIER 1)
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-gray-400 uppercase tracking-widest">Valid Thru</p>
+                    <p className="text-xs font-mono text-gray-200">2026 – 2027</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Passport Privileges Breakdown */}
+            <div className="lg:col-span-6 space-y-4">
+              <h3 className="text-xl font-bold text-white">Passport Privileges &amp; Institutional Access</h3>
+              <ul className="space-y-3 text-xs text-gray-300">
+                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span><strong>Priority Peer-Review:</strong> Guaranteed fast-track editorial processing across all 11 Renaissance Publications.</span>
+                </li>
+                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span><strong>VNJCM Leadership Rights:</strong> Vote and lead regional RTI drives, public audits, and municipal governance workshops.</span>
+                </li>
+                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="text-cyan-400 font-bold">✓</span>
+                  <span><strong>People&apos;s Data Lab Access:</strong> Unrestricted download access to open datasets, white papers, and working papers.</span>
+                </li>
+              </ul>
+
+              <div className="pt-2">
+                <Link
+                  href="/signin?plan=passport"
+                  className="inline-block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all"
+                >
+                  Enroll &amp; Generate Your Passport ID (₹499) &rarr;
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
