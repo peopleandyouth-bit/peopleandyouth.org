@@ -30,10 +30,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           password,
           options: {
             data: { full_name: fullName },
-            options: {
-  data: { full_name: fullName },
-  emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
-},
+            emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
           },
         });
         if (error) throw error;
@@ -59,7 +56,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: \/auth/callback,
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
       },
     });
     if (error) {
@@ -89,7 +86,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         {message && (
           <div
-            className={mb-4 p-3 rounded-xl border text-xs \}
+            className={`mb-4 p-3 rounded-xl border text-xs ${
+              message.type === "error"
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+            }`}
           >
             {message.text}
           </div>
