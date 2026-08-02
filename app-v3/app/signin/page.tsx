@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { Country, State, City } from 'country-state-city';
 
 // Data Lists
 const INTEREST_OPTIONS = [
@@ -10,12 +11,6 @@ const INTEREST_OPTIONS = [
   'Climate', 'Agriculture', 'Rural Development', 'Urban Governance',
   'Healthcare', 'International Relations', 'Entrepreneurship', 'Gender Studies',
   'Social Justice', 'Law', 'Data Science'
-];
-
-const PARTICIPATION_OPTIONS = [
-  'Read', 'Publish Articles', 'Volunteer', 'Conduct Research',
-  'Join Campaigns', 'Attend Events', 'Join Campus Chapter',
-  'Become a Fellow', 'Mentor', 'Receive Newsletter'
 ];
 
 const SKILL_OPTIONS = [
@@ -32,6 +27,10 @@ const ROLES = [
 export default function AuthPage() {
   const [authMode, setAuthMode] = useState<'signin' | 'register'>('register');
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // Country Code State for Cascading Drops
+  const [selectedCountryIso, setSelectedCountryIso] = useState<string>('IN'); // Default to India
+  const [selectedStateIso, setSelectedStateIso] = useState<string>('');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -54,24 +53,60 @@ export default function AuthPage() {
     designation: '',
     sector: '',
     interests: [] as string[],
-    participation: [] as string[],
     skills: [] as string[],
-    languages: 'English, Hindi',
     linkedin: '',
     github: '',
     orcid: '',
-    website: '',
 
     // Tier 3
     whyJoin: '',
     passionateIssue: '',
-    pastPublications: '',
     leadCampusChapter: false,
-    cvFileName: ''
   });
 
+  // Fetch Location Lists dynamically
+  const allCountries = useMemo(() => Country.getAllCountries(), []);
+  
+  const availableStates = useMemo(() => {
+    return selectedCountryIso ? State.getStatesOfCountry(selectedCountryIso) : [];
+  }, [selectedCountryIso]);
+
+  const availableCities = useMemo(() => {
+    return selectedCountryIso && selectedStateIso 
+      ? City.getCitiesOfState(selectedCountryIso, selectedStateIso) 
+      : [];
+  }, [selectedCountryIso, selectedStateIso]);
+
+  // Handle Country Selection
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryIso = e.target.value;
+    const countryObj = allCountries.find((c) => c.isoCode === countryIso);
+    
+    setSelectedCountryIso(countryIso);
+    setSelectedStateIso('');
+    setFormData((prev) => ({
+      ...prev,
+      country: countryObj ? countryObj.name : '',
+      state: '',
+      cityDistrict: ''
+    }));
+  };
+
+  // Handle State Selection
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const stateIso = e.target.value;
+    const stateObj = availableStates.find((s) => s.isoCode === stateIso);
+
+    setSelectedStateIso(stateIso);
+    setFormData((prev) => ({
+      ...prev,
+      state: stateObj ? stateObj.name : '',
+      cityDistrict: ''
+    }));
+  };
+
   // Toggle selection arrays
-  const toggleSelection = (field: 'interests' | 'participation' | 'skills', item: string) => {
+  const toggleSelection = (field: 'interests' | 'skills', item: string) => {
     setFormData((prev) => {
       const current = prev[field];
       const updated = current.includes(item)
@@ -170,7 +205,6 @@ export default function AuthPage() {
         ) : (
           /* CIVIC PROFILE REGISTRATION WIZARD */
           <div>
-            {/* Title & Onboarding Intro */}
             <div className="text-center mb-10">
               <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-3">
                 Civic Identity Onboarding
@@ -195,7 +229,7 @@ export default function AuthPage() {
                     : 'bg-[#070b19] border border-white/20 text-gray-300'
                 }`}
               >
-                <span>1</span> Tier 1: Registration
+                <span>1</span> Registration
               </button>
 
               <button
@@ -206,7 +240,7 @@ export default function AuthPage() {
                     : 'bg-[#070b19] border border-white/20 text-gray-300'
                 }`}
               >
-                <span>2</span> Tier 2: Profile
+                <span>2</span> Profile
               </button>
 
               <button
@@ -217,7 +251,7 @@ export default function AuthPage() {
                     : 'bg-[#070b19] border border-white/20 text-gray-300'
                 }`}
               >
-                <span>3</span> Tier 3: Engagement
+                <span>3</span> Engagement
               </button>
             </div>
 
@@ -240,7 +274,7 @@ export default function AuthPage() {
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         placeholder="e.g. Ananya Sharma"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                        className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
                         required
                       />
                     </div>
@@ -252,7 +286,7 @@ export default function AuthPage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="ananya@example.com"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                        className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
                         required
                       />
                     </div>
@@ -264,7 +298,7 @@ export default function AuthPage() {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         placeholder="••••••••"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                        className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
                         required
                       />
                     </div>
@@ -284,39 +318,73 @@ export default function AuthPage() {
                       </select>
                     </div>
 
+                    {/* COUNTRY SELECT */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">Country *</label>
-                      <input
-                        type="text"
-                        value={formData.country}
-                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                      <select
+                        value={selectedCountryIso}
+                        onChange={handleCountryChange}
+                        className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
                         required
-                      />
+                      >
+                        <option value="">Select Country</option>
+                        {allCountries.map((c) => (
+                          <option key={c.isoCode} value={c.isoCode}>
+                            {c.flag} {c.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
+                    {/* STATE / UT SELECT */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">State / UT *</label>
-                      <input
-                        type="text"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        placeholder="e.g. Delhi, Maharashtra, Gujarat"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                      <select
+                        value={selectedStateIso}
+                        onChange={handleStateChange}
+                        disabled={!selectedCountryIso || availableStates.length === 0}
+                        className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500 disabled:opacity-50"
                         required
-                      />
+                      >
+                        <option value="">
+                          {availableStates.length > 0 ? 'Select State / UT' : 'Select Country First'}
+                        </option>
+                        {availableStates.map((s) => (
+                          <option key={s.isoCode} value={s.isoCode}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
+                    {/* CITY / DISTRICT SELECT WITH CUSTOM FALLBACK */}
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">City or District *</label>
-                      <input
-                        type="text"
-                        value={formData.cityDistrict}
-                        onChange={(e) => setFormData({ ...formData, cityDistrict: e.target.value })}
-                        placeholder="e.g. New Delhi / Ahmedabad"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500"
-                        required
-                      />
+                      {availableCities.length > 0 ? (
+                        <select
+                          value={formData.cityDistrict}
+                          onChange={(e) => setFormData({ ...formData, cityDistrict: e.target.value })}
+                          className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                          required
+                        >
+                          <option value="">Select City / District</option>
+                          {availableCities.map((city) => (
+                            <option key={city.name} value={city.name}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          value={formData.cityDistrict}
+                          onChange={(e) => setFormData({ ...formData, cityDistrict: e.target.value })}
+                          placeholder={selectedStateIso ? "Type your City or District" : "Select State first"}
+                          disabled={!selectedStateIso}
+                          className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-cyan-500 disabled:opacity-50"
+                          required
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -338,7 +406,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      disabled={!formData.fullName || !formData.email || !formData.termsAccepted}
+                      disabled={!formData.fullName || !formData.email || !formData.state || !formData.cityDistrict || !formData.termsAccepted}
                       className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all"
                     >
                       Continue to Civic Profile &rarr;
@@ -376,75 +444,6 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  {/* Conditional Role Details */}
-                  {formData.role === 'Student' || formData.role === 'Research Scholar' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Institution</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. IIFT, DU, IIT"
-                          value={formData.institution}
-                          onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Course / Major</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Public Policy, MBA, Law"
-                          value={formData.course}
-                          onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Graduation Year</label>
-                        <input
-                          type="text"
-                          placeholder="2027"
-                          value={formData.graduationYear}
-                          onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Organization</label>
-                        <input
-                          type="text"
-                          placeholder="Org Name"
-                          value={formData.organization}
-                          onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Designation</label>
-                        <input
-                          type="text"
-                          placeholder="Analyst / Advocate"
-                          value={formData.designation}
-                          onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-300 mb-1">Sector</label>
-                        <input
-                          type="text"
-                          placeholder="Governance / Legal / Tech"
-                          value={formData.sector}
-                          onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                      </div>
-                    </div>
-                  )}
-
                   {/* Areas of Interest Multi-select */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">
@@ -474,7 +473,7 @@ export default function AuthPage() {
                   {/* Skills Multi-select */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">
-                      Skills &amp; Capabilities <span className="text-gray-500 font-normal">(For volunteer matching)</span>
+                      Skills &amp; Capabilities
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {SKILL_OPTIONS.map((item) => {
@@ -494,34 +493,6 @@ export default function AuthPage() {
                           </button>
                         );
                       })}
-                    </div>
-                  </div>
-
-                  {/* Linked Accounts */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">Academic &amp; Professional Links</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <input
-                        type="url"
-                        placeholder="LinkedIn Profile URL"
-                        value={formData.linkedin}
-                        onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                        className="bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white"
-                      />
-                      <input
-                        type="url"
-                        placeholder="GitHub / Portfolio URL"
-                        value={formData.github}
-                        onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-                        className="bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white"
-                      />
-                      <input
-                        type="text"
-                        placeholder="ORCID iD (Researchers)"
-                        value={formData.orcid}
-                        onChange={(e) => setFormData({ ...formData, orcid: e.target.value })}
-                        className="bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white"
-                      />
                     </div>
                   </div>
 
@@ -554,13 +525,11 @@ export default function AuthPage() {
 
                   {/* Civic Passport Card Live Preview */}
                   <div className="bg-gradient-to-br from-blue-950/80 via-[#0a122c] to-cyan-950/80 border border-cyan-500/30 rounded-2xl p-6 relative overflow-hidden shadow-2xl">
-                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
-                    
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <span className="text-[10px] font-bold tracking-widest text-cyan-400 uppercase">PEOPLE &amp; YOUTH — CIVIC PASSPORT PREVIEW</span>
                         <h4 className="text-xl font-extrabold text-white mt-1">{formData.fullName || 'Member Name'}</h4>
-                        <p className="text-xs text-gray-400">{formData.role} • {formData.cityDistrict || 'District'}, {formData.state || 'State'}</p>
+                        <p className="text-xs text-gray-400">{formData.role} • {formData.cityDistrict || 'District'}, {formData.state || 'State'}, {formData.country}</p>
                       </div>
                       <div className="text-right">
                         <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-[11px] font-mono px-3 py-1 rounded-full font-bold">
@@ -568,60 +537,6 @@ export default function AuthPage() {
                         </span>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-3 gap-3 border-t border-white/10 pt-4 text-center">
-                      <div>
-                        <p className="text-xs text-gray-400">Publications</p>
-                        <p className="text-lg font-bold text-cyan-400">00</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Civic Hours</p>
-                        <p className="text-lg font-bold text-cyan-400">00</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Impact Score</p>
-                        <p className="text-lg font-bold text-cyan-400">100 pts</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Contribution Questions */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">Why do you want to join People &amp; Youth?</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Briefly state your primary objective or vision..."
-                        value={formData.whyJoin}
-                        onChange={(e) => setFormData({ ...formData, whyJoin: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-300 uppercase mb-2">What governance or public policy issue are you most passionate about?</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Higher Education Transparency, RTI Accountability, Rural Enterprise"
-                        value={formData.passionateIssue}
-                        onChange={(e) => setFormData({ ...formData, passionateIssue: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Campus Leadership Checkbox */}
-                  <div className="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
-                    <input
-                      type="checkbox"
-                      id="chapter"
-                      checked={formData.leadCampusChapter}
-                      onChange={(e) => setFormData({ ...formData, leadCampusChapter: e.target.checked })}
-                      className="accent-cyan-500 rounded h-4 w-4"
-                    />
-                    <label htmlFor="chapter" className="text-xs text-gray-300">
-                      <strong>Campus Chapter Leadership:</strong> I am interested in establishing or leading a People &amp; Youth Chapter at my institution/city.
-                    </label>
                   </div>
 
                   <div className="pt-6 flex justify-between items-center">
@@ -635,7 +550,7 @@ export default function AuthPage() {
 
                     <button
                       type="submit"
-                      className="px-10 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all transform hover:scale-[1.02]"
+                      className="px-10 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all"
                     >
                       Generate Civic Passport &amp; Complete Registration
                     </button>
