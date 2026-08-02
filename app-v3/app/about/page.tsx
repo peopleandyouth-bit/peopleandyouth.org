@@ -3,6 +3,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
+// CONSTANT ASSETS & URLS
+const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
+const BRAND_LOGO_URL = "https://i.postimg.cc/rFK0BBXw/Google-Logo-002.png";
+const INSTA_QR_URL = "https://i.postimg.cc/pd7M9jTk/Insta-VNJCM.jpg";
+const WHATSAPP_QR_URL = "https://i.postimg.cc/bY1fJshc/Whatsapp-VNJCM.jpg";
+const YOUTUBE_QR_URL = "https://i.postimg.cc/FHT448Qm/You-Tube-VNJCM.jpg";
+
+const LINKEDIN_URL = "https://www.linkedin.com/company/vidyarthi-nagrik-jan-chetna-manch";
+const FACEBOOK_URL = "https://www.facebook.com/share/1ZGB3ZQKqE/";
+const YOUTUBE_URL = "https://www.youtube.com/@peopleandyouth";
+const INSTAGRAM_URL = "https://www.instagram.com/peopleandyouth";
+
 // DATA STRUCTURES
 const MOUNTAINS = [
   { id: 'm1', name: 'Constitutional Literacy', cave: 'Constitution Cave', icon: '📜' },
@@ -62,6 +74,7 @@ const RESEARCH_DIVISIONS = [
 export default function AboutPage() {
   const [selectedMountain, setSelectedMountain] = useState<string | null>(null);
   const [selectedCave, setSelectedCave] = useState<string | null>(null);
+  const [isCardFlipped, setIsCardFlipped] = useState<boolean>(false);
 
   // Upload Form State
   const [uploadFormData, setUploadFormData] = useState({
@@ -91,13 +104,16 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
       
-      {/* HEADER WITH TOP ₹499 PAYMENT BUTTON */}
+      {/* HEADER WITH DIRECT RAZORPAY PAYMENT LINK */}
       <header className="border-b border-white/10 bg-[#070b19]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold px-3 py-1.5 rounded-lg text-lg tracking-wider">
-              P&amp;Y
-            </div>
+            {/* BRAND LOGO IMAGE */}
+            <img 
+              src={BRAND_LOGO_URL} 
+              alt="People & Youth Logo" 
+              className="h-10 w-auto rounded-lg object-contain bg-white/10 p-1 border border-white/20"
+            />
             <div className="flex flex-col">
               <span className="font-extrabold text-lg tracking-tight text-white leading-none">
                 People &amp; Youth
@@ -109,18 +125,20 @@ export default function AboutPage() {
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* 499 PAYMENT LINK BUTTON */}
-            <Link
-              href="/signin?plan=passport"
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5"
+            {/* DIRECT RAZORPAY PAYMENT LINK */}
+            <a
+              href={RAZORPAY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs sm:text-sm shadow-xl shadow-amber-500/25 transition-all flex items-center gap-2 transform hover:scale-105"
             >
               <span>💳</span>
-              <span>Claim Passport (₹499)</span>
-            </Link>
+              <span>Claim Passport <span className="line-through text-black/60 font-semibold text-[11px]">₹1,000</span> ₹499</span>
+            </a>
 
             <Link
               href="/signin"
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/20 transition-all hidden sm:inline-block"
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold text-xs sm:text-sm transition-all hidden sm:inline-block"
             >
               Build Civic Profile
             </Link>
@@ -169,107 +187,172 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 💳 FEATURED CIVIC PASSPORT CARD SYSTEM SECTION (HIGH VISIBILITY) */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/50 rounded-3xl p-8 sm:p-12 shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-8">
+        {/* 💳 3D FLIPPING SOVEREIGN CIVIC PASSPORT CARD SHOWCASE */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/50 rounded-3xl p-8 sm:p-12 shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-10">
+          
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
             <div>
-              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">OFFICIAL CIVIC CREDENTIAL SYSTEM</span>
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">SOVEREIGN CIVIC IDENTITY</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1">Sovereign Civic Passport</h2>
-              <p className="text-xs text-gray-300 mt-1">Verified lifetime institutional identity for student researchers &amp; policy advocates.</p>
+              <p className="text-xs text-gray-300 mt-1">Verified lifetime institutional identity credential for global youth &amp; researchers.</p>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="px-4 py-2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-400/40">
-                Annual Institutional Pass: ₹499
-              </span>
-              <Link
-                href="/signin?plan=passport"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20 transition-all"
+              <div className="bg-amber-500/10 border border-amber-400/40 p-2.5 rounded-2xl text-right">
+                <span className="text-[10px] text-amber-300 uppercase tracking-widest block font-mono font-bold">Limited Offer</span>
+                <span className="line-through text-gray-400 text-xs mr-1.5">₹1,000</span>
+                <span className="text-xl font-extrabold text-amber-400">₹499</span>
+                <span className="text-[10px] text-emerald-400 font-bold block">✓ Lifetime Free Access</span>
+              </div>
+              <a
+                href={RAZORPAY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all transform hover:scale-105"
               >
-                Get Passport Now &rarr;
-              </Link>
+                Claim Passport (₹499) &rarr;
+              </a>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Visual Passport Mock Card */}
-            <div className="lg:col-span-6 bg-gradient-to-br from-blue-950/90 via-[#0b132e] to-cyan-950/90 border border-cyan-400/60 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-2xl backdrop-blur-xl group hover:border-cyan-300 transition-all">
-              <div className="absolute -right-12 -top-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all" />
-              
-              <div className="flex justify-between items-start mb-8 relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold px-2.5 py-1 rounded-md text-sm">
-                    P&amp;Y
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* 3D FLIPPING PASSPORT CARD CONTAINER */}
+            <div className="lg:col-span-6 space-y-4">
+              <div 
+                onClick={() => setIsCardFlipped(!isCardFlipped)}
+                className="group [perspective:1000px] w-full max-w-md mx-auto h-[290px] cursor-pointer"
+              >
+                <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${isCardFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
+                  
+                  {/* FRONT SIDE OF PASSPORT CARD */}
+                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-blue-950/90 via-[#0b132e] to-cyan-950/90 border-2 border-cyan-400/60 rounded-2xl p-6 flex flex-col justify-between shadow-2xl backdrop-blur-xl group-hover:border-cyan-300">
+                    
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={BRAND_LOGO_URL} 
+                          alt="Brand Logo" 
+                          className="h-9 w-auto rounded-md object-contain bg-white/10 p-0.5 border border-white/20"
+                        />
+                        <div>
+                          <p className="text-xs font-extrabold text-white tracking-wider">PEOPLE &amp; YOUTH</p>
+                          <p className="text-[9px] text-cyan-400 font-mono uppercase tracking-widest">SOVEREIGN CIVIC PASSPORT</p>
+                        </div>
+                      </div>
+
+                      <span className="bg-amber-500/20 text-amber-300 border border-amber-400/50 text-[10px] font-mono px-2.5 py-1 rounded-full font-bold">
+                        ~~₹1,000~~ ₹499 LIFETIME
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[9px] text-gray-400 uppercase tracking-widest">Civic Passport Holder</p>
+                        <p className="text-xl font-extrabold text-white tracking-wide">Swaraj Shandilya</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">Jurisdiction</p>
+                          <p className="font-semibold text-gray-200">Delhi, India</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">Passport ID</p>
+                          <p className="font-mono text-cyan-300 font-bold">PY-2026-612030</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/10 flex justify-between items-center">
+                      <p className="text-[10px] font-mono font-bold text-emerald-400 flex items-center gap-1">
+                        <span>✓</span> VERIFIED TIER 1 FELLOW
+                      </p>
+                      <p className="text-[10px] font-mono text-cyan-400 italic">Click card to flip 🔄</p>
+                    </div>
+
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-white tracking-wide">PEOPLE &amp; YOUTH</p>
-                    <p className="text-[9px] text-cyan-400 font-mono uppercase tracking-widest">VERIFIED CIVIC PASSPORT</p>
+
+                  {/* BACK SIDE OF PASSPORT CARD */}
+                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-[#0a122c] via-[#070b19] to-blue-950 border-2 border-amber-400/60 rounded-2xl p-5 flex flex-col justify-between shadow-2xl backdrop-blur-xl">
+                    
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                      <div className="flex items-center gap-2">
+                        <img src={BRAND_LOGO_URL} alt="Logo" className="h-6 w-auto" />
+                        <span className="text-[10px] font-mono font-bold text-gray-200">P&amp;Y OFFICIAL VERIFICATION SEAL</span>
+                      </div>
+                      <span className="text-[9px] font-mono text-cyan-400">peopleandyouth.org</span>
+                    </div>
+
+                    {/* QR CODES GRID */}
+                    <div className="grid grid-cols-3 gap-3 text-center my-2">
+                      
+                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
+                        <img src={INSTA_QR_URL} alt="Instagram QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
+                        <span className="text-[9px] font-bold text-pink-400 font-mono">Instagram</span>
+                      </div>
+
+                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
+                        <img src={WHATSAPP_QR_URL} alt="WhatsApp QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
+                        <span className="text-[9px] font-bold text-emerald-400 font-mono">WhatsApp</span>
+                      </div>
+
+                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
+                        <img src={YOUTUBE_QR_URL} alt="YouTube QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
+                        <span className="text-[9px] font-bold text-red-400 font-mono">YouTube</span>
+                      </div>
+
+                    </div>
+
+                    <div className="text-[9px] text-gray-400 text-center font-mono border-t border-white/10 pt-2">
+                      Sovereign Document Issued by Vidyarthi Nagrik Jan Chetna Manch (VNJCM) • Non-Transferable
+                    </div>
+
                   </div>
+
                 </div>
-                <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-[11px] font-mono px-3 py-1 rounded-full font-bold shadow-md shadow-cyan-500/10">
-                  PY-2026-612030
-                </span>
               </div>
 
-              <div className="space-y-4 relative z-10">
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">Passport Holder</p>
-                  <p className="text-xl font-extrabold text-white">Swaraj Shandilya</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">Jurisdiction</p>
-                    <p className="font-semibold text-gray-200">Delhi, India</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">Institutional Role</p>
-                    <p className="font-semibold text-cyan-400">Research Fellow</p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex justify-between items-end">
-                  <div>
-                    <p className="text-[9px] text-gray-400 uppercase tracking-widest">Verification Status</p>
-                    <p className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1">
-                      <span>✓</span> ACTIVE MEMBER (TIER 1)
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] text-gray-400 uppercase tracking-widest">Valid Thru</p>
-                    <p className="text-xs font-mono text-gray-200">2026 – 2027</p>
-                  </div>
-                </div>
+              <div className="text-center">
+                <button
+                  onClick={() => setIsCardFlipped(!isCardFlipped)}
+                  className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline font-bold"
+                >
+                  🔄 Toggle Card View (Front / Back QR Codes)
+                </button>
               </div>
             </div>
 
-            {/* Passport Privileges Breakdown */}
+            {/* PASSPORT BENEFITS LIST */}
             <div className="lg:col-span-6 space-y-4">
-              <h3 className="text-xl font-bold text-white">Passport Privileges &amp; Institutional Access</h3>
+              <h3 className="text-xl font-bold text-white">Why Register for Your Civic Passport?</h3>
               <ul className="space-y-3 text-xs text-gray-300">
                 <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <span className="text-amber-400 font-bold">✓</span>
+                  <span><strong>Lifetime Free Membership:</strong> Pay once (~~₹1,000~~ ₹499 offer) and gain permanent institutional access with no recurring subscription fees.</span>
+                </li>
+                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
                   <span className="text-cyan-400 font-bold">✓</span>
-                  <span><strong>Priority Peer-Review:</strong> Guaranteed fast-track editorial processing across all 11 Renaissance Publications.</span>
+                  <span><strong>Priority Peer Review:</strong> Guaranteed fast-track editorial processing across all 11 Renaissance Publications.</span>
                 </li>
                 <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
                   <span className="text-cyan-400 font-bold">✓</span>
                   <span><strong>VNJCM Leadership Rights:</strong> Vote and lead regional RTI drives, public audits, and municipal governance workshops.</span>
                 </li>
-                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="text-cyan-400 font-bold">✓</span>
-                  <span><strong>People&apos;s Data Lab Access:</strong> Unrestricted download access to open datasets, white papers, and working papers.</span>
-                </li>
               </ul>
 
               <div className="pt-2">
-                <Link
-                  href="/signin?plan=passport"
-                  className="inline-block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all"
+                <a
+                  href={RAZORPAY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block w-full text-center py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all transform hover:scale-105"
                 >
-                  Enroll &amp; Generate Your Passport ID (₹499) &rarr;
-                </Link>
+                  Pay ₹499 &amp; Claim Sovereign Passport &rarr;
+                </a>
               </div>
             </div>
+
           </div>
         </section>
 
@@ -714,10 +797,44 @@ export default function AboutPage() {
 
       </div>
 
-      {/* FOOTER */}
-      <footer className="border-t border-white/10 py-6 text-center text-xs text-gray-500">
-        <p>&copy; 2026 People &amp; Youth Digital Institution. All rights reserved.</p>
+      {/* STANDARDIZED FOOTER WITH SOCIAL LINKS */}
+      <footer className="border-t border-white/10 bg-[#050814] py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            <div className="flex items-center gap-3">
+              <img src={BRAND_LOGO_URL} alt="Brand Logo" className="h-8 w-auto rounded-md" />
+              <span className="font-extrabold text-sm tracking-tight text-white">
+                People &amp; Youth Digital Institution
+              </span>
+            </div>
+
+            {/* SOCIAL MEDIA LINKS */}
+            <div className="flex items-center gap-6 text-xs font-mono">
+              <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+                LinkedIn ↗
+              </a>
+              <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+                Facebook ↗
+              </a>
+              <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+                YouTube ↗
+              </a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">
+                Instagram ↗
+              </a>
+            </div>
+
+          </div>
+
+          <div className="border-t border-white/10 pt-4 text-center text-[11px] text-gray-500">
+            <p>&copy; 2026 People &amp; Youth Digital Institution (VNJCM). All rights reserved.</p>
+          </div>
+
+        </div>
       </footer>
+
     </main>
   );
 }
