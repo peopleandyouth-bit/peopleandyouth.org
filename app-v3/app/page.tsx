@@ -10,7 +10,12 @@ import Footer from "@/components/layout/Footer";
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden">
-      <Navbar />{/* Test change */}
+      {/* IMPOSSIBLE TO MISS RED TEST BANNER */}
+      <div className="bg-red-600 text-white text-center py-4 px-4 text-xl font-black uppercase tracking-widest border-b-4 border-yellow-400 z-50 relative">
+        🔥 VERCEL LIVE UPDATE IS WORKING!
+      </div>
+
+      <Navbar />
       <Hero />
       <PlatformSections />
       <FounderStory />
