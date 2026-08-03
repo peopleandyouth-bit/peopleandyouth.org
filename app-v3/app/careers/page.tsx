@@ -126,7 +126,6 @@ export default function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submittedAppId, setSubmittedAppId] = useState<string | null>(null);
 
-  // Candidate Dashboard State across all 6 Tabs
   const [candidateForm, setCandidateForm] = useState({
     fullName: '',
     email: '',
@@ -148,7 +147,7 @@ export default function CareersPage() {
     passportId: '',
   });
 
-  // Handle Submission Directly to Supabase
+  // Handle Submission Directly to Supabase AND Automated Email Dispatch
   const handleResumeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -156,6 +155,7 @@ export default function CareersPage() {
     const generatedAppId = `PY-APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
+      // 1. Save candidate record into Supabase Table
       const { error } = await supabase.from('candidate_applications').insert([
         {
           app_id: generatedAppId,
@@ -180,9 +180,19 @@ export default function CareersPage() {
         }
       ]);
 
-      if (error) {
-        console.error("Supabase insert error:", error);
-      }
+      if (error) console.error("Supabase insert error:", error);
+
+      // 2. Automatically Trigger Confirmation Email API
+      await fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: candidateForm.email,
+          fullName: candidateForm.fullName,
+          roleApplied: candidateForm.primaryDomain,
+        }),
+      });
+
     } catch (err) {
       console.error("Submission error:", err);
     } finally {
@@ -314,13 +324,12 @@ export default function CareersPage() {
             </div>
 
             <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs border border-emerald-400/40">
-              🔒 Private Supabase Encryption Active
+              🔒 Private Encryption &amp; Automated Email Active
             </span>
           </div>
 
           {/* 6 INTERACTIVE TAB BUTTONS */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-            
             <button
               onClick={() => setActiveTab('profile')}
               className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
@@ -392,18 +401,17 @@ export default function CareersPage() {
               <span className="text-xs font-mono font-bold text-cyan-400">06. Identity</span>
               <span className="text-[10px] mt-0.5 font-medium">Civic Passport</span>
             </button>
-
           </div>
 
           {/* CONFIRMATION SCREEN */}
           {submittedAppId && (
             <div className="p-6 rounded-2xl bg-emerald-500/20 border-2 border-emerald-400/60 text-white space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-emerald-300 font-mono">✓ APPLICATION SUBMITTED PRIVATELY TO SUPABASE</span>
+                <span className="text-sm font-bold text-emerald-300 font-mono">✓ APPLICATION SUBMITTED &amp; CONFIRMATION EMAIL DISPATCHED</span>
                 <span className="px-3 py-1 bg-emerald-500 text-black font-mono font-bold text-xs rounded-lg">{submittedAppId}</span>
               </div>
               <p className="text-xs text-gray-200 leading-relaxed">
-                Thank you! Your candidate profile has been securely stored in our private institutional database. You may use your Application ID (<strong className="text-emerald-300">{submittedAppId}</strong>) under Step 05 to track review status.
+                Thank you! Your candidate profile has been securely stored in our private institutional database, and a formal confirmation email from <strong className="text-cyan-300">contact@peopleandyouth.org</strong> has been sent to your registered inbox.
               </p>
             </div>
           )}
@@ -725,7 +733,7 @@ export default function CareersPage() {
                       ✓ Profile Submitted
                     </div>
                     <div className="bg-white/5 p-3 rounded-xl border border-cyan-500/40 text-cyan-300 text-xs font-mono">
-                      ● Under Editorial Review
+                      ● Under Review
                     </div>
                     <div className="bg-white/5 p-3 rounded-xl border border-white/10 text-gray-500 text-xs font-mono">
                       ○ Interview Scheduling
@@ -805,7 +813,7 @@ export default function CareersPage() {
                     disabled={isSubmitting}
                     className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/25 transition-all transform hover:scale-105"
                   >
-                    {isSubmitting ? 'Submitting to Supabase...' : 'Complete Registration & Submit Application →'}
+                    {isSubmitting ? 'Sending Confirmation...' : 'Complete Registration & Submit Application →'}
                   </button>
                 </div>
               </div>
@@ -996,7 +1004,6 @@ export default function CareersPage() {
       {/* STANDARDIZED FOOTER */}
       <footer className="border-t border-white/10 bg-[#050814] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -1043,7 +1050,6 @@ export default function CareersPage() {
           <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
             <p>&copy; 2026 People &amp; Youth Digital Institution (VNJCM). All rights reserved.</p>
           </div>
-
         </div>
       </footer>
 
