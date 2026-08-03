@@ -1,18 +1,17 @@
 ﻿'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import GoogleTranslate from '@/components/GoogleTranslate';
 import { UserRole } from '@/lib/types/os';
 import { getRoleBadgeColor } from '@/lib/rbac';
 
 export default function UniversalDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'research' | 'events' | 'ai'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'research' | 'ai'>('overview');
   const [aiQuery, setAiQuery] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Simulated Logged-In User Context
   const currentUser = {
     fullName: "Swaraj Shandilya",
     username: "swarajshandilya",
@@ -48,8 +47,6 @@ export default function UniversalDashboard() {
 
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 flex flex-col justify-between">
-      
-      {/* OS NAVBAR */}
       <header className="border-b border-white/10 bg-[#070b19]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
@@ -75,10 +72,7 @@ export default function UniversalDashboard() {
         </div>
       </header>
 
-      {/* OS MAIN BODY */}
       <div className="max-w-7xl mx-auto px-4 py-8 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* SIDEBAR NAVIGATION */}
         <aside className="lg:col-span-3 space-y-4">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-3 border-b border-white/10 pb-4">
@@ -91,7 +85,6 @@ export default function UniversalDashboard() {
               </div>
             </div>
 
-            {/* ROLES BADGES */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">Assigned Roles</span>
               <div className="flex flex-wrap gap-1.5">
@@ -144,14 +137,9 @@ export default function UniversalDashboard() {
           </nav>
         </aside>
 
-        {/* MAIN DISPLAY PANEL */}
         <main className="lg:col-span-9 space-y-6">
-          
-          {/* OVERVIEW VIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              
-              {/* IMPACT SCORE FORMULA BANNER */}
               <div className="bg-gradient-to-r from-blue-950 via-[#0a122c] to-cyan-950 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">CIVIC IMPACT SCORE LEDGER</span>
@@ -180,15 +168,14 @@ export default function UniversalDashboard() {
                 </div>
               </div>
 
-              {/* QUICK WORKSPACE ACCESS */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Link
                   href="/departments/research"
                   className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:border-cyan-400/50 transition-all space-y-2 block"
                 >
                   <span className="text-2xl">🔬</span>
-                  <h3 className="font-bold text-white text-sm">Research Department Workspace</h3>
-                  <p className="text-xs text-gray-400">Access peer reviews, dataset analytics, and Knowledge Caves.</p>
+                  <h3 className="font-bold text-white text-sm">Research Workspace</h3>
+                  <p className="text-xs text-gray-400">Access peer reviews and Knowledge Caves.</p>
                 </Link>
 
                 <Link
@@ -197,7 +184,7 @@ export default function UniversalDashboard() {
                 >
                   <span className="text-2xl">✍️</span>
                   <h3 className="font-bold text-white text-sm">Editorial &amp; Dissent Dias</h3>
-                  <p className="text-xs text-gray-400">Review pending journal submissions and long-form essays.</p>
+                  <p className="text-xs text-gray-400">Review pending journal submissions.</p>
                 </Link>
 
                 <Link
@@ -205,21 +192,18 @@ export default function UniversalDashboard() {
                   className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:border-cyan-400/50 transition-all space-y-2 block"
                 >
                   <span className="text-2xl">🏛</span>
-                  <h3 className="font-bold text-white text-sm">District RTI Campaigns</h3>
-                  <p className="text-xs text-gray-400">Direct municipal audit drives and local grassroots leadership.</p>
+                  <h3 className="font-bold text-white text-sm">District Campaigns</h3>
+                  <p className="text-xs text-gray-400">Direct municipal audit drives.</p>
                 </Link>
               </div>
-
             </div>
           )}
 
-          {/* AI RAG ASSISTANT VIEW */}
           {activeTab === 'ai' && (
             <div className="bg-white/5 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 space-y-6">
               <div className="border-b border-white/10 pb-4">
-                <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">STEP 13: INSTITUTIONAL RAG ENGINE</span>
+                <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">INSTITUTIONAL RAG ENGINE</span>
                 <h2 className="text-2xl font-extrabold text-white mt-1">Ask People &amp; Youth AI</h2>
-                <p className="text-xs text-gray-300 mt-1">Queries are evaluated strictly against internal policy papers, whitepapers, and knowledge caves.</p>
               </div>
 
               <form onSubmit={handleAiAsk} className="space-y-4">
@@ -227,7 +211,7 @@ export default function UniversalDashboard() {
                   rows={3}
                   value={aiQuery}
                   onChange={(e) => setAiQuery(e.target.value)}
-                  placeholder="Ask about RTI guidelines, constitutional precedents, or Renaissance journal submission standards..."
+                  placeholder="Ask about RTI guidelines, constitutional precedents, or Renaissance journal standards..."
                   className="w-full bg-[#070b19] border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-cyan-500"
                 />
                 <button
@@ -235,7 +219,7 @@ export default function UniversalDashboard() {
                   disabled={isAiLoading}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs"
                 >
-                  {isAiLoading ? 'Searching Knowledge Graph...' : 'Execute Institutional Inquiry →'}
+                  {isAiLoading ? 'Searching Knowledge Graph...' : 'Execute Inquiry →'}
                 </button>
               </form>
 
@@ -247,10 +231,8 @@ export default function UniversalDashboard() {
               )}
             </div>
           )}
-
         </main>
       </div>
-
     </main>
   );
 }

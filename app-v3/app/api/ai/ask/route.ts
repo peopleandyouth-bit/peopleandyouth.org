@@ -9,7 +9,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Inquiry query missing.' }, { status: 400 });
     }
 
-    // Search Knowledge Nodes & Papers in Supabase
     const { data: nodes } = await supabase
       .from('knowledge_nodes')
       .select('title, summary, entity_type')
