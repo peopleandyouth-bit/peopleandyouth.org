@@ -4,30 +4,70 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import GoogleTranslate from '@/components/GoogleTranslate';
 
-// CONSTANT ASSETS & URLS
-const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
 const BRAND_LOGO_URL = "https://i.postimg.cc/rFK0BBXw/Google-Logo-002.png";
-const INSTA_QR_URL = "https://i.postimg.cc/pd7M9jTk/Insta-VNJCM.jpg";
-const WHATSAPP_QR_URL = "https://i.postimg.cc/bY1fJshc/Whatsapp-VNJCM.jpg";
-const YOUTUBE_QR_URL = "https://i.postimg.cc/FHT448Qm/You-Tube-VNJCM.jpg";
+const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
 
 const LINKEDIN_URL = "https://www.linkedin.com/company/vidyarthi-nagrik-jan-chetna-manch";
 const FACEBOOK_URL = "https://www.facebook.com/share/1ZGB3ZQKqE/";
 const YOUTUBE_URL = "https://www.youtube.com/@peopleandyouth";
 const INSTAGRAM_URL = "https://www.instagram.com/peopleandyouth";
 
+// INSTITUTIONAL DIRECTORY FOR QUICK SEARCH
+const SYSTEM_DIRECTORY = [
+  { title: "Supreme Constitution (Volume I)", route: "/constitution", desc: "Founding charter, vision, core values, & civilizational philosophy", category: "Governance" },
+  { title: "Careers & Candidate Portal", route: "/careers", desc: "6-step application, 17 domains, district mandates, & ambassador framework", category: "Talent" },
+  { title: "Renaissance Policy Journals", route: "/submit-paper", desc: "Open-access peer-review portal for 11 journals & 17 Knowledge Caves", category: "Research" },
+  { title: "Rural Governance & Advisory", route: "/rural-consulting", desc: "Panchayati Raj technical assistance, municipal audits, & leadership labs", category: "Consulting" },
+  { title: "Universal OS Dashboard", route: "/dashboard", desc: "Central digital HQ, Civic Impact Score ledger, & volunteer tracking", category: "Platform OS" },
+  { title: "Public Profiles & Passports", route: "/profile/swarajshandilya", desc: "Sovereign credential cards, verified research, & skills ledger", category: "Identity" },
+  { title: "Department Workspaces", route: "/departments/research", desc: "Kanban task boards & project management across 15+ departments", category: "Workspaces" },
+  { title: "Private Admin Control Panel", route: "/admin", desc: "Passkey-protected candidate application & passport ledger manager", category: "Admin" },
+  { title: "About Mandate & Civic Passport", route: "/about", desc: "3D interactive card, ₹499 Razorpay verification, & institutional charter", category: "Charter" },
+];
+
 export default function HomePage() {
-  const [isCardFlipped, setIsCardFlipped] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const filteredDirectory = searchQuery.trim() === '' 
+    ? [] 
+    : SYSTEM_DIRECTORY.filter(item => 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+  const handleAiAsk = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+    setIsAiLoading(true);
+    setAiResponse(null);
+
+    try {
+      const res = await fetch('/api/ai/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: aiQuery }),
+      });
+      const data = await res.json();
+      setAiResponse(data.answer || 'No institutional citation found.');
+    } catch (err) {
+      setAiResponse('Unable to connect to Institutional Knowledge RAG Engine.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
       
-      {/* HEADER & NAVIGATION BAR */}
+      {/* GLOBAL HEADER */}
       <header className="border-b border-white/10 bg-[#070b19]/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 shrink-0">
             <img 
               src={BRAND_LOGO_URL} 
               alt="People & Youth Logo" 
@@ -43,389 +83,266 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-            <Link href="/about" className="hover:text-cyan-400 transition-colors">
-              About Mandate
-            </Link>
-            <Link href="/submit-paper" className="hover:text-cyan-400 transition-colors">
-              Policy Journals
-            </Link>
-            <Link href="/rural-consulting" className="hover:text-cyan-400 transition-colors">
-              Rural Consulting
-            </Link>
-            <Link href="/editorial-policy" className="hover:text-cyan-400 transition-colors">
-              Editorial Standards
-            </Link>
+          {/* TOP NAV LINKS */}
+          <nav className="hidden xl:flex items-center gap-5 text-xs font-mono tracking-tight text-gray-300">
+            <Link href="/constitution" className="hover:text-amber-300 transition-colors text-amber-400 font-bold">📜 Constitution</Link>
+            <Link href="/careers" className="hover:text-cyan-300 transition-colors text-cyan-400 font-bold">💼 Careers</Link>
+            <Link href="/submit-paper" className="hover:text-white transition-colors">🔬 Journals</Link>
+            <Link href="/rural-consulting" className="hover:text-white transition-colors">🌾 Rural Advisory</Link>
+            <Link href="/dashboard" className="hover:text-white transition-colors">🖥️ OS HQ</Link>
+            <Link href="/admin" className="hover:text-white transition-colors">🔒 Admin</Link>
           </nav>
 
-          {/* Action Buttons & Google Translate */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <GoogleTranslate />
             <a
               href={RAZORPAY_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs sm:text-sm shadow-xl shadow-amber-500/25 transition-all flex items-center gap-2 transform hover:scale-105"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs shadow-xl shadow-amber-500/25 transition-all flex items-center gap-2 transform hover:scale-105"
             >
               <span>💳</span>
-              <span>Claim Passport <span className="line-through text-black/60 text-[11px]">₹1,000</span> ₹499</span>
+              <span className="hidden sm:inline">Civic Passport</span> ₹499
             </a>
           </div>
-
         </div>
       </header>
 
-      {/* MAIN HOME CONTAINER */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-24">
+      {/* HERO & SEARCH ENGINE SECTION */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-16">
         
-        {/* HERO SECTION */}
+        {/* HERO BANNER */}
         <section className="text-center space-y-6 max-w-4xl mx-auto pt-4">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            Sovereign Digital Youth Platform
+          <span className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-semibold uppercase tracking-wider">
+            GLOBAL CIVIC KNOWLEDGE INSTITUTION
           </span>
           
           <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
-            India&apos;s Sovereign Platform for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300">Public Policy Research</span> &amp; Governance
+            Building Institutions. <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-300">
+              Empowering Humanity.
+            </span>
           </h1>
           
-          <p className="text-gray-300 text-base sm:text-lg leading-relaxed max-w-3xl mx-auto">
-            Empowering students, researchers, and young advocates to publish peer-reviewed policy briefs, conduct institutional audits, and claim verified digital Civic Passports.
+          <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+            India&apos;s sovereign digital platform for public policy research, empirical governance audits, constitutional literacy, and decentralized civic leadership.
           </p>
 
-          {/* KEY METRICS BANNER */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-white/10 text-center">
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">Non-Partisan</p>
-              <p className="text-[11px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Civic Rigor</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">Verified</p>
-              <p className="text-[11px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Civic Passports</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">Peer-Reviewed</p>
-              <p className="text-[11px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Policy Journals</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-              <p className="text-2xl sm:text-3xl font-extrabold text-cyan-400">Direct</p>
-              <p className="text-[11px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">RTI &amp; Audit Action</p>
-            </div>
-          </div>
-        </section>
-
-        {/* SHOWROOM SPOTLIGHT: 3D FLIPPING CIVIC PASSPORT SHOWCASE */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border-2 border-cyan-500/50 rounded-3xl p-8 sm:p-14 shadow-[0_0_60px_rgba(6,182,212,0.2)] space-y-10">
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
-            <div>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[11px] font-mono font-bold uppercase tracking-wider mb-2">
-                <span>🔥</span> FEATURED EDITION • SPECIAL SHOWROOM DISPLAY
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white">The Sovereign Civic Passport</h2>
-              <p className="text-xs text-gray-300 mt-1">Verified lifetime digital credential mapping your jurisdiction &amp; policy contributions.</p>
+          {/* REAL-TIME INSTITUTIONAL SEARCH BAR */}
+          <div className="max-w-2xl mx-auto pt-2 relative">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="🔎 Direct Jump Search: Type 'Careers', 'Constitution', 'Admin', 'RTI'..."
+                className="w-full bg-[#0b1228] border-2 border-cyan-500/50 focus:border-cyan-400 rounded-2xl px-5 py-4 text-white text-sm focus:outline-none shadow-2xl font-mono"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-gray-400 hover:text-white"
+                >
+                  ✖ Clear
+                </button>
+              )}
             </div>
 
-            <div className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/10">
-              <div className="text-right">
-                <span className="text-[10px] text-amber-300 uppercase font-mono font-bold block">Exclusive Inaugural Offer</span>
-                <span className="line-through text-gray-400 text-xs mr-1.5">₹1,000</span>
-                <span className="text-2xl font-extrabold text-amber-400">₹499</span>
-                <span className="text-[10px] text-emerald-400 font-bold block">✓ Lifetime Free Access</span>
-              </div>
-              <a
-                href={RAZORPAY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all transform hover:scale-105"
-              >
-                Claim (₹499) &rarr;
-              </a>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* 3D FLIPPING CARD COMPONENT */}
-            <div className="lg:col-span-6 space-y-4">
-              <div 
-                onClick={() => setIsCardFlipped(!isCardFlipped)}
-                className="group [perspective:1000px] w-full max-w-md mx-auto h-[290px] cursor-pointer"
-              >
-                <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${isCardFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
-                  
-                  {/* FRONT SIDE */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-blue-950/95 via-[#0b132e] to-cyan-950/95 border-2 border-cyan-400/70 rounded-2xl p-6 flex flex-col justify-between shadow-2xl backdrop-blur-xl group-hover:border-cyan-300">
-                    
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={BRAND_LOGO_URL} 
-                          alt="Logo" 
-                          className="h-9 w-auto rounded-md object-contain bg-white/10 p-0.5 border border-white/20"
-                        />
-                        <div>
-                          <p className="text-xs font-extrabold text-white tracking-wider">PEOPLE &amp; YOUTH</p>
-                          <p className="text-[9px] text-cyan-400 font-mono uppercase tracking-widest">SOVEREIGN CIVIC PASSPORT</p>
-                        </div>
-                      </div>
-
-                      <span className="bg-amber-500/20 text-amber-300 border border-amber-400/50 text-[10px] font-mono px-2.5 py-1 rounded-full font-bold">
-                        ~~₹1,000~~ ₹499
+            {/* SEARCH RESULTS DROPDOWN */}
+            {filteredDirectory.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#070b19] border-2 border-cyan-400 rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto text-left p-2 space-y-1 backdrop-blur-2xl">
+                {filteredDirectory.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.route}
+                    className="block p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-cyan-500/30"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-white">{item.title}</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                        {item.category}
                       </span>
                     </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-[9px] text-gray-400 uppercase tracking-widest">Civic Passport Holder</p>
-                        <p className="text-xl font-extrabold text-white tracking-wide">Swaraj Shandilya</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">Jurisdiction</p>
-                          <p className="font-semibold text-gray-200">Delhi, India</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-gray-400 uppercase tracking-widest">Passport ID</p>
-                          <p className="font-mono text-cyan-300 font-bold">PY-2026-612030</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                      <p className="text-[10px] font-mono font-bold text-emerald-400 flex items-center gap-1">
-                        <span>✓</span> VERIFIED TIER 1 FELLOW
-                      </p>
-                      <p className="text-[10px] font-mono text-cyan-400 italic">Click card to flip 🔄</p>
-                    </div>
-
-                  </div>
-
-                  {/* BACK SIDE (PERMANENT QR CODES) */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-[#0a122c] via-[#070b19] to-blue-950 border-2 border-amber-400/70 rounded-2xl p-5 flex flex-col justify-between shadow-2xl backdrop-blur-xl">
-                    
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                      <div className="flex items-center gap-2">
-                        <img src={BRAND_LOGO_URL} alt="Logo" className="h-6 w-auto" />
-                        <span className="text-[10px] font-mono font-bold text-gray-200">OFFICIAL VERIFICATION SEAL</span>
-                      </div>
-                      <span className="text-[9px] font-mono text-cyan-400">peopleandyouth.org</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 text-center my-2">
-                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
-                        <img src={INSTA_QR_URL} alt="Instagram QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
-                        <span className="text-[9px] font-bold text-pink-400 font-mono">Instagram</span>
-                      </div>
-
-                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
-                        <img src={WHATSAPP_QR_URL} alt="WhatsApp QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
-                        <span className="text-[9px] font-bold text-emerald-400 font-mono">WhatsApp</span>
-                      </div>
-
-                      <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
-                        <img src={YOUTUBE_QR_URL} alt="YouTube QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
-                        <span className="text-[9px] font-bold text-red-400 font-mono">YouTube</span>
-                      </div>
-                    </div>
-
-                    <div className="text-[9px] text-gray-400 text-center font-mono border-t border-white/10 pt-2">
-                      Sovereign Document Issued by Vidyarthi Nagrik Jan Chetna Manch (VNJCM) • Non-Transferable
-                    </div>
-
-                  </div>
-
-                </div>
+                    <p className="text-xs text-gray-400 mt-1">{item.desc}</p>
+                  </Link>
+                ))}
               </div>
-
-              <div className="text-center">
-                <button
-                  onClick={() => setIsCardFlipped(!isCardFlipped)}
-                  className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline font-bold"
-                >
-                  🔄 Toggle Preview (Front Identity / Back QR Codes)
-                </button>
-              </div>
-            </div>
-
-            {/* KEY PASSPORT PRIVILEGES */}
-            <div className="lg:col-span-6 space-y-4">
-              <h3 className="text-xl font-bold text-white">Showroom Privileges &amp; Institutional Perks</h3>
-              <ul className="space-y-3 text-xs text-gray-300">
-                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="text-amber-400 font-bold">✓</span>
-                  <span><strong>Lifetime Free Access:</strong> One-time ₹499 payment (strikethrough offer from ~~₹1,000~~) with zero annual recurring fees.</span>
-                </li>
-                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="text-cyan-400 font-bold">✓</span>
-                  <span><strong>Priority Peer-Review:</strong> Fast-track evaluation across all 11 Renaissance Publications.</span>
-                </li>
-                <li className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="text-cyan-400 font-bold">✓</span>
-                  <span><strong>VNJCM Leadership Network:</strong> Direct leadership rights for grassroots RTI monitoring &amp; civic audits.</span>
-                </li>
-              </ul>
-
-              <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                <a
-                  href={RAZORPAY_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 text-center py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all transform hover:scale-105"
-                >
-                  Pay ₹499 &amp; Claim Passport Now &rarr;
-                </a>
-                <Link
-                  href="/about"
-                  className="px-6 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-400 font-bold text-sm text-center transition-all"
-                >
-                  Explore Institutional Mandate
-                </Link>
-              </div>
-            </div>
-
-          </div>
-
-        </section>
-
-        {/* SYSTEM ARCHITECTURE / FOUR PILLARS */}
-        <section className="space-y-10">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">SYSTEM ARCHITECTURE</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">How People &amp; Youth Operates</h2>
-            <p className="text-sm text-gray-400">
-              A four-tier decentralized framework built for academic integrity and public accountability.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-400/50 transition-all group">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold font-mono text-base flex items-center justify-center">
-                  01
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">Civic Passports</h3>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  Establish a verified digital passport mapping your district, educational background, and policy interests.
-                </p>
-              </div>
-              <div className="pt-6">
-                <a href={RAZORPAY_URL} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-amber-400 hover:underline">
-                  Claim for ₹499 &rarr;
-                </a>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-400/50 transition-all group">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-300 font-bold font-mono text-base flex items-center justify-center">
-                  02
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">Policy Publications</h3>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  Submit open-access research papers, legal commentaries, and economic analyses to peer-reviewed journals.
-                </p>
-              </div>
-              <div className="pt-6">
-                <Link href="/about#upload-research" className="text-xs font-bold text-blue-400 hover:underline">
-                  Submit Research &rarr;
-                </Link>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-400/50 transition-all group">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold font-mono text-base flex items-center justify-center">
-                  03
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">Dissent Dias</h3>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  Engage in structured, constitutional debates addressing public finance, institutional readiness, and reforms.
-                </p>
-              </div>
-              <div className="pt-6">
-                <Link href="/about" className="text-xs font-bold text-cyan-400 hover:underline">
-                  Read Charter &rarr;
-                </Link>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-b from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-400/50 transition-all group">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-300 font-bold font-mono text-base flex items-center justify-center">
-                  04
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">Rural Consulting</h3>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  Connecting policy scholars with grassroots rural governance, municipal planning, and local development.
-                </p>
-              </div>
-              <div className="pt-6">
-                <Link href="/rural-consulting" className="text-xs font-bold text-blue-400 hover:underline">
-                  Explore Consulting &rarr;
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
-        {/* DETAILED INSTITUTIONAL MANDATE HIGHLIGHT CARD */}
-        <section className="bg-gradient-to-br from-blue-950/60 via-[#0a122c] to-cyan-950/60 border border-cyan-500/40 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        {/* EMBEDDED ASK PEOPLE & YOUTH AI BOX */}
+        <section className="max-w-3xl mx-auto bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
+          <div className="flex justify-between items-center border-b border-white/10 pb-3">
+            <div>
+              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block font-bold">INSTITUTIONAL SEARCH ENGINE</span>
+              <h3 className="text-lg font-bold text-white">Ask People &amp; Youth AI</h3>
+            </div>
+            <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-mono rounded-full">
+              RAG Engine v1.0
+            </span>
+          </div>
+
+          <form onSubmit={handleAiAsk} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              placeholder="Ask about RTI guidelines, constitutional principles, or research papers..."
+              className="flex-1 bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-xs focus:outline-none focus:border-cyan-500"
+            />
+            <button
+              type="submit"
+              disabled={isAiLoading}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-extrabold text-xs shrink-0 hover:from-cyan-400 hover:to-blue-500 transition-all"
+            >
+              {isAiLoading ? 'Searching...' : 'Query AI →'}
+            </button>
+          </form>
+
+          {aiResponse && (
+            <div className="p-4 rounded-xl bg-[#0b1228] border border-cyan-400/30 text-xs text-gray-200 font-mono leading-relaxed space-y-1">
+              <span className="text-cyan-400 font-bold block">📜 Institutional AI Response:</span>
+              <p>{aiResponse}</p>
+            </div>
+          )}
+        </section>
+
+        {/* MASTER SHOWCASE GRID (ALL 10 MAJOR DEVELOPMENTS) */}
+        <section className="space-y-6">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">COMPLETE PLATFORM MAP</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Explore All Platform Modules</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <div className="lg:col-span-8 space-y-4">
-              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">ABOUT PEOPLE &amp; YOUTH</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-                Institutional Transparency &amp; Rigorous Public Accountability
-              </h2>
-              <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-                We believe that democracy thrives when youth transition from passive onlookers to active policy architects. From evaluating Right to Information (RTI) implementation to auditing campus readiness in higher education, our institution empowers young citizens with verified evidence.
+            {/* 1. CONSTITUTION */}
+            <Link href="/constitution" className="bg-white/5 border border-amber-500/40 hover:border-amber-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">📜</span>
+                <span className="text-[10px] font-mono uppercase bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30">Governing Charter</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Supreme Constitution</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Read Volume I of our founding charter establishing institutional vision, values, and civilizational philosophy.
               </p>
-              <div className="pt-2">
-                <Link
-                  href="/about"
-                  className="inline-block px-6 py-3 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold text-xs sm:text-sm hover:bg-cyan-500/30 transition-all"
-                >
-                  Read Full Institutional Mandate &amp; Workflow &rarr;
-                </Link>
-              </div>
-            </div>
+              <span className="text-xs font-mono text-amber-400 font-bold block">Open Founding Charter &rarr;</span>
+            </Link>
 
-            <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 text-center">
-              <div className="text-cyan-400 font-bold text-lg">Quick Mandate Links</div>
-              <div className="flex flex-col gap-2.5 text-xs">
-                <Link href="/about" className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 transition-all text-left flex justify-between items-center">
-                  <span>Institutional Workflow</span>
-                  <span className="text-cyan-400">&rarr;</span>
-                </Link>
-                <Link href="/editorial-policy" className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 transition-all text-left flex justify-between items-center">
-                  <span>Editorial Guidelines</span>
-                  <span className="text-cyan-400">&rarr;</span>
-                </Link>
-                <Link href="/privacy" className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 transition-all text-left flex justify-between items-center">
-                  <span>Privacy Policy</span>
-                  <span className="text-cyan-400">&rarr;</span>
-                </Link>
-                <Link href="/terms" className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 transition-all text-left flex justify-between items-center">
-                  <span>Terms of Use</span>
-                  <span className="text-cyan-400">&rarr;</span>
-                </Link>
+            {/* 2. CAREERS */}
+            <Link href="/careers" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">💼</span>
+                <span className="text-[10px] font-mono uppercase bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/30">17 Domains</span>
               </div>
-            </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">Careers &amp; Opportunities</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                6-step candidate portal for District Coordinators, Youth Ambassadors, Researchers, and Fellows.
+              </p>
+              <span className="text-xs font-mono text-cyan-400 font-bold block">Apply to Open Roles &rarr;</span>
+            </Link>
+
+            {/* 3. RESEARCH */}
+            <Link href="/submit-paper" className="bg-white/5 border border-blue-500/40 hover:border-blue-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🔬</span>
+                <span className="text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-400/30">11 Journals</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">Policy Publications</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Open-access research manuscript portal for legal scholars and policy researchers contributing to 17 Knowledge Caves.
+              </p>
+              <span className="text-xs font-mono text-blue-400 font-bold block">Submit Policy Paper &rarr;</span>
+            </Link>
+
+            {/* 4. RURAL CONSULTING */}
+            <Link href="/rural-consulting" className="bg-white/5 border border-emerald-500/40 hover:border-emerald-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🌾</span>
+                <span className="text-[10px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30">Advisory</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">Rural Governance</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Panchayati Raj technical assistance, municipal audits, and grassroots district leadership labs.
+              </p>
+              <span className="text-xs font-mono text-emerald-400 font-bold block">Request Advisory Partnership &rarr;</span>
+            </Link>
+
+            {/* 5. OS DASHBOARD */}
+            <Link href="/dashboard" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🖥️</span>
+                <span className="text-[10px] font-mono uppercase bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/30">System OS</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">Universal Dashboard</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Digital headquarters tracking Civic Impact Scores, volunteer hours, and assigned role badges.
+              </p>
+              <span className="text-xs font-mono text-cyan-400 font-bold block">Enter Dashboard HQ &rarr;</span>
+            </Link>
+
+            {/* 6. PUBLIC PROFILES */}
+            <Link href="/profile/swarajshandilya" className="bg-white/5 border border-amber-500/40 hover:border-amber-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">👤</span>
+                <span className="text-[10px] font-mono uppercase bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-400/30">Verification</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Universal Profile &amp; Passport</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Sovereign digital identity card with QR verification, verified research publications, and skills ledger.
+              </p>
+              <span className="text-xs font-mono text-amber-400 font-bold block">View Public Profile &rarr;</span>
+            </Link>
+
+            {/* 7. WORKSPACES */}
+            <Link href="/departments/research" className="bg-white/5 border border-purple-500/40 hover:border-purple-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">⚙️</span>
+                <span className="text-[10px] font-mono uppercase bg-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-400/30">Kanban Board</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">Department Workspaces</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Institutional project manager tracking tasks across Editorial, Research, Technology, and Campaigns.
+              </p>
+              <span className="text-xs font-mono text-purple-400 font-bold block">Open Workspace &rarr;</span>
+            </Link>
+
+            {/* 8. ADMIN CONTROL PANEL */}
+            <Link href="/admin" className="bg-white/5 border border-red-500/40 hover:border-red-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🔒</span>
+                <span className="text-[10px] font-mono uppercase bg-red-500/20 text-red-300 px-2.5 py-0.5 rounded-full border border-red-400/30">Passkey Access</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-red-300 transition-colors">Admin Control Panel</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Private dashboard to review candidates, view PDF resumes, update review statuses, and inspect issued passports.
+              </p>
+              <span className="text-xs font-mono text-red-400 font-bold block">Authenticate Admin &rarr;</span>
+            </Link>
+
+            {/* 9. CHARTER & PASSPORT */}
+            <Link href="/about" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🏛️</span>
+                <span className="text-[10px] font-mono uppercase bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/30">Mandate</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">About Mandate &amp; Showcase</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Learn about Vidyarthi Nagrik Jan Chetna Manch (VNJCM), inspect our 3D Civic Passport card, and view Knowledge Caves.
+              </p>
+              <span className="text-xs font-mono text-cyan-400 font-bold block">Read Institutional Mandate &rarr;</span>
+            </Link>
 
           </div>
         </section>
 
       </div>
 
-      {/* FULL 4-COLUMN FOOTER WITH LEGAL & SOCIAL LINKS */}
+      {/* UNIFIED FOOTER */}
       <footer className="border-t border-white/10 bg-[#050814] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            
-            {/* Brand Column */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <img src={BRAND_LOGO_URL} alt="Brand Logo" className="h-8 w-auto rounded-md" />
@@ -434,48 +351,45 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed">
-                India&apos;s sovereign digital youth institution for public policy, empirical research, and institutional accountability.
+                India&apos;s sovereign digital youth organisation for public policy, empirical research, and institutional accountability.
               </p>
             </div>
 
-            {/* Institution Column */}
             <div className="space-y-3">
-              <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Institution</p>
-              <ul className="space-y-2 text-xs text-gray-400">
+              <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Portals &amp; Charters</p>
+              <ul className="space-y-2 text-xs text-gray-400 font-mono">
                 <li><Link href="/about" className="hover:text-white transition-colors">About Mandate</Link></li>
-                <li><Link href="/signin" className="hover:text-white transition-colors">Civic Passport</Link></li>
-                <li><Link href="/submit-paper" className="hover:text-white transition-colors">Submit Policy Research</Link></li>
-                <li><Link href="/rural-consulting" className="hover:text-white transition-colors">Rural Consulting</Link></li>
+                <li><Link href="/constitution" className="hover:text-amber-300 text-amber-400 font-semibold transition-colors">📜 Supreme Constitution</Link></li>
+                <li><Link href="/careers" className="hover:text-cyan-300 text-cyan-400 font-semibold transition-colors">💼 Careers &amp; Roles</Link></li>
+                <li><Link href="/submit-paper" className="hover:text-white transition-colors">🔬 Submit Policy Research</Link></li>
+                <li><Link href="/rural-consulting" className="hover:text-white transition-colors">🌾 Rural Advisory</Link></li>
               </ul>
             </div>
 
-            {/* Governance & Legal Column */}
             <div className="space-y-3">
-              <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Governance &amp; Legal</p>
-              <ul className="space-y-2 text-xs text-gray-400">
-                <li><Link href="/editorial-policy" className="hover:text-white transition-colors">Editorial Guidelines</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Use</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">System OS &amp; Admin</p>
+              <ul className="space-y-2 text-xs text-gray-400 font-mono">
+                <li><Link href="/dashboard" className="hover:text-white transition-colors">🖥️ Universal OS Dashboard</Link></li>
+                <li><Link href="/profile/swarajshandilya" className="hover:text-white transition-colors">👤 Universal Profile</Link></li>
+                <li><Link href="/departments/research" className="hover:text-white transition-colors">⚙️ Workspaces</Link></li>
+                <li><Link href="/admin" className="hover:text-white transition-colors">🔒 Admin Panel</Link></li>
               </ul>
             </div>
 
-            {/* Social Network Column */}
             <div className="space-y-3">
               <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Social Network</p>
-              <ul className="space-y-2 text-xs text-gray-400">
+              <ul className="space-y-2 text-xs text-gray-400 font-mono">
                 <li><a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn ↗</a></li>
                 <li><a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook ↗</a></li>
                 <li><a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube ↗</a></li>
                 <li><a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram ↗</a></li>
               </ul>
             </div>
-
           </div>
 
-          <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
+          <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500 font-mono">
             <p>&copy; 2026 People &amp; Youth Digital Institution (VNJCM). All rights reserved.</p>
           </div>
-
         </div>
       </footer>
 
