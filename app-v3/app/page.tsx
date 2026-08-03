@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import GoogleTranslate from '@/components/GoogleTranslate';
 
 // CONSTANT ASSETS & URLS
 const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
@@ -58,8 +59,9 @@ export default function HomePage() {
             </Link>
           </nav>
 
-          {/* Direct Razorpay Checkout Header Button */}
+          {/* Action Buttons & Google Translate */}
           <div className="flex items-center gap-3">
+            <GoogleTranslate />
             <a
               href={RAZORPAY_URL}
               target="_blank"
@@ -112,7 +114,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 🏆 SHOWROOM SPOTLIGHT: 3D FLIPPING CIVIC PASSPORT SHOWCASE */}
+        {/* SHOWROOM SPOTLIGHT: 3D FLIPPING CIVIC PASSPORT SHOWCASE */}
         <section className="relative overflow-hidden bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border-2 border-cyan-500/50 rounded-3xl p-8 sm:p-14 shadow-[0_0_60px_rgba(6,182,212,0.2)] space-y-10">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">

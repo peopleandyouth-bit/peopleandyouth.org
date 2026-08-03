@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import GoogleTranslate from '@/components/GoogleTranslate';
 
 // CONSTANT ASSETS & URLS
 const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
@@ -104,11 +105,10 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
       
-      {/* HEADER WITH DIRECT RAZORPAY PAYMENT LINK */}
+      {/* HEADER WITH DIRECT RAZORPAY PAYMENT LINK & GOOGLE TRANSLATE */}
       <header className="border-b border-white/10 bg-[#070b19]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            {/* BRAND LOGO IMAGE */}
             <img 
               src={BRAND_LOGO_URL} 
               alt="People & Youth Logo" 
@@ -125,7 +125,7 @@ export default function AboutPage() {
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* DIRECT RAZORPAY PAYMENT LINK */}
+            <GoogleTranslate />
             <a
               href={RAZORPAY_URL}
               target="_blank"
@@ -286,7 +286,6 @@ export default function AboutPage() {
 
                     {/* QR CODES GRID */}
                     <div className="grid grid-cols-3 gap-3 text-center my-2">
-                      
                       <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex flex-col items-center">
                         <img src={INSTA_QR_URL} alt="Instagram QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
                         <span className="text-[9px] font-bold text-pink-400 font-mono">Instagram</span>
@@ -301,7 +300,6 @@ export default function AboutPage() {
                         <img src={YOUTUBE_QR_URL} alt="YouTube QR" className="h-16 w-16 rounded-md object-cover mb-1 border border-white/20" />
                         <span className="text-[9px] font-bold text-red-400 font-mono">YouTube</span>
                       </div>
-
                     </div>
 
                     <div className="text-[9px] text-gray-400 text-center font-mono border-t border-white/10 pt-2">
@@ -323,7 +321,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* PASSPORT BENEFITS LIST */}
+            {/* PASSPORT PRIVILEGES BREAKDOWN */}
             <div className="lg:col-span-6 space-y-4">
               <h3 className="text-xl font-bold text-white">Why Register for Your Civic Passport?</h3>
               <ul className="space-y-3 text-xs text-gray-300">
@@ -423,7 +421,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 🏛 VIDYARTHI NAGRIK JAN CHETNA MANCH (VNJCM) SECTION */}
+        {/* VIDYARTHI NAGRIK JAN CHETNA MANCH (VNJCM) SECTION */}
         <section className="bg-white/5 border border-white/10 rounded-3xl p-8 sm:p-12 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-white/10 pb-6">
             <div>
@@ -460,7 +458,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 🌲 THE FOREST OF CIVIC RENAISSANCE: MOUNTAINS & KNOWLEDGE CAVES */}
+        {/* THE FOREST OF CIVIC RENAISSANCE: MOUNTAINS & KNOWLEDGE CAVES */}
         <section className="space-y-10">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">INTELLECTUAL LANDSCAPE</span>
@@ -548,7 +546,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 📰 DISSENT DIAS SECTION */}
+        {/* DISSENT DIAS SECTION */}
         <section className="bg-gradient-to-br from-blue-950/60 via-[#0a122c] to-cyan-950/60 border border-cyan-500/40 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl">
           <div className="space-y-2">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">EDITORIAL &amp; DISCOURSE PLATFORM</span>
@@ -580,7 +578,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 📚 RENAISSANCE PUBLICATIONS */}
+        {/* RENAISSANCE PUBLICATIONS */}
         <section className="space-y-8">
           <div className="border-b border-white/10 pb-4">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">SCHOLARLY JOURNALS</span>
@@ -608,7 +606,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 🔬 RESEARCH, INNOVATION & PUBLIC KNOWLEDGE (11 DIVISIONS) */}
+        {/* RESEARCH, INNOVATION & PUBLIC KNOWLEDGE (11 DIVISIONS) */}
         <section className="space-y-8">
           <div className="border-b border-white/10 pb-4">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">RESEARCH INFRASTRUCTURE</span>
@@ -736,7 +734,7 @@ export default function AboutPage() {
           </form>
         </section>
 
-        {/* 🎓 LEADERSHIP & LEARNING & 🤝 GLOBAL PARTICIPATION */}
+        {/* LEADERSHIP & LEARNING & GLOBAL PARTICIPATION */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4">
             <span className="text-2xl">🎓</span>
