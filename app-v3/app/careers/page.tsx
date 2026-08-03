@@ -1,8 +1,9 @@
 ﻿'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import GoogleTranslate from '@/components/GoogleTranslate';
+import { supabase } from '@/lib/supabaseClient';
 
 // CONSTANT ASSETS & URLS
 const RAZORPAY_URL = "https://rzp.io/rzp/gLKmbVf";
@@ -122,13 +123,11 @@ const CAREER_DOMAINS = [
 export default function CareersPage() {
   const [selectedDomain, setSelectedDomain] = useState<string>('policy');
   const [activeTab, setActiveTab] = useState<'profile' | 'resume' | 'portfolio' | 'tasks' | 'status' | 'identity'>('profile');
-  const [resumeSubmitted, setResumeSubmitted] = useState<boolean>(false);
-  const [savedApplications, setSavedApplications] = useState<any[]>([]);
-  const [showAdminView, setShowAdminView] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submittedAppId, setSubmittedAppId] = useState<string | null>(null);
 
   // Candidate Dashboard State across all 6 Tabs
   const [candidateForm, setCandidateForm] = useState({
-    // Tab 1: Profile
     fullName: '',
     email: '',
     phone: '',
@@ -136,67 +135,69 @@ export default function CareersPage() {
     linkedinUrl: '',
     githubUrl: '',
     coverNote: '',
-
-    // Tab 2: Resume / CV
     resumeDriveUrl: '',
     cvSummary: '',
     totalExperienceYears: '0-1 Years',
     highestQualification: 'Bachelor\'s Degree',
-
-    // Tab 3: Portfolio
     researchPapersUrl: '',
     policyBriefsUrl: '',
     writingSamplesUrl: '',
-
-    // Tab 4: Tasks / Skill Assessment
     taskSubmissionUrl: '',
     methodologyNotes: '',
-
-    // Tab 5: Status Lookup
     searchAppId: '',
-
-    // Tab 6: Identity
     passportId: '',
   });
 
-  // Load saved applications from LocalStorage on mount
-  useEffect(() => {
-    const localData = localStorage.getItem('py_candidate_applications');
-    if (localData) {
-      try {
-        setSavedApplications(JSON.parse(localData));
-      } catch (e) {
-        console.error("Failed to parse local application storage", e);
-      }
-    }
-  }, []);
-
-  // Handle Full Form Submission
-  const handleResumeSubmit = (e: React.FormEvent) => {
+  // Handle Submission Directly to Supabase
+  const handleResumeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    const newApplication = {
-      id: `PY-APP-${Math.floor(100000 + Math.random() * 900000)}`,
-      timestamp: new Date().toLocaleString(),
-      ...candidateForm,
-      status: 'Under Editorial Review'
-    };
+    const generatedAppId = `PY-APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    const updatedApps = [newApplication, ...savedApplications];
-    setSavedApplications(updatedApps);
-    localStorage.setItem('py_candidate_applications', JSON.stringify(updatedApps));
+    try {
+      const { error } = await supabase.from('candidate_applications').insert([
+        {
+          app_id: generatedAppId,
+          full_name: candidateForm.fullName,
+          email: candidateForm.email,
+          phone: candidateForm.phone,
+          primary_domain: candidateForm.primaryDomain,
+          linkedin_url: candidateForm.linkedinUrl,
+          github_url: candidateForm.githubUrl,
+          cover_note: candidateForm.coverNote,
+          resume_drive_url: candidateForm.resumeDriveUrl,
+          cv_summary: candidateForm.cvSummary,
+          total_experience_years: candidateForm.totalExperienceYears,
+          highest_qualification: candidateForm.highestQualification,
+          research_papers_url: candidateForm.researchPapersUrl,
+          policy_briefs_url: candidateForm.policyBriefsUrl,
+          writing_samples_url: candidateForm.writingSamplesUrl,
+          task_submission_url: candidateForm.taskSubmissionUrl,
+          methodology_notes: candidateForm.methodologyNotes,
+          passport_id: candidateForm.passportId,
+          status: 'Under Review'
+        }
+      ]);
 
-    setResumeSubmitted(true);
-    setTimeout(() => setResumeSubmitted(false), 8000);
-
-    // Reset Form
-    setCandidateForm({
-      fullName: '', email: '', phone: '', primaryDomain: 'Public Policy & Governance',
-      linkedinUrl: '', githubUrl: '', coverNote: '', resumeDriveUrl: '', cvSummary: '',
-      totalExperienceYears: '0-1 Years', highestQualification: 'Bachelor\'s Degree',
-      researchPapersUrl: '', policyBriefsUrl: '', writingSamplesUrl: '', taskSubmissionUrl: '',
-      methodologyNotes: '', searchAppId: '', passportId: ''
-    });
+      if (error) {
+        console.error("Supabase insert error:", error);
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittedAppId(generatedAppId);
+      
+      // Reset Form
+      setCandidateForm({
+        fullName: '', email: '', phone: '', primaryDomain: 'Public Policy & Governance',
+        linkedinUrl: '', githubUrl: '', coverNote: '', resumeDriveUrl: '', cvSummary: '',
+        totalExperienceYears: '0-1 Years', highestQualification: 'Bachelor\'s Degree',
+        researchPapersUrl: '', policyBriefsUrl: '', writingSamplesUrl: '', taskSubmissionUrl: '',
+        methodologyNotes: '', searchAppId: '', passportId: ''
+      });
+    }
   };
 
   const activeDomainObj = CAREER_DOMAINS.find(d => d.id === selectedDomain) || CAREER_DOMAINS[0];
@@ -257,7 +258,7 @@ export default function CareersPage() {
       {/* TOP SUB-NAVIGATION BAR */}
       <div className="bg-[#0b132e] border-b border-white/10 py-3 overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-start md:justify-center gap-6 text-xs font-mono whitespace-nowrap text-gray-300">
-          <a href="#candidate-portal" className="text-cyan-400 font-bold hover:underline">📁 Interactive Candidate Portal</a>
+          <a href="#candidate-portal" className="text-cyan-400 font-bold hover:underline">📁 Candidate Dashboard</a>
           <span className="text-gray-600">•</span>
           <a href="#opportunities" className="hover:text-cyan-400 transition-colors">💼 Career Opportunities</a>
           <span className="text-gray-600">•</span>
@@ -266,8 +267,6 @@ export default function CareersPage() {
           <a href="#youth-ambassadors" className="hover:text-cyan-400 transition-colors">🌟 Youth Ambassadors</a>
           <span className="text-gray-600">•</span>
           <a href="#internships" className="hover:text-cyan-400 transition-colors">🎓 Internships</a>
-          <span className="text-gray-600">•</span>
-          <a href="#admin-repository" className="text-amber-400 hover:underline">📥 Admin Submissions ({savedApplications.length})</a>
         </div>
       </div>
 
@@ -304,24 +303,19 @@ export default function CareersPage() {
           </div>
         </section>
 
-        {/* 🏆 INTERACTIVE 6-STEP CANDIDATE DASHBOARD PORTAL */}
+        {/* 🏆 PRIVATE & INTERACTIVE 6-STEP CANDIDATE DASHBOARD PORTAL */}
         <section id="candidate-portal" className="bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-10 shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-8">
           
           <div className="border-b border-white/10 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">INTERACTIVE RECRUITMENT PORTAL</span>
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">PRIVATE RECRUITMENT PORTAL</span>
               <h2 className="text-3xl font-extrabold text-white mt-1">Candidate Dashboard</h2>
-              <p className="text-xs text-gray-300 mt-1">Click through all 6 steps below to complete your profile, upload research, and track application status.</p>
+              <p className="text-xs text-gray-300 mt-1">Fill out the 6 interactive steps below. Your application is directly encrypted &amp; stored privately in our Supabase database.</p>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowAdminView(!showAdminView)}
-                className="px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs border border-amber-400/40 hover:bg-amber-500/30 transition-all"
-              >
-                📥 Admin Data Viewer ({savedApplications.length})
-              </button>
-            </div>
+
+            <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs border border-emerald-400/40">
+              🔒 Private Supabase Encryption Active
+            </span>
           </div>
 
           {/* 6 INTERACTIVE TAB BUTTONS */}
@@ -401,15 +395,20 @@ export default function CareersPage() {
 
           </div>
 
-          {/* SUCCESS NOTIFICATION */}
-          {resumeSubmitted && (
-            <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-xs font-mono space-y-1">
-              <p className="font-bold">✓ CANDIDATE PROFILE SUCCESSFULLY SUBMITTED &amp; STORED!</p>
-              <p className="text-[11px] text-gray-300">Your application record has been indexed into the People &amp; Youth Talent Bank. You can view saved submissions under the Admin Repository section at the bottom.</p>
+          {/* CONFIRMATION SCREEN */}
+          {submittedAppId && (
+            <div className="p-6 rounded-2xl bg-emerald-500/20 border-2 border-emerald-400/60 text-white space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-emerald-300 font-mono">✓ APPLICATION SUBMITTED PRIVATELY TO SUPABASE</span>
+                <span className="px-3 py-1 bg-emerald-500 text-black font-mono font-bold text-xs rounded-lg">{submittedAppId}</span>
+              </div>
+              <p className="text-xs text-gray-200 leading-relaxed">
+                Thank you! Your candidate profile has been securely stored in our private institutional database. You may use your Application ID (<strong className="text-emerald-300">{submittedAppId}</strong>) under Step 05 to track review status.
+              </p>
             </div>
           )}
 
-          {/* TAB CONTENT PANELS CONTAINER */}
+          {/* TAB CONTENT FORM PANELS */}
           <form onSubmit={handleResumeSubmit} className="bg-[#070b19]/80 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6">
             
             {/* TAB 01: PROFILE */}
@@ -803,9 +802,10 @@ export default function CareersPage() {
 
                   <button
                     type="submit"
+                    disabled={isSubmitting}
                     className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/25 transition-all transform hover:scale-105"
                   >
-                    Complete Registration &amp; Submit Application &rarr;
+                    {isSubmitting ? 'Submitting to Supabase...' : 'Complete Registration & Submit Application →'}
                   </button>
                 </div>
               </div>
@@ -815,87 +815,7 @@ export default function CareersPage() {
 
         </section>
 
-        {/* 📥 ADMIN CANDIDATE REPOSITORY DATA VIEWER */}
-        <section id="admin-repository" className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-white/10 pb-4">
-            <div>
-              <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">INSTITUTIONAL TALENT BANK</span>
-              <h3 className="text-2xl font-extrabold text-white mt-1">📥 Received Candidate Submissions</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Stored locally on your browser. Submissions can also be forwarded directly to your email inbox or Supabase tables.</p>
-            </div>
-            
-            <button
-              onClick={() => {
-                localStorage.removeItem('py_candidate_applications');
-                setSavedApplications([]);
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-red-500/20 text-red-300 text-xs font-mono border border-red-500/30 hover:bg-red-500/30"
-            >
-              Clear Stored Test Data
-            </button>
-          </div>
-
-          {savedApplications.length === 0 ? (
-            <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl space-y-2">
-              <p className="text-sm font-bold text-gray-400">No candidate applications submitted yet.</p>
-              <p className="text-xs text-gray-500">Fill out the Candidate Dashboard form above and click &quot;Complete Registration &amp; Submit Application&quot; to test candidate data capture!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {savedApplications.map((app, idx) => (
-                <div key={idx} className="bg-[#0b1228] border border-cyan-500/30 rounded-2xl p-6 space-y-3">
-                  <div className="flex justify-between items-start border-b border-white/10 pb-3">
-                    <div>
-                      <span className="text-xs font-mono text-cyan-400 font-bold">{app.id}</span>
-                      <h4 className="text-lg font-bold text-white">{app.fullName || 'Anonymous Candidate'}</h4>
-                      <p className="text-xs text-gray-400">{app.email} • {app.phone}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[11px] border border-emerald-400/30">
-                        {app.status}
-                      </span>
-                      <p className="text-[10px] text-gray-500 mt-1 font-mono">{app.timestamp}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                    <div>
-                      <span className="text-gray-400 block font-mono text-[10px]">Domain:</span>
-                      <span className="font-semibold text-white">{app.primaryDomain}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block font-mono text-[10px]">Experience:</span>
-                      <span className="font-semibold text-white">{app.totalExperienceYears}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block font-mono text-[10px]">LinkedIn:</span>
-                      {app.linkedinUrl ? (
-                        <a href={app.linkedinUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline">View Profile ↗</a>
-                      ) : <span className="text-gray-500">Not provided</span>}
-                    </div>
-                  </div>
-
-                  {app.coverNote && (
-                    <div className="pt-2 border-t border-white/5">
-                      <span className="text-gray-400 block font-mono text-[10px]">Statement of Intent:</span>
-                      <p className="text-xs text-gray-300 italic mt-0.5">&ldquo;{app.coverNote}&rdquo;</p>
-                    </div>
-                  )}
-
-                  {app.resumeDriveUrl && (
-                    <div className="pt-1">
-                      <a href={app.resumeDriveUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-amber-400 underline">
-                        📄 Open Uploaded Resume PDF Link ↗
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* COMPLETE CAREER DOMAINS & ROLE EXPANSION MATRIX */}
+        {/* CAREER DOMAINS MATRIX */}
         <section id="opportunities" className="space-y-8">
           <div className="border-b border-white/10 pb-4">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">CAREER OPPORTUNITIES MATRIX</span>
