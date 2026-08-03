@@ -1,316 +1,303 @@
-﻿"use client";
+﻿'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "members" | "articles" | "payments">("overview");
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+export default function AdminPage() {
+  const [passkey, setPasskey] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [passports, setPassports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedTab, setSelectedTab] = useState<'applications' | 'passports'>('applications');
+  const [filterDomain, setFilterDomain] = useState<string>('All');
 
-  const fetchData = async () => {
-    setLoading(true);
+  // Hardcoded Admin Key (Change this or use env variable)
+  const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_PASSKEY || 'py_admin_2026';
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passkey === ADMIN_KEY) {
+      setIsAuthenticated(true);
+      fetchAdminData();
+    } else {
+      alert('Invalid Admin Passkey');
+    }
+  };
+
+  const fetchAdminData = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/admin/data");
-      const result = await res.json();
-      setData(result);
+      // Fetch Candidate Applications
+      const { data: appsData, error: appsError } = await supabase
+        .from('candidate_applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (appsData) setApplications(appsData);
+      if (appsError) console.error('Apps Fetch Error:', appsError);
+
+      // Fetch Civic Passports
+      const { data: passData, error: passError } = await supabase
+        .from('civic_passports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (passData) setPassports(passData);
+      if (passError) console.error('Passports Fetch Error:', passError);
     } catch (err) {
-      console.error(err);
+      console.error('Fetch Error:', err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const updateStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase
+      .from('candidate_applications')
+      .update({ status: newStatus })
+      .eq('id', id);
 
-  const handleArticleAction = async (articleId: string, status: "approved" | "rejected") => {
-    try {
-      const res = await fetch("/api/admin/article", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ articleId, status }),
-      });
-      if (res.ok) {
-        fetchData();
-      }
-    } catch (err) {
-      console.error(err);
+    if (!error) {
+      setApplications(applications.map(a => a.id === id ? { ...a, status: newStatus } : a));
+    } else {
+      alert('Failed to update status');
     }
   };
 
-  if (loading) {
+  const filteredApps = filterDomain === 'All' 
+    ? applications 
+    : applications.filter(a => a.primary_domain === filterDomain);
+
+  if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <div className="text-cyan-400 font-mono animate-pulse text-sm">
-          Loading Administrative Control Panel...
+      <main className="min-h-screen bg-[#070b19] text-white flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white/5 border border-cyan-500/40 rounded-3xl p-8 space-y-6 shadow-2xl backdrop-blur-xl">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">RESTRICTED ACCESS</span>
+            <h1 className="text-2xl font-extrabold text-white">Institutional Control Panel</h1>
+            <p className="text-xs text-gray-400">Enter administrator passkey to access candidate database &amp; passport ledgers.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Admin Passkey</label>
+              <input
+                type="password"
+                value={passkey}
+                onChange={e => setPasskey(e.target.value)}
+                placeholder="Enter passkey (default: py_admin_2026)"
+                className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500 font-mono"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all"
+            >
+              Authenticate &amp; Open Dashboard &rarr;
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <Link href="/" className="text-xs text-gray-500 hover:text-cyan-400 font-mono">← Back to Public Website</Link>
+          </div>
         </div>
       </main>
     );
   }
 
-  const filteredProfiles = data?.profiles?.filter((p: any) =>
-    (p.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.membership_id || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Top Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-          <div>
-            <div className="flex items-center space-x-3">
-              <Link href="/" className="text-xs font-mono text-cyan-400 hover:underline">
-                &larr; Return to Main Platform
-              </Link>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-2">
-              Institutional Admin Dashboard
-            </h1>
-            <p className="text-xs text-slate-400 font-mono mt-1">
-              SOVEREIGN CONTROL &amp; AUDIT MONITOR
+    <main className="min-h-screen bg-[#070b19] text-white p-6 sm:p-10 space-y-8">
+      
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
+        <div>
+          <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">ADMINISTRATIVE DASHBOARD</span>
+          <h1 className="text-3xl font-extrabold text-white mt-1">People &amp; Youth Control Center</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Managing private Supabase candidate records &amp; issued Civic Passports.</p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={fetchAdminData}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono border border-white/10"
+          >
+            🔄 Refresh Data
+          </button>
+          <button
+            onClick={() => setIsAuthenticated(false)}
+            className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-mono border border-red-500/30"
+          >
+            🔒 Lock Session
+          </button>
+        </div>
+      </div>
+
+      {/* METRICS OVERVIEW */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <span className="text-xs font-mono text-gray-400 block">Total Candidate Submissions</span>
+          <span className="text-3xl font-extrabold text-cyan-400 mt-1 block">{applications.length}</span>
+        </div>
+        <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <span className="text-xs font-mono text-gray-400 block">Civic Passports Issued</span>
+          <span className="text-3xl font-extrabold text-amber-400 mt-1 block">{passports.length}</span>
+        </div>
+        <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <span className="text-xs font-mono text-gray-400 block">Under Review</span>
+          <span className="text-3xl font-extrabold text-emerald-400 mt-1 block">
+            {applications.filter(a => a.status === 'Under Review').length}
+          </span>
+        </div>
+        <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <span className="text-xs font-mono text-gray-400 block">Shortlisted / Interviewed</span>
+          <span className="text-3xl font-extrabold text-blue-400 mt-1 block">
+            {applications.filter(a => a.status === 'Shortlisted' || a.status === 'Interview Scheduled').length}
+          </span>
+        </div>
+      </div>
+
+      {/* TAB SELECTOR */}
+      <div className="flex gap-4 border-b border-white/10 pb-3">
+        <button
+          onClick={() => setSelectedTab('applications')}
+          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            selectedTab === 'applications' ? 'bg-cyan-500 text-black' : 'bg-white/5 text-gray-300 hover:bg-white/10'
+          }`}
+        >
+          Candidate Applications ({applications.length})
+        </button>
+        <button
+          onClick={() => setSelectedTab('passports')}
+          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            selectedTab === 'passports' ? 'bg-cyan-500 text-black' : 'bg-white/5 text-gray-300 hover:bg-white/10'
+          }`}
+        >
+          Civic Passport Holders ({passports.length})
+        </button>
+      </div>
+
+      {/* APPLICATIONS PANEL */}
+      {selectedTab === 'applications' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-mono text-gray-400">Filter by Domain:</span>
+            <select
+              value={filterDomain}
+              onChange={e => setFilterDomain(e.target.value)}
+              className="bg-[#0b1228] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+            >
+              <option value="All">All Domains</option>
+              <option value="Public Policy & Governance">Public Policy &amp; Governance</option>
+              <option value="Research & Empirical Analytics">Research &amp; Empirical Analytics</option>
+              <option value="Technology & AI Engineering">Technology &amp; AI Engineering</option>
+              <option value="Editorial & Journalism">Editorial &amp; Journalism</option>
+            </select>
+          </div>
+
+          {isLoading ? (
+            <p className="text-xs font-mono text-cyan-400">Loading Supabase records...</p>
+          ) : filteredApps.length === 0 ? (
+            <p className="text-xs text-gray-500 py-8 text-center border border-dashed border-white/10 rounded-2xl">
+              No candidate submissions found in database.
             </p>
-          </div>
-
-          <div className="flex items-center space-x-2 bg-slate-900 p-1.5 rounded-xl border border-white/10 text-xs">
-            {(["overview", "members", "articles", "payments"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all uppercase text-[11px] font-mono ${
-                  activeTab === tab
-                    ? "bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* METRICS OVERVIEW */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass-card p-6 rounded-2xl border border-white/5">
-            <div className="text-xs font-mono text-slate-400 uppercase">Total Revenue</div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-cyan-400 mt-2">
-              &#8377;{data?.metrics?.totalRevenue || 0}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-1">Razorpay Verified Settlements</div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border border-white/5">
-            <div className="text-xs font-mono text-slate-400 uppercase">Founding Members</div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-2">
-              {data?.metrics?.verifiedFounders || 0}
-            </div>
-            <div className="text-[10px] text-emerald-400 mt-1">&#10003; Dissent Cards Generated</div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border border-white/5">
-            <div className="text-xs font-mono text-slate-400 uppercase">Total Accounts</div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-2">
-              {data?.metrics?.totalMembers || 0}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-1">Authenticated Auth Sessions</div>
-          </div>
-
-          <div className="glass-card p-6 rounded-2xl border border-white/5">
-            <div className="text-xs font-mono text-slate-400 uppercase">Pending Papers</div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-2">
-              {data?.metrics?.pendingArticles || 0}
-            </div>
-            <div className="text-[10px] text-amber-300 mt-1">Awaiting Think Tank Review</div>
-          </div>
-        </div>
-
-        {/* TAB 1: OVERVIEW SUMMARY */}
-        {activeTab === "overview" && (
-          <div className="glass-panel p-8 rounded-3xl border border-cyan-500/20 space-y-6">
-            <h3 className="text-lg font-bold text-white">System Status Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-              <div className="space-y-3">
-                <div className="flex justify-between p-3 rounded-xl bg-slate-900 border border-white/5">
-                  <span className="text-slate-400">Database Engine</span>
-                  <span className="text-emerald-400 font-mono font-bold">Supabase PostgreSQL Connected</span>
-                </div>
-                <div className="flex justify-between p-3 rounded-xl bg-slate-900 border border-white/5">
-                  <span className="text-slate-400">Payment Gateway</span>
-                  <span className="text-cyan-400 font-mono font-bold">Razorpay API Route Online</span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between p-3 rounded-xl bg-slate-900 border border-white/5">
-                  <span className="text-slate-400">Debate Engine</span>
-                  <span className="text-cyan-400 font-mono font-bold">Dissent Dias Protocol Active</span>
-                </div>
-                <div className="flex justify-between p-3 rounded-xl bg-slate-900 border border-white/5">
-                  <span className="text-slate-400">Verification Engine</span>
-                  <span className="text-emerald-400 font-mono font-bold">QR Server Dynamic Renderer Active</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: MEMBERS DIRECTORY */}
-        {activeTab === "members" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <input
-                type="text"
-                placeholder="Search by Name, Email, or Member ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full max-w-md px-4 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white text-sm focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-
-            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-900 border-b border-white/10 font-mono text-slate-400 uppercase">
-                    <tr>
-                      <th className="p-4">Member Name</th>
-                      <th className="p-4">Email Address</th>
-                      <th className="p-4">Membership ID</th>
-                      <th className="p-4">Founding Member</th>
-                      <th className="p-4">Card Link</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {filteredProfiles?.map((member: any) => (
-                      <tr key={member.id} className="hover:bg-slate-900/50 transition-colors">
-                        <td className="p-4 font-semibold text-white">{member.full_name || "N/A"}</td>
-                        <td className="p-4 text-slate-300 font-mono">{member.email}</td>
-                        <td className="p-4 font-mono text-cyan-400">{member.membership_id || "Unassigned"}</td>
-                        <td className="p-4">
-                          {member.is_founding_member ? (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800">
-                              VERIFIED (&#8377;{member.amount_paid})
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-slate-800 text-slate-400">
-                              Standard User
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          {member.membership_id && (
-                            <Link
-                              href={`/verify/${member.membership_id}`}
-                              target="_blank"
-                              className="text-cyan-400 hover:underline font-mono"
-                            >
-                              View Card &rarr;
-                            </Link>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: ARTICLE APPROVALS */}
-        {activeTab === "articles" && (
-          <div className="space-y-4">
-            {data?.articles?.length === 0 ? (
-              <div className="glass-panel p-12 text-center rounded-2xl text-slate-400 text-sm">
-                No policy submissions pending review.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {data?.articles?.map((article: any) => (
-                  <div key={article.id} className="glass-card p-6 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-1 max-w-2xl">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded">
-                          {article.category}
-                        </span>
-                        <span className="text-xs text-slate-400">By {article.author_name} ({article.author_email})</span>
-                      </div>
-                      <h4 className="text-base font-bold text-white">{article.title}</h4>
-                      <p className="text-xs text-slate-300">{article.abstract}</p>
+          ) : (
+            <div className="space-y-4">
+              {filteredApps.map((app) => (
+                <div key={app.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 hover:border-cyan-500/40 transition-all">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-3">
+                    <div>
+                      <span className="text-xs font-mono text-cyan-400 font-bold">{app.app_id}</span>
+                      <h3 className="text-lg font-bold text-white">{app.full_name}</h3>
+                      <p className="text-xs text-gray-400">{app.email} • {app.phone || 'No phone'}</p>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      {article.status === "pending" ? (
-                        <>
-                          <button
-                            onClick={() => handleArticleAction(article.id, "approved")}
-                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
-                          >
-                            Approve &amp; Publish
-                          </button>
-                          <button
-                            onClick={() => handleArticleAction(article.id, "rejected")}
-                            className="px-4 py-2 rounded-xl bg-red-900 hover:bg-red-800 text-white font-bold text-xs"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      ) : (
-                        <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase ${
-                          article.status === "approved" ? "bg-emerald-950 text-emerald-300 border border-emerald-800" : "bg-red-950 text-red-300 border border-red-800"
-                        }`}>
-                          {article.status}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-gray-400">Status:</span>
+                      <select
+                        value={app.status || 'Under Review'}
+                        onChange={e => updateStatus(app.id, e.target.value)}
+                        className="bg-[#0b1228] border border-cyan-500/50 rounded-xl px-3 py-1.5 text-xs text-cyan-300 font-mono font-bold"
+                      >
+                        <option value="Under Review">Under Review</option>
+                        <option value="Shortlisted">Shortlisted</option>
+                        <option value="Interview Scheduled">Interview Scheduled</option>
+                        <option value="Onboarded">Onboarded</option>
+                        <option value="Archived">Archived</option>
+                      </select>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* TAB 4: TRANSACTIONS */}
-        {activeTab === "payments" && (
-          <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 border-b border-white/10 font-mono text-slate-400 uppercase">
-                  <tr>
-                    <th className="p-4">Customer Email</th>
-                    <th className="p-4">Razorpay Order ID</th>
-                    <th className="p-4">Payment ID</th>
-                    <th className="p-4">Amount</th>
-                    <th className="p-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {data?.profiles
-                    ?.filter((p: any) => p.payment_status === "completed")
-                    ?.map((pay: any) => (
-                      <tr key={pay.id} className="hover:bg-slate-900/50">
-                        <td className="p-4 font-semibold text-white">{pay.email}</td>
-                        <td className="p-4 font-mono text-slate-400">{pay.razorpay_order_id || "N/A"}</td>
-                        <td className="p-4 font-mono text-cyan-400">{pay.razorpay_payment_id || "N/A"}</td>
-                        <td className="p-4 font-bold text-emerald-400">&#8377;{pay.amount_paid}</td>
-                        <td className="p-4">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800">
-                            SETTLED
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+                    <div>
+                      <span className="text-gray-500 block font-mono text-[10px]">Domain:</span>
+                      <span className="font-semibold text-white">{app.primary_domain}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block font-mono text-[10px]">Experience:</span>
+                      <span className="font-semibold text-white">{app.total_experience_years || 'Fresher'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block font-mono text-[10px]">LinkedIn:</span>
+                      {app.linkedin_url ? (
+                        <a href={app.linkedin_url} target="_blank" rel="noreferrer" className="text-cyan-400 underline">View Profile ↗</a>
+                      ) : <span className="text-gray-600">None</span>}
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block font-mono text-[10px]">Resume Link:</span>
+                      {app.resume_drive_url ? (
+                        <a href={app.resume_drive_url} target="_blank" rel="noreferrer" className="text-amber-400 font-bold underline">Open Resume PDF ↗</a>
+                      ) : <span className="text-gray-600">None</span>}
+                    </div>
+                  </div>
+
+                  {app.cover_note && (
+                    <div className="bg-[#0b1228] p-3 rounded-xl border border-white/5 text-xs text-gray-300">
+                      <span className="text-gray-500 block font-mono text-[10px] mb-1">Statement of Intent:</span>
+                      &ldquo;{app.cover_note}&rdquo;
+                    </div>
+                  )}
+
+                  <div className="text-[10px] font-mono text-gray-500 text-right">
+                    Submitted on: {new Date(app.created_at).toLocaleString()}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-      </div>
+      {/* PASSPORTS PANEL */}
+      {selectedTab === 'passports' && (
+        <div className="space-y-4">
+          {passports.length === 0 ? (
+            <p className="text-xs text-gray-500 py-8 text-center border border-dashed border-white/10 rounded-2xl">
+              No Civic Passports issued yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {passports.map((pass) => (
+                <div key={pass.id} className="bg-white/5 border border-amber-500/30 rounded-2xl p-5 space-y-2">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span className="text-xs font-mono font-bold text-cyan-400">{pass.passport_id}</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
+                      {pass.status}
+                    </span>
+                  </div>
+                  <h4 className="text-base font-bold text-white">{pass.holder_name}</h4>
+                  <p className="text-xs text-gray-400">{pass.email} • {pass.phone || 'N/A'}</p>
+                  <p className="text-[11px] text-gray-500 font-mono">Payment ID: {pass.payment_id} ({pass.amount_paid})</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
     </main>
   );
 }
