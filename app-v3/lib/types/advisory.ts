@@ -13,18 +13,6 @@ export interface PolicyDirective {
   enacted_at: string;
 }
 
-export interface CouncilMember {
-  id: string;
-  full_name: string;
-  role_title: string;
-  division_slug: string;
-  passport_id: string;
-  email: string;
-  bio: string;
-  avatar_url: string;
-  is_emeritus: boolean;
-}
-
 export interface AdvisoryDivision {
   id: string;
   slug: string;
