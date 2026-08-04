@@ -1,84 +1,30 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Playfair_Display, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-});
-
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-});
+﻿import type { Metadata, Viewport } from 'next';
+import '@/app/globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://peopleandyouth.org"),
+  title: 'People & Youth — Sovereign Digital Institution',
+  description: 'Empowering youth leadership, empirical research, and constitutional transparency.',
+};
 
-  title: {
-    default: "People & Youth",
-    template: "%s | People & Youth",
-  },
-
-  description:
-    "At the Heart of Change 💙. India's youth-led digital institution for public policy, entrepreneurship, civic leadership and rural transformation.",
-
-  keywords: [
-    "People and Youth",
-    "VNJCM",
-    "Public Policy",
-    "Dissent Dias",
-    "Think Tank",
-    "Youth",
-    "India",
-    "Rural Development",
-    "Startup",
-    "Leadership",
-  ],
-
-  authors: [{ name: "People & Youth" }],
-
-  openGraph: {
-    title: "People & Youth",
-    description:
-      "Leading Youth Towards Praxis.",
-    url: "https://peopleandyouth.org",
-    siteName: "People & Youth",
-    images: [
-      {
-        url: "/images/profile picture.jpg",
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "en_IN",
-    type: "website",
-  },
-
-  twitter: {
-    card: "summary_large_image",
-    title: "People & Youth",
-    description: "At the Heart of Change 💙",
-    images: ["/images/profile picture.jpg"],
-  },
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#070b19',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${jakarta.variable} ${playfair.variable} ${mono.variable}`}
-      >
-        {children}
+    <html lang="en" className="dark overflow-x-hidden">
+      <body className="bg-[#070b19] text-white antialiased min-h-screen w-full overflow-x-hidden selection:bg-cyan-500 selection:text-black">
+        <div className="relative w-full max-w-full overflow-x-hidden flex flex-col min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );
