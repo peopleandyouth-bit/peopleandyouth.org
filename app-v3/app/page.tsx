@@ -12,17 +12,18 @@ const FACEBOOK_URL = "https://www.facebook.com/share/1ZGB3ZQKqE/";
 const YOUTUBE_URL = "https://www.youtube.com/@peopleandyouth";
 const INSTAGRAM_URL = "https://www.instagram.com/peopleandyouth";
 
-// INSTITUTIONAL DIRECTORY FOR QUICK SEARCH
+// INSTITUTIONAL SYSTEM DIRECTORY FOR JUMP SEARCH
 const SYSTEM_DIRECTORY = [
+  { title: "About Mandate & Charter", route: "/about", desc: "VNJCM identity, 3 civic pillars, 17 Knowledge Caves, & institutional mandate", category: "Mandate" },
   { title: "Supreme Constitution (Volume I)", route: "/constitution", desc: "Founding charter, vision, core values, & civilizational philosophy", category: "Governance" },
   { title: "Careers & Candidate Portal", route: "/careers", desc: "6-step application, 17 domains, district mandates, & ambassador framework", category: "Talent" },
-  { title: "Renaissance Policy Journals", route: "/submit-paper", desc: "Open-access peer-review portal for 11 journals & 17 Knowledge Caves", category: "Research" },
-  { title: "Rural Governance & Advisory", route: "/rural-consulting", desc: "Panchayati Raj technical assistance, municipal audits, & leadership labs", category: "Consulting" },
+  { title: "Renaissance Policy Journals", route: "/submit-paper", desc: "Open-access peer-review portal for 14 journals & 17 Knowledge Caves", category: "Research" },
+  { title: "Advisory & Governance Consulting", route: "/rural-consulting", desc: "Municipal performance audits, Panchayati Raj assistance, & public policy strategy", category: "Advisory" },
   { title: "Universal OS Dashboard", route: "/dashboard", desc: "Central digital HQ, Civic Impact Score ledger, & volunteer tracking", category: "Platform OS" },
   { title: "Public Profiles & Passports", route: "/profile/swarajshandilya", desc: "Sovereign credential cards, verified research, & skills ledger", category: "Identity" },
   { title: "Department Workspaces", route: "/departments/research", desc: "Kanban task boards & project management across 15+ departments", category: "Workspaces" },
-  { title: "Private Admin Control Panel", route: "/admin", desc: "Passkey-protected candidate application & passport ledger manager", category: "Admin" },
-  { title: "About Mandate & Civic Passport", route: "/about", desc: "3D interactive card, ₹499 Razorpay verification, & institutional charter", category: "Charter" },
+  { title: "Private Admin Control Panel & CIMS", route: "/admin/cims", desc: "Passkey-protected CIMS control center & candidate application manager", category: "Admin" },
+  { title: "Dissent Dias Editorial Platform", route: "/dissent-dias", desc: "Long-form essays, policy critiques, youth voices, & public debates", category: "Editorial" },
 ];
 
 export default function HomePage() {
@@ -85,12 +86,13 @@ export default function HomePage() {
 
           {/* TOP NAV LINKS */}
           <nav className="hidden xl:flex items-center gap-5 text-xs font-mono tracking-tight text-gray-300">
+            <Link href="/about" className="hover:text-cyan-300 transition-colors text-cyan-400 font-bold">🏛️ About Mandate</Link>
             <Link href="/constitution" className="hover:text-amber-300 transition-colors text-amber-400 font-bold">📜 Constitution</Link>
-            <Link href="/careers" className="hover:text-cyan-300 transition-colors text-cyan-400 font-bold">💼 Careers</Link>
+            <Link href="/careers" className="hover:text-cyan-300 transition-colors text-cyan-300 font-bold">💼 Careers</Link>
             <Link href="/submit-paper" className="hover:text-white transition-colors">🔬 Journals</Link>
-            <Link href="/rural-consulting" className="hover:text-white transition-colors">🌾 Rural Advisory</Link>
+            <Link href="/rural-consulting" className="hover:text-emerald-300 text-emerald-400 font-bold transition-colors">🏛️ Advisory</Link>
             <Link href="/dashboard" className="hover:text-white transition-colors">🖥️ OS HQ</Link>
-            <Link href="/admin" className="hover:text-white transition-colors">🔒 Admin</Link>
+            <Link href="/admin/cims" className="hover:text-white transition-colors">🔒 CIMS Admin</Link>
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">
@@ -108,8 +110,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO & SEARCH ENGINE SECTION */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-16">
+      {/* MAIN CONTAINER */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-20">
         
         {/* HERO BANNER */}
         <section className="text-center space-y-6 max-w-4xl mx-auto pt-4">
@@ -128,14 +130,14 @@ export default function HomePage() {
             India&apos;s sovereign digital platform for public policy research, empirical governance audits, constitutional literacy, and decentralized civic leadership.
           </p>
 
-          {/* REAL-TIME INSTITUTIONAL SEARCH BAR */}
+          {/* REAL-TIME DIRECTORY SEARCH BAR */}
           <div className="max-w-2xl mx-auto pt-2 relative">
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="🔎 Direct Jump Search: Type 'Careers', 'Constitution', 'Admin', 'RTI'..."
+                placeholder="🔎 Direct Jump Search: Type 'Mandate', 'Constitution', 'Advisory', 'Careers'..."
                 className="w-full bg-[#0b1228] border-2 border-cyan-500/50 focus:border-cyan-400 rounded-2xl px-5 py-4 text-white text-sm focus:outline-none shadow-2xl font-mono"
               />
               {searchQuery && (
@@ -148,7 +150,7 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* SEARCH RESULTS DROPDOWN */}
+            {/* SEARCH DROPDOWN */}
             {filteredDirectory.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-[#070b19] border-2 border-cyan-400 rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto text-left p-2 space-y-1 backdrop-blur-2xl">
                 {filteredDirectory.map((item, idx) => (
@@ -171,11 +173,54 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* EMBEDDED ASK PEOPLE & YOUTH AI BOX */}
+        {/* FRONT-PAGE SECTION: ABOUT OUR INSTITUTIONAL MANDATE */}
+        <section className="bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border-2 border-cyan-500/40 rounded-3xl p-8 sm:p-12 space-y-8 shadow-2xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6">
+            <div>
+              <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block font-bold">FOUNDING CHARTER &amp; HERITAGE</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1">About the Institutional Mandate</h2>
+              <p className="text-xs text-cyan-300 font-mono mt-1">Vidyarthi Nagrik Jan Chetna Manch (VNJCM) • People &amp; Youth</p>
+            </div>
+            <Link
+              href="/about"
+              className="px-6 py-3 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/30 transition-all shrink-0"
+            >
+              Explore Full Mandate &amp; Caves &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
+              <span className="text-2xl">🏛️</span>
+              <h3 className="font-bold text-white text-base">Civic Knowledge Institution</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Founded to bridge empirical research with public accountability, empowering youth through constitutional literacy and grassroots policy audits.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
+              <span className="text-2xl">🏔️</span>
+              <h3 className="font-bold text-white text-base">Mountain Ranges &amp; Caves</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Organized into 4 overarching Mountain Ranges encompassing 17 specialized Knowledge Caves spanning Governance, Trade, RTI, and Artificial Intelligence.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
+              <span className="text-2xl">💳</span>
+              <h3 className="font-bold text-white text-base">Sovereign Civic Passport</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                A lifetime digital identity credential verified via QR code, granting verified fellows access to publications, research grants, and district leadership drives.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* EMBEDDED ASK PEOPLE & YOUTH AI ASSISTANT BOX */}
         <section className="max-w-3xl mx-auto bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
           <div className="flex justify-between items-center border-b border-white/10 pb-3">
             <div>
-              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block font-bold">INSTITUTIONAL SEARCH ENGINE</span>
+              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block font-bold">INSTITUTIONAL RAG ENGINE</span>
               <h3 className="text-lg font-bold text-white">Ask People &amp; Youth AI</h3>
             </div>
             <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-mono rounded-full">
@@ -208,16 +253,29 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* MASTER SHOWCASE GRID (ALL 10 MAJOR DEVELOPMENTS) */}
+        {/* MASTER SHOWCASE GRID (ALL PLATFORM MODULES) */}
         <section className="space-y-6">
           <div className="text-center space-y-2">
-            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">COMPLETE PLATFORM MAP</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Explore All Platform Modules</h2>
+            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">COMPLETE PLATFORM ARCHITECTURE</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Explore Institutional Modules</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* 1. CONSTITUTION */}
+            {/* 1. ABOUT MANDATE */}
+            <Link href="/about" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">🏛️</span>
+                <span className="text-[10px] font-mono uppercase bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/30">Mandate</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">About Mandate &amp; Showcase</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Learn about Vidyarthi Nagrik Jan Chetna Manch (VNJCM), inspect our 3D Civic Passport card, and view Knowledge Caves.
+              </p>
+              <span className="text-xs font-mono text-cyan-400 font-bold block">Read Institutional Mandate &rarr;</span>
+            </Link>
+
+            {/* 2. CONSTITUTION */}
             <Link href="/constitution" className="bg-white/5 border border-amber-500/40 hover:border-amber-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">📜</span>
@@ -230,7 +288,7 @@ export default function HomePage() {
               <span className="text-xs font-mono text-amber-400 font-bold block">Open Founding Charter &rarr;</span>
             </Link>
 
-            {/* 2. CAREERS */}
+            {/* 3. CAREERS */}
             <Link href="/careers" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">💼</span>
@@ -243,11 +301,11 @@ export default function HomePage() {
               <span className="text-xs font-mono text-cyan-400 font-bold block">Apply to Open Roles &rarr;</span>
             </Link>
 
-            {/* 3. RESEARCH */}
+            {/* 4. RENAISSANCE PUBLICATIONS */}
             <Link href="/submit-paper" className="bg-white/5 border border-blue-500/40 hover:border-blue-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">🔬</span>
-                <span className="text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-400/30">11 Journals</span>
+                <span className="text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-400/30">14 Journals</span>
               </div>
               <h3 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">Policy Publications</h3>
               <p className="text-xs text-gray-300 leading-relaxed">
@@ -256,20 +314,33 @@ export default function HomePage() {
               <span className="text-xs font-mono text-blue-400 font-bold block">Submit Policy Paper &rarr;</span>
             </Link>
 
-            {/* 4. RURAL CONSULTING */}
+            {/* 5. BROADENED ADVISORY */}
             <Link href="/rural-consulting" className="bg-white/5 border border-emerald-500/40 hover:border-emerald-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
-                <span className="text-3xl">🌾</span>
-                <span className="text-[10px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30">Advisory</span>
+                <span className="text-3xl">🏛️</span>
+                <span className="text-[10px] font-mono uppercase bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-400/30">Broad Umbrella</span>
               </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">Rural Governance</h3>
+              <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">Advisory &amp; Governance</h3>
               <p className="text-xs text-gray-300 leading-relaxed">
-                Panchayati Raj technical assistance, municipal audits, and grassroots district leadership labs.
+                Broad advisory ecosystem: Panchayati Raj technical assistance, municipal audits, public policy strategy, and AI ethics consulting.
               </p>
               <span className="text-xs font-mono text-emerald-400 font-bold block">Request Advisory Partnership &rarr;</span>
             </Link>
 
-            {/* 5. OS DASHBOARD */}
+            {/* 6. DISSENT DIAS */}
+            <Link href="/dissent-dias" className="bg-white/5 border border-purple-500/40 hover:border-purple-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-3xl">✍️</span>
+                <span className="text-[10px] font-mono uppercase bg-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-400/30">Editorial</span>
+              </div>
+              <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">Dissent Dias</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Editorial platform for long-form essays, reasoned critiques, youth voices, and public policy debates.
+              </p>
+              <span className="text-xs font-mono text-purple-400 font-bold block">Read Dissent Dias Essays &rarr;</span>
+            </Link>
+
+            {/* 7. OS DASHBOARD */}
             <Link href="/dashboard" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">🖥️</span>
@@ -282,7 +353,7 @@ export default function HomePage() {
               <span className="text-xs font-mono text-cyan-400 font-bold block">Enter Dashboard HQ &rarr;</span>
             </Link>
 
-            {/* 6. PUBLIC PROFILES */}
+            {/* 8. PUBLIC PROFILES */}
             <Link href="/profile/swarajshandilya" className="bg-white/5 border border-amber-500/40 hover:border-amber-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">👤</span>
@@ -295,43 +366,17 @@ export default function HomePage() {
               <span className="text-xs font-mono text-amber-400 font-bold block">View Public Profile &rarr;</span>
             </Link>
 
-            {/* 7. WORKSPACES */}
-            <Link href="/departments/research" className="bg-white/5 border border-purple-500/40 hover:border-purple-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
-              <div className="flex justify-between items-center">
-                <span className="text-3xl">⚙️</span>
-                <span className="text-[10px] font-mono uppercase bg-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-400/30">Kanban Board</span>
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">Department Workspaces</h3>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Institutional project manager tracking tasks across Editorial, Research, Technology, and Campaigns.
-              </p>
-              <span className="text-xs font-mono text-purple-400 font-bold block">Open Workspace &rarr;</span>
-            </Link>
-
-            {/* 8. ADMIN CONTROL PANEL */}
-            <Link href="/admin" className="bg-white/5 border border-red-500/40 hover:border-red-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
+            {/* 9. CIMS ADMIN */}
+            <Link href="/admin/cims" className="bg-white/5 border border-red-500/40 hover:border-red-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
               <div className="flex justify-between items-center">
                 <span className="text-3xl">🔒</span>
-                <span className="text-[10px] font-mono uppercase bg-red-500/20 text-red-300 px-2.5 py-0.5 rounded-full border border-red-400/30">Passkey Access</span>
+                <span className="text-[10px] font-mono uppercase bg-red-500/20 text-red-300 px-2.5 py-0.5 rounded-full border border-red-400/30">CIMS Control</span>
               </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-red-300 transition-colors">Admin Control Panel</h3>
+              <h3 className="text-lg font-bold text-white group-hover:text-red-300 transition-colors">CIMS Admin Control Panel</h3>
               <p className="text-xs text-gray-300 leading-relaxed">
-                Private dashboard to review candidates, view PDF resumes, update review statuses, and inspect issued passports.
+                Content &amp; Institution Management System dashboard to review candidate applications, manage publications, and inspect logs.
               </p>
-              <span className="text-xs font-mono text-red-400 font-bold block">Authenticate Admin &rarr;</span>
-            </Link>
-
-            {/* 9. CHARTER & PASSPORT */}
-            <Link href="/about" className="bg-white/5 border border-cyan-500/40 hover:border-cyan-400 p-6 rounded-3xl space-y-3 transition-all group shadow-xl">
-              <div className="flex justify-between items-center">
-                <span className="text-3xl">🏛️</span>
-                <span className="text-[10px] font-mono uppercase bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/30">Mandate</span>
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">About Mandate &amp; Showcase</h3>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Learn about Vidyarthi Nagrik Jan Chetna Manch (VNJCM), inspect our 3D Civic Passport card, and view Knowledge Caves.
-              </p>
-              <span className="text-xs font-mono text-cyan-400 font-bold block">Read Institutional Mandate &rarr;</span>
+              <span className="text-xs font-mono text-red-400 font-bold block">Authenticate CIMS &rarr;</span>
             </Link>
 
           </div>
@@ -358,11 +403,12 @@ export default function HomePage() {
             <div className="space-y-3">
               <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Portals &amp; Charters</p>
               <ul className="space-y-2 text-xs text-gray-400 font-mono">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Mandate</Link></li>
+                <li><Link href="/about" className="hover:text-cyan-300 text-cyan-400 font-semibold transition-colors">🏛️ About Mandate</Link></li>
                 <li><Link href="/constitution" className="hover:text-amber-300 text-amber-400 font-semibold transition-colors">📜 Supreme Constitution</Link></li>
                 <li><Link href="/careers" className="hover:text-cyan-300 text-cyan-400 font-semibold transition-colors">💼 Careers &amp; Roles</Link></li>
                 <li><Link href="/submit-paper" className="hover:text-white transition-colors">🔬 Submit Policy Research</Link></li>
-                <li><Link href="/rural-consulting" className="hover:text-white transition-colors">🌾 Rural Advisory</Link></li>
+                <li><Link href="/rural-consulting" className="hover:text-emerald-300 text-emerald-400 font-semibold transition-colors">🏛️ Advisory</Link></li>
+                <li><Link href="/dissent-dias" className="hover:text-white transition-colors">✍️ Dissent Dias</Link></li>
               </ul>
             </div>
 
@@ -372,7 +418,7 @@ export default function HomePage() {
                 <li><Link href="/dashboard" className="hover:text-white transition-colors">🖥️ Universal OS Dashboard</Link></li>
                 <li><Link href="/profile/swarajshandilya" className="hover:text-white transition-colors">👤 Universal Profile</Link></li>
                 <li><Link href="/departments/research" className="hover:text-white transition-colors">⚙️ Workspaces</Link></li>
-                <li><Link href="/admin" className="hover:text-white transition-colors">🔒 Admin Panel</Link></li>
+                <li><Link href="/admin/cims" className="hover:text-white transition-colors">🔒 CIMS Admin Panel</Link></li>
               </ul>
             </div>
 
