@@ -14,7 +14,7 @@ export default function AdminPage() {
   const [filterDomain, setFilterDomain] = useState<string>('All');
 
   // Hardcoded Admin Key (Change this or use env variable)
-  const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_PASSKEY || 'py_admin_2026';
+  const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_PASSKEY || 'peopleandyouth@0007';
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +87,7 @@ export default function AdminPage() {
                 type="password"
                 value={passkey}
                 onChange={e => setPasskey(e.target.value)}
-                placeholder="Enter passkey (default: py_admin_2026)"
+                placeholder="Enter passkey (default: peopleandyouth@0007)"
                 className="w-full bg-[#0b1228] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500 font-mono"
                 required
               />
