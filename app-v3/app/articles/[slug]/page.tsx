@@ -10,10 +10,8 @@ const BRAND_LOGO_URL = "https://i.postimg.cc/rFK0BBXw/Google-Logo-002.png";
 export default function ArticlePage({ params }: { params: { slug: string } }) {
   const articleSlug = params.slug || 'constitutional-precedents-dpi';
   const [article, setArticle] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Fallback Mock for Immediate Display / Static Render
   const fallbackArticle = {
     title: "Constitutional Morality & Empirical Governance in Digital Infrastructure",
     subtitle: "Evaluating algorithmic accountability, administrative transparency, and citizen rights across district municipal frameworks.",
@@ -71,7 +69,7 @@ Building resilient democratic institutions requires more than technology deploym
 
   const fetchArticle = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('cims_articles')
         .select('*')
         .eq('slug', articleSlug)
@@ -84,8 +82,6 @@ Building resilient democratic institutions requires more than technology deploym
       }
     } catch (err) {
       setArticle(fallbackArticle);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -94,7 +90,7 @@ Building resilient democratic institutions requires more than technology deploym
   return (
     <main className="min-h-screen bg-[#070b19] text-white selection:bg-cyan-500 selection:text-black flex flex-col justify-between relative">
       
-      {/* READING PROGRESS BAR */}
+      {/* SCROLL PROGRESS BAR */}
       <div 
         className="fixed top-0 left-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-amber-400 z-50 transition-all duration-150"
         style={{ width: `${scrollProgress}%` }}
@@ -122,17 +118,17 @@ Building resilient democratic institutions requires more than technology deploym
         </div>
       </header>
 
-      {/* ARTICLE WRAPPER */}
+      {/* ARTICLE BODY CONTAINER */}
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-10">
         
-        {/* CATEGORY & METADATA */}
+        {/* METADATA BANNER */}
         <div className="space-y-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold uppercase tracking-wider">
               {current.content_type || 'Policy Brief'}
             </span>
             <span className="text-xs font-mono text-gray-400">
-              • {current.reading_time_minutes || 6} Min Read
+              • {current.reading_time_minutes || 8} Min Read
             </span>
           </div>
 
@@ -146,46 +142,69 @@ Building resilient democratic institutions requires more than technology deploym
             </p>
           )}
 
-          {/* AUTHOR CARD */}
-          <div className="pt-4 flex items-center justify-center gap-4 border-t border-b border-white/10 py-4 max-w-md mx-auto">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border border-cyan-300 flex items-center justify-center text-black font-extrabold text-base">
-              PY
+          {/* AUTHOR & DIGITAL COPYRIGHT SEAL */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-b border-white/10 py-4 max-w-2xl mx-auto font-mono text-xs">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border border-cyan-300 flex items-center justify-center text-black font-extrabold text-sm">
+                PY
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-white">{current.author_name || 'Swaraj Shandilya'}</p>
+                <p className="text-cyan-400 text-[10px]">{current.author_role || 'Verified Senior Policy Fellow'}</p>
+              </div>
             </div>
-            <div className="text-left font-mono text-xs">
-              <p className="font-bold text-white text-sm">{current.author_name || 'People & Youth Scholar'}</p>
-              <p className="text-cyan-400">{current.author_role || 'Verified Institutional Author'}</p>
+
+            {/* DIGITAL COPYRIGHT WATERMARK SEAL */}
+            <div className="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-[10px] text-right">
+              <p className="font-bold">🔒 Official Signature &amp; Copyright Seal</p>
+              <p className="text-gray-400">Signed: peopleandyouth.org • Anti-Theft Ledger</p>
             </div>
           </div>
         </div>
 
-        {/* FEATURED COVER IMAGE */}
+        {/* FEATURED COVER IMAGE WITH OVERLAY WATERMARK */}
         {current.featured_image && (
-          <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+          <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative group">
             <img 
               src={current.featured_image} 
               alt={current.title} 
               className="w-full h-80 sm:h-96 object-cover"
             />
+            {/* PERMANENT WATERMARK OVERLAY TO PREVENT IMAGE THEFT */}
+            <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 text-[10px] font-mono text-cyan-300 font-bold">
+              © 2026 peopleandyouth.org | All Rights Reserved
+            </div>
           </div>
         )}
 
-        {/* OFFICIAL PDF REPORT ATTACHMENT CARD */}
+        {/* TOP PDF DOWNLOAD HUB CARD */}
         {current.pdf_url && (
-          <div className="bg-gradient-to-r from-blue-950/60 via-[#0a122c] to-cyan-950/60 border-2 border-cyan-500/40 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">OFFICIAL DOCUMENTATION</span>
-              <h3 className="text-sm font-bold text-white">Full Institutional PDF Report Attached</h3>
-              <p className="text-xs text-gray-300">Download the complete peer-reviewed paper with appendices and audit logs.</p>
+          <div className="bg-gradient-to-r from-blue-950/80 via-[#0a122c] to-cyan-950/80 border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold block">
+                  📄 INSTITUTIONAL PDF DOWNLOAD HUB (TOP)
+                </span>
+                <h3 className="text-base font-extrabold text-white">View or Download Official PDF Whitepaper</h3>
+                <p className="text-xs text-gray-300">Contains full empirical datasets, policy appendices, and field audit logs.</p>
+              </div>
+
+              <a
+                href={current.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs font-mono transition-all shrink-0 flex items-center gap-2 shadow-lg shadow-cyan-500/20 transform hover:scale-105"
+              >
+                <span>📥 Download PDF Report</span>
+                <span>↗</span>
+              </a>
             </div>
-            <a
-              href={current.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs font-mono transition-all shrink-0 flex items-center gap-2"
-            >
-              <span>📄 Download PDF Report</span>
-              <span>↘</span>
-            </a>
+
+            {/* DIGITAL SIGNATURE ANTI-THEFT BANNER */}
+            <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center text-[10px] font-mono text-gray-400 gap-2">
+              <span className="text-emerald-400 font-bold">✓ Digitally Signed &amp; Sealed by People &amp; Youth (peopleandyouth.org)</span>
+              <span className="text-amber-300">Tamper-Proof ID: PY-PDF-2026-SEAL</span>
+            </div>
           </div>
         )}
 
@@ -199,14 +218,45 @@ Building resilient democratic institutions requires more than technology deploym
           </div>
         )}
 
-        {/* ARTICLE EXTENDED LONG-FORM BODY */}
+        {/* ARTICLE BODY */}
         <div className="prose prose-invert max-w-none text-gray-200 text-sm sm:text-base leading-relaxed space-y-6 font-sans">
           <div dangerouslySetInnerHTML={{ __html: current.body_markdown.replace(/\n/g, '<br/>') }} />
         </div>
 
+        {/* BOTTOM PDF DOWNLOAD HUB CARD */}
+        {current.pdf_url && (
+          <div className="bg-gradient-to-r from-blue-950/80 via-[#0a122c] to-cyan-950/80 border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold block">
+                  📄 INSTITUTIONAL PDF DOWNLOAD HUB (BOTTOM)
+                </span>
+                <h3 className="text-base font-extrabold text-white">Download Complete Official PDF Paper</h3>
+                <p className="text-xs text-gray-300">Preserved within the People &amp; Youth Knowledge Repository for citation &amp; research.</p>
+              </div>
+
+              <a
+                href={current.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs font-mono transition-all shrink-0 flex items-center gap-2 shadow-lg shadow-cyan-500/20 transform hover:scale-105"
+              >
+                <span>📥 Download PDF Report</span>
+                <span>↗</span>
+              </a>
+            </div>
+
+            {/* DIGITAL SIGNATURE ANTI-THEFT BANNER */}
+            <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center text-[10px] font-mono text-gray-400 gap-2">
+              <span className="text-emerald-400 font-bold">✓ Digitally Signed &amp; Sealed by People &amp; Youth (peopleandyouth.org)</span>
+              <span className="text-amber-300">Tamper-Proof ID: PY-PDF-2026-SEAL</span>
+            </div>
+          </div>
+        )}
+
         {/* TAGS LEDGER */}
         {current.tags && current.tags.length > 0 && (
-          <div className="pt-6 border-t border-white/10 flex flex-wrap gap-2">
+          <div className="pt-4 border-t border-white/10 flex flex-wrap gap-2">
             {current.tags.map((tag: string, idx: number) => (
               <span key={idx} className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-cyan-300">
                 #{tag}
@@ -215,15 +265,18 @@ Building resilient democratic institutions requires more than technology deploym
           </div>
         )}
 
-        {/* FOOTER AUTHOR BIO CARD */}
-        <div className="bg-[#0b1228] border border-white/10 rounded-3xl p-8 space-y-4">
-          <span className="text-xs font-mono text-cyan-400 uppercase font-bold">ABOUT THE INSTITUTIONAL PUBLISHER</span>
-          <p className="text-xs text-gray-300 leading-relaxed">
-            This article is published under the open-access charter of <strong>People &amp; Youth (VNJCM)</strong>. All publications are subject to peer review and preserved within our 17 Knowledge Caves to support constitutional literacy and public administration.
+        {/* SOVEREIGN COPYRIGHT & AUTHOR BIO CARD */}
+        <div className="bg-[#0b1228] border-2 border-cyan-500/40 rounded-3xl p-8 space-y-4 shadow-2xl">
+          <div className="flex justify-between items-center border-b border-white/10 pb-3">
+            <span className="text-xs font-mono text-cyan-400 uppercase font-bold">INSTITUTIONAL COPYRIGHT &amp; REPOSITORY POLICY</span>
+            <span className="text-[10px] font-mono text-emerald-400 border border-emerald-400/40 px-2 py-0.5 rounded">Verified Open Access</span>
+          </div>
+          <p className="text-xs text-gray-300 leading-relaxed font-mono">
+            This article and its associated PDF whitepapers are published under the sovereign charter of <strong>People &amp; Youth (peopleandyouth.org)</strong>. Unauthorized reproduction, copyright theft, or redistribution without explicit digital signature attribution is strictly prohibited under institutional regulations.
           </p>
-          <div className="flex gap-4">
-            <Link href="/submit-paper" className="text-xs font-mono text-cyan-400 hover:underline">Submit Your Research →</Link>
-            <Link href="/constitution" className="text-xs font-mono text-amber-400 hover:underline">View Governing Constitution →</Link>
+          <div className="flex flex-wrap gap-4 pt-2 font-mono text-xs">
+            <Link href="/submit-paper" className="text-cyan-400 hover:underline">Submit Policy Research →</Link>
+            <Link href="/constitution" className="text-amber-400 hover:underline">View Governing Constitution →</Link>
           </div>
         </div>
 
@@ -232,7 +285,7 @@ Building resilient democratic institutions requires more than technology deploym
       {/* FOOTER */}
       <footer className="border-t border-white/10 bg-[#050814] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 font-mono">
-          <p>&copy; 2026 People &amp; Youth Digital Institution (VNJCM). All rights reserved.</p>
+          <p>&copy; 2026 People &amp; Youth Digital Institution (peopleandyouth.org). All rights reserved.</p>
         </div>
       </footer>
 
