@@ -1,29 +1,139 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import GoogleTranslate from '@/components/GoogleTranslate';
 import { supabase } from '@/lib/supabaseClient';
 
 const BRAND_LOGO_URL = "https://i.postimg.cc/rFK0BBXw/Google-Logo-002.png";
 
-export default function RuralConsultingPage() {
+// 14 ADVISORY DIVISIONS PARALLEL TO 14 RENAISSANCE JOURNALS
+const ADVISORY_DIVISIONS = [
+  {
+    id: "policy",
+    title: "Policy Strategy & Legislative Advisory",
+    journalMatch: "Policy Renaissance",
+    icon: "🏛️",
+    desc: "Assisting government bodies, think tanks, and civic institutions in drafting evidence-based legislation and policy frameworks."
+  },
+  {
+    id: "education",
+    title: "Education Reform & Campus Governance Advisory",
+    journalMatch: "Education Renaissance",
+    icon: "🎓",
+    desc: "Guiding higher education institutions, universities, and schools on accreditation compliance, campus readiness, and curriculum modernization."
+  },
+  {
+    id: "trade",
+    title: "Trade & Cross-Border Commerce Advisory",
+    journalMatch: "Trade Renaissance",
+    icon: "💼",
+    desc: "Providing strategic insights on international trade policy, export-import compliance, GIFT City regulations, and supply chain resilience."
+  },
+  {
+    id: "governance",
+    title: "Governance & Public Administration Advisory",
+    journalMatch: "Governance Renaissance",
+    icon: "⚖️",
+    desc: "Auditing administrative efficiency, civil service reforms, anti-corruption mechanisms, and public transparency drives."
+  },
+  {
+    id: "technology",
+    title: "Technology, AI Ethics & DPI Advisory",
+    journalMatch: "Technology Renaissance",
+    icon: "🤖",
+    desc: "Advising public and private sectors on Digital Public Infrastructure (DPI), AI ethics, cybersecurity governance, and data privacy compliance."
+  },
+  {
+    id: "health",
+    title: "Public Health & Sanitation Advisory",
+    journalMatch: "Health Renaissance",
+    icon: "🏥",
+    desc: "Evaluating primary healthcare delivery, rural medical supply chains, epidemic preparedness, and municipal sanitation drives."
+  },
+  {
+    id: "climate",
+    title: "Climate Action & Ecological Advisory",
+    journalMatch: "Climate Renaissance",
+    icon: "🌿",
+    desc: "Formulating renewable energy roadmaps, carbon credit auditing, disaster risk reduction, and sustainable environmental policies."
+  },
+  {
+    id: "law",
+    title: "Constitutional Law & Judicial Advisory",
+    journalMatch: "Law Renaissance",
+    icon: "📜",
+    desc: "Providing legal research, constitutional auditing, court management strategy, and public interest law consultations."
+  },
+  {
+    id: "economics",
+    title: "Empirical Economics & Market Advisory",
+    journalMatch: "Economics Renaissance",
+    icon: "📊",
+    desc: "Conducting field-level econometric studies, labor market analysis, inflation impact studies, and informal economy evaluations."
+  },
+  {
+    id: "finance",
+    title: "Public Finance & Fiscal Budgeting Advisory",
+    journalMatch: "Finance Renaissance",
+    icon: "💳",
+    desc: "Assisting local Panchayats and municipal corporations with participatory budgeting, CAG audit compliance, and tax revenue optimization."
+  },
+  {
+    id: "innovation",
+    title: "Grassroots Innovation & Startups Advisory",
+    journalMatch: "Innovation Renaissance",
+    icon: "💡",
+    desc: "Mentoring youth entrepreneurs, intellectual property protection, incubator management, and technology transfer frameworks."
+  },
+  {
+    id: "agriculture",
+    title: "Agriculture & Rural Development Advisory",
+    journalMatch: "Agriculture Renaissance",
+    icon: "🌾",
+    desc: "Empowering Panchayati Raj institutions, farmer-producer organizations (FPOs), agrarian market linkage, and crop insurance audits."
+  },
+  {
+    id: "urban",
+    title: "Urban Planning & Smart Municipalities Advisory",
+    journalMatch: "Urban Renaissance",
+    icon: "🏙️",
+    desc: "Consulting tier-2/tier-3 cities on municipal performance audits, traffic management, waste treatment, and affordable housing."
+  },
+  {
+    id: "international",
+    title: "International Diplomacy & Global Affairs Advisory",
+    journalMatch: "International Relations Renaissance",
+    icon: "🌐",
+    desc: "Advising international bodies and diplomatic missions on South Asian geopolitics, multilateral treaties, and global youth leadership."
+  }
+];
+
+export default function AdvisoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
     organizationName: '',
     contactPerson: '',
     email: '',
     districtState: '',
-    consultingDomain: 'Municipal Governance Audit',
+    consultingDomain: 'Policy Strategy & Legislative Advisory',
     projectDescription: ''
   });
+
+  const handleSelectDomain = (domainTitle: string) => {
+    setForm((prev) => ({ ...prev, consultingDomain: domainTitle }));
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const generatedId = `PY-RURAL-${Math.floor(100000 + Math.random() * 900000)}`;
+    const generatedId = `PY-ADV-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
       const { error } = await supabase.from('rural_consulting_inquiries').insert([
@@ -43,7 +153,7 @@ export default function RuralConsultingPage() {
       setSubmittedId(generatedId);
       setForm({
         organizationName: '', contactPerson: '', email: '',
-        districtState: '', consultingDomain: 'Municipal Governance Audit', projectDescription: ''
+        districtState: '', consultingDomain: 'Policy Strategy & Legislative Advisory', projectDescription: ''
       });
     } catch (err) {
       console.error(err);
@@ -68,9 +178,10 @@ export default function RuralConsultingPage() {
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
             <Link href="/about" className="hover:text-cyan-400 transition-colors">About Mandate</Link>
+            <Link href="/constitution" className="hover:text-amber-300 text-amber-400 font-semibold transition-colors">📜 Constitution</Link>
             <Link href="/careers" className="hover:text-cyan-400 transition-colors">Careers &amp; Opportunities</Link>
             <Link href="/submit-paper" className="hover:text-cyan-400 transition-colors">Policy Journals</Link>
-            <Link href="/rural-consulting" className="text-cyan-400 font-bold border-b-2 border-cyan-400 py-1">Rural Consulting</Link>
+            <Link href="/rural-consulting" className="text-emerald-400 font-bold border-b-2 border-emerald-400 py-1">🏛️ Advisory</Link>
           </nav>
 
           <GoogleTranslate />
@@ -78,62 +189,81 @@ export default function RuralConsultingPage() {
       </header>
 
       {/* CONTAINER */}
-      <div className="max-w-6xl mx-auto px-4 py-12 w-full flex-1 space-y-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-1 space-y-16">
         
-        <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-semibold uppercase tracking-wider">
-            GRASSROOTS GOVERNANCE INITIATIVE
+        {/* TITLE BANNER */}
+        <div className="text-center space-y-4 max-w-4xl mx-auto">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold uppercase tracking-wider">
+            INSTITUTIONAL ADVISORY &amp; CONSULTING EYES
           </span>
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white">Rural Governance &amp; Advisory</h1>
-          <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-            Bridging academic public policy scholars with Panchayati Raj institutions, rural district administrations, and local development programs across India.
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight">
+            14 Specialized Advisory Divisions
+          </h1>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
+            Parallel to our 14 Renaissance Publications, our advisory arms bridge empirical academic research with government bodies, municipal corporations, universities, and international organisations.
           </p>
         </div>
 
-        {/* 3 PILLARS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-2xl">🌾</span>
-            <h3 className="text-lg font-bold text-white">Panchayati Raj Technical Assistance</h3>
-            <p className="text-xs text-gray-300 leading-relaxed">Assisting Gram Panchayats with participatory budgeting, local scheme audits, and digital record keeping.</p>
-          </div>
+        {/* 14 ADVISORY CARDS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {ADVISORY_DIVISIONS.map((item) => (
+            <div 
+              key={item.id} 
+              className="bg-white/5 border border-white/10 hover:border-emerald-400/50 p-6 rounded-3xl space-y-4 flex flex-col justify-between transition-all group backdrop-blur-xl"
+            >
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-3xl">{item.icon}</span>
+                  <span className="text-[10px] font-mono uppercase bg-cyan-500/10 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-400/20">
+                    Parallel: {item.journalMatch}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
 
-          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-2xl">📊</span>
-            <h3 className="text-lg font-bold text-white">Municipal Performance Audits</h3>
-            <p className="text-xs text-gray-300 leading-relaxed">Empirical field evaluations measuring government scheme outcomes across tier-2, tier-3, and rural blocks.</p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-2xl">🏛</span>
-            <h3 className="text-lg font-bold text-white">District Leadership Labs</h3>
-            <p className="text-xs text-gray-300 leading-relaxed">Training youth and local stakeholders in Right to Information (RTI) filing and public accountability frameworks.</p>
-          </div>
+              {/* CUSTOM SUBMISSION / PROPOSAL BUTTON FOR EACH SECTION */}
+              <button
+                onClick={() => handleSelectDomain(item.title)}
+                className="w-full mt-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 font-mono text-xs font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <span>📝 Submit Proposal / Article</span>
+                <span>↓</span>
+              </button>
+            </div>
+          ))}
         </div>
 
-        {/* CONSULTING INQUIRY FORM */}
-        <section className="bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-cyan-500/40 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl">
-          <div className="space-y-2">
-            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">PROJECT INTAKE PORTAL</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Initiate a Rural Governance Partnership</h2>
-            <p className="text-xs text-gray-300">District administrations, educational institutions, and NGOs can request consulting engagement below.</p>
+        {/* INTAKE FORM */}
+        <section 
+          ref={formRef} 
+          className="bg-gradient-to-br from-[#0c1638] via-[#070b19] to-[#0a1836] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 space-y-6 shadow-2xl"
+        >
+          <div className="space-y-2 border-b border-white/10 pb-4">
+            <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest font-bold">PROJECT &amp; ARTICLE INTAKE PORTAL</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Initiate an Advisory Engagement or Article Submission</h2>
+            <p className="text-xs text-gray-300">Select your advisory domain below to submit proposals, research briefs, or request consulting partnerships.</p>
           </div>
 
           {submittedId && (
             <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-xs font-mono">
-              ✓ Consulting Inquiry Registered ({submittedId})! Our Rural Governance Advisory Team will review your project brief.
+              ✓ Proposal Registered ({submittedId})! Our Institutional Advisory Team will review your brief within 48 hours.
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Organization / Body Name *</label>
+              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Organization / Body / Author Name *</label>
               <input
                 type="text"
                 value={form.organizationName}
                 onChange={e => setForm({...form, organizationName: e.target.value})}
-                placeholder="e.g. Gram Panchayat Advisory Board / Youth NGO"
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                placeholder="e.g. Gram Panchayat Advisory / University / Independent Scholar"
+                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
@@ -144,8 +274,8 @@ export default function RuralConsultingPage() {
                 type="text"
                 value={form.contactPerson}
                 onChange={e => setForm({...form, contactPerson: e.target.value})}
-                placeholder="e.g. Rajesh Kumar"
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                placeholder="e.g. Dr. Rajesh Kumar"
+                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
@@ -157,45 +287,48 @@ export default function RuralConsultingPage() {
                 value={form.email}
                 onChange={e => setForm({...form, email: e.target.value})}
                 placeholder="contact@org.in"
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">District &amp; State *</label>
+              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">District &amp; State / Country *</label>
               <input
                 type="text"
                 value={form.districtState}
                 onChange={e => setForm({...form, districtState: e.target.value})}
-                placeholder="e.g. Gaya, Bihar / Varanasi, UP"
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                placeholder="e.g. Delhi / Varanasi, UP / GIFT City, Gujarat"
+                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Consulting Domain *</label>
+              <label className="block text-xs font-mono text-emerald-400 uppercase mb-2 font-bold">
+                Target Advisory Division (14 Domains) *
+              </label>
               <select
                 value={form.consultingDomain}
                 onChange={e => setForm({...form, consultingDomain: e.target.value})}
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#070b19] border border-emerald-500/50 rounded-xl px-4 py-3 text-emerald-300 text-sm font-bold font-mono focus:outline-none focus:border-emerald-400"
               >
-                <option value="Municipal Governance Audit">Municipal Governance Audit</option>
-                <option value="Panchayati Raj Technical Assistance">Panchayati Raj Technical Assistance</option>
-                <option value="RTI & Public Finance Transparency Drive">RTI &amp; Public Finance Transparency Drive</option>
-                <option value="District Youth Leadership Workshop">District Youth Leadership Workshop</option>
+                {ADVISORY_DIVISIONS.map((div) => (
+                  <option key={div.id} value={div.title}>
+                    {div.title} (Parallel: {div.journalMatch})
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Project Description &amp; Scope *</label>
+              <label className="block text-xs font-mono text-gray-300 uppercase mb-2">Proposal Brief / Article Executive Summary *</label>
               <textarea
                 rows={4}
                 value={form.projectDescription}
                 onChange={e => setForm({...form, projectDescription: e.target.value})}
-                placeholder="Outline the local challenges, target panchayats/districts, and expected consulting outcomes..."
-                className="w-full bg-[#070b19] border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-cyan-500"
+                placeholder="Outline the scope of consulting engagement, policy brief abstract, or project objectives..."
+                className="w-full bg-[#070b19] border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
@@ -204,15 +337,22 @@ export default function RuralConsultingPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-cyan-500/25 transition-all"
+                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/25 transition-all"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Advisory Request →'}
+                {isSubmitting ? 'Submitting...' : 'Submit Advisory Proposal →'}
               </button>
             </div>
           </form>
         </section>
 
       </div>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 bg-[#050814] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 font-mono">
+          <p>&copy; 2026 People &amp; Youth Digital Institution (VNJCM). All rights reserved.</p>
+        </div>
+      </footer>
 
     </main>
   );
