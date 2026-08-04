@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import '@/app/globals.css';
-import PrintProtection from '@/components/security/PrintProtection';
+import PrintProtection from './PrintProtection';
 
 export const metadata: Metadata = {
   title: 'People & Youth — Sovereign Digital Institution',
