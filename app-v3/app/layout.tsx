@@ -1,4 +1,4 @@
-﻿import type { Metadata, Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '@/app/globals.css';
 import PrintProtection from '@/components/security/PrintProtection';
 
