@@ -1,25 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_ESSAY = {
-  slug: 'dialectics-of-consciousness',
-  title: 'Dialectics of Consciousness',
-  subtitle: 'A Soliloquy on Ideas, Society, and the Human Mind',
-  category: 'Essay • Philosophy & Human Consciousness',
-  author_name: 'Swaraj Shandilya',
-  author_bio: 'Founder at peopleandyouth.org | Ex-Coordinator, The Public Policy Club, IIFT | MBA(IB) IIFT (2025–27)',
-  read_time: '~6 min read',
-  status: 'published'
-};
+export default function DynamicWatermarkedEssayPage({ params }: { params: Promise<{ slug: string }> }) {
+  // Unwrap Next.js dynamic params
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
 
-export default function WatermarkedEssayReaderPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug || 'dialectics-of-consciousness';
-  const [essay, setEssay] = useState<any>(DEFAULT_ESSAY);
+  const [essay, setEssay] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -35,34 +29,68 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
   };
 
   const fetchEssay = async () => {
+    setLoading(true);
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('watermarked_essays')
         .select('*')
         .eq('slug', slug)
         .single();
 
-      if (data) setEssay(data);
+      if (error || !data) {
+        setNotFound(true);
+      } else {
+        setEssay(data);
+        setNotFound(false);
+      }
     } catch (err) {
-      console.error('Using default fallback essay rendering.');
+      setNotFound(true);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#070b19] text-white flex items-center justify-center font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <span>Fetching sovereign publication record...</span>
+        </div>
+      </main>
+    );
+  }
+
+  if (notFound || !essay) {
+    return (
+      <main className="min-h-screen bg-[#070b19] text-white flex flex-col items-center justify-center font-mono text-xs p-6 text-center space-y-4">
+        <span className="text-4xl">🏛️</span>
+        <h1 className="text-xl font-bold text-amber-400">404 — Publication Record Not Found</h1>
+        <p className="text-gray-400 max-w-md">
+          No active essay found matching <code className="bg-white/10 px-2 py-1 rounded text-white">/essay/{slug}</code> in the database ledger.
+        </p>
+        <Link href="/dissent-dias" className="px-6 py-2.5 rounded-xl bg-amber-400 text-black font-bold hover:bg-yellow-300">
+          ← Return to Editorial Portal
+        </Link>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#EAEAEA] text-[#222222] font-serif relative overflow-x-hidden selection:bg-[#C59B27] selection:text-white">
       
-      {/* FLOATING ADMIN QUICK CONTROLS (ADMIN ONLY) */}
+      {/* FLOATING ADMIN CONTROLS */}
       {isAdmin && (
         <div className="bg-[#0B192C] text-[#C59B27] px-6 py-2.5 font-mono text-xs font-bold flex justify-between items-center border-b border-[#C59B27] sticky top-0 z-50 print:hidden">
-          <span>🛡️ ADMIN ACCESS: Viewing as Authorized Administrator</span>
+          <span>🛡️ ADMIN ACCESS: Active Session Detected</span>
           <div className="flex gap-4">
-            <Link href="/admin/print" className="hover:underline text-white">🖨️ Print This Document in Studio</Link>
-            <Link href="/admin/essays" className="hover:underline text-white">📜 Publish New Essay</Link>
+            <Link href="/admin/print" className="hover:underline text-white">🖨️ Print Studio</Link>
+            <Link href="/admin/essays" className="hover:underline text-white">📜 Publisher HQ</Link>
           </div>
         </div>
       )}
 
-      {/* WATERMARK ENGINE */}
+      {/* SVG DYNAMIC WATERMARK */}
       <style jsx global>{`
         .page-watermark-layer {
           position: relative;
@@ -76,8 +104,6 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
           .page-watermark-layer {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='200' viewBox='0 0 350 200'%3E%3Ctext x='20' y='100' fill='rgba(11, 25, 44, 0.15)' font-size='18' font-family='Georgia, serif' font-weight='bold' transform='rotate(-25 175 100)'%3Epeopleandyouth.org • Sovereign Academic Record%3C/text%3E%3C/svg%3E") !important;
             background-repeat: repeat !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
           }
         }
       `}</style>
@@ -88,11 +114,11 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
           <span>🏛️</span>
           <span>peopleandyouth.org / Editorial Portal</span>
         </Link>
-        <span className="text-gray-400 text-[10px]">SOVEREIGN WATERMARKED ESSAY • NO UNAUTHORIZED REPRODUCTION</span>
+        <span className="text-gray-400 text-[10px]">SOVEREIGN WATERMARKED ESSAY</span>
       </div>
 
       {/* ESSAY CANVAS */}
-      <div className="max-w-[210mm] mx-auto my-6 bg-white p-8 sm:p-16 shadow-2xl page-watermark-layer border border-gray-200 relative">
+      <article className="max-w-[210mm] mx-auto my-6 bg-white p-8 sm:p-16 shadow-2xl page-watermark-layer border border-gray-200 relative">
         
         <div className="text-center pb-4 mb-8 border-b border-gray-200">
           <div className="text-xs font-bold tracking-[3px] uppercase text-[#0B192C] font-sans">Dissent Dias — by peopleandyouth.org</div>
@@ -100,64 +126,49 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
         </div>
 
         <div className="text-center text-[#C59B27] uppercase tracking-[2.5px] text-xs font-bold mb-3 font-sans">
-          {essay?.category || 'Essay • Philosophy & Human Consciousness'}
+          {essay.category || 'Essay • Philosophy & Public Policy'}
         </div>
 
         <h1 className="text-center text-[#0B192C] text-3xl sm:text-4xl font-bold mb-2 leading-tight">
-          {essay?.title || 'Dialectics of Consciousness'}
+          {essay.title}
         </h1>
 
-        <p className="text-center italic text-lg text-[#5B6470] mb-2">
-          {essay?.subtitle || 'A Soliloquy on Ideas, Society, and the Human Mind'}
-        </p>
+        {essay.subtitle && (
+          <p className="text-center italic text-lg text-[#5B6470] mb-2">
+            {essay.subtitle}
+          </p>
+        )}
 
         <div className="text-center text-xs text-[#5B6470] tracking-wider uppercase mb-6 font-sans">
-          {essay?.author_name || 'Swaraj Shandilya'} &nbsp;·&nbsp; {essay?.read_time || '~6 min read'}
+          {essay.author_name || 'Swaraj Shandilya'} &nbsp;·&nbsp; {essay.read_time || '~5 min read'}
         </div>
 
         <hr className="border-t-2 border-[#C59B27] w-16 mx-auto mb-8" />
 
         <div className="flex gap-4 items-start bg-[#F4F6F9] rounded p-4 mb-8 font-sans">
           <div className="w-12 h-12 rounded-full bg-[#0B192C] text-white flex items-center justify-center font-bold text-lg shrink-0">
-            SS
+            {essay.author_name ? essay.author_name.split(' ').map((n: string) => n[0]).join('') : 'PY'}
           </div>
           <div className="text-xs space-y-1">
-            <div className="font-bold text-[#0B192C]">{essay?.author_name || 'Swaraj Shandilya'}</div>
-            <div className="text-[#5B6470] leading-relaxed">{essay?.author_bio || 'Founder at peopleandyouth.org'}</div>
+            <div className="font-bold text-[#0B192C]">{essay.author_name || 'Swaraj Shandilya'}</div>
+            <div className="text-[#5B6470] leading-relaxed">{essay.author_bio || 'Founder at peopleandyouth.org'}</div>
             <div className="text-[#C59B27] font-bold">peopleandyouth.org</div>
           </div>
         </div>
 
-        {/* ESSAY BODY */}
-        {essay?.raw_html ? (
-          <div className="prose prose-lg max-w-none text-[#222222] leading-relaxed font-serif" dangerouslySetInnerHTML={{ __html: essay.raw_html }} />
-        ) : (
-          <div className="space-y-6 text-base sm:text-lg leading-relaxed text-[#222222]">
-            <div className="bg-[#F4F6F9] border-l-4 border-[#C59B27] p-5 italic text-[#3a3f47] text-sm">
-              <p className="mb-2">This is neither a political manifesto nor an attempt to persuade.</p>
-              <p className="mb-2">It is a soliloquy — a conversation with oneself, written in the hope that others may find reflections of their own questions within it.</p>
-              <p>Ideas are not conclusions to be accepted; they are invitations to think.</p>
-            </div>
-
-            <h2 className="text-[#0B192C] text-2xl font-bold border-b border-gray-200 pb-2 mt-8">I. The Age of False Dichotomies</h2>
-            <p>Our age is fascinated by binaries. We are encouraged to choose between Left and Right, Capitalism and Socialism, Tradition and Modernity, Desire and Suppression, as though human civilization advances only by choosing one extreme over another.</p>
-            <p>Yet history tells a different story. Every significant transformation has emerged not from the victory of one absolute over another, but from the dialogue between opposing forces.</p>
-
-            <blockquote className="bg-[#F4F6F9] border-l-4 border-[#C59B27] my-6 p-5 italic font-bold text-[#0B192C]">
-              "True capitalism and true socialism are not enemies. Their highest forms meet in synthesis."
-            </blockquote>
-
-            <p>The future rarely belongs to ideological purity. It belongs to intellectual evolution.</p>
-          </div>
-        )}
+        {/* DYNAMIC RAW HTML BODY */}
+        <div 
+          className="prose prose-lg max-w-none text-[#222222] leading-relaxed font-serif"
+          dangerouslySetInnerHTML={{ __html: essay.raw_html }} 
+        />
 
         <div className="mt-12 pt-6 border-t border-gray-200 text-center font-sans">
-          <div className="font-bold text-[#0B192C] text-sm">{essay?.author_name || 'Swaraj Shandilya'}</div>
-          <div className="text-xs text-[#5B6470] max-w-md mx-auto mt-1">{essay?.author_bio || 'Founder at peopleandyouth.org'}</div>
+          <div className="font-bold text-[#0B192C] text-sm">{essay.author_name}</div>
+          <div className="text-xs text-[#5B6470] max-w-md mx-auto mt-1">{essay.author_bio}</div>
           <div className="text-xs text-[#C59B27] font-bold mt-1">peopleandyouth.org</div>
         </div>
 
-      </div>
+      </article>
 
     </main>
   );
