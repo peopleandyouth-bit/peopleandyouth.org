@@ -20,10 +20,19 @@ const DEFAULT_ESSAY = {
 export default function WatermarkedEssayReaderPage({ params }: { params: { slug: string } }) {
   const slug = params.slug || 'dialectics-of-consciousness';
   const [essay, setEssay] = useState<any>(DEFAULT_ESSAY);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchEssay();
+    checkAdmin();
   }, [slug]);
+
+  const checkAdmin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.user_metadata?.role === 'admin') {
+      setIsAdmin(true);
+    }
+  };
 
   const fetchEssay = async () => {
     try {
@@ -41,6 +50,19 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
 
   return (
     <main className="min-h-screen bg-[#EAEAEA] text-[#222222] font-serif relative overflow-x-hidden selection:bg-[#C59B27] selection:text-white">
+      
+      {/* FLOATING ADMIN QUICK CONTROLS (ADMIN ONLY) */}
+      {isAdmin && (
+        <div className="bg-[#0B192C] text-[#C59B27] px-6 py-2.5 font-mono text-xs font-bold flex justify-between items-center border-b border-[#C59B27] sticky top-0 z-50 print:hidden">
+          <span>🛡️ ADMIN ACCESS: Viewing as Authorized Administrator</span>
+          <div className="flex gap-4">
+            <Link href="/admin/print" className="hover:underline text-white">🖨️ Print This Document in Studio</Link>
+            <Link href="/admin/essays" className="hover:underline text-white">📜 Publish New Essay</Link>
+          </div>
+        </div>
+      )}
+
+      {/* WATERMARK ENGINE */}
       <style jsx global>{`
         .page-watermark-layer {
           position: relative;
@@ -60,15 +82,18 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
         }
       `}</style>
 
+      {/* NAV BAR */}
       <div className="bg-[#0B192C] text-white font-mono text-xs py-3 px-6 flex justify-between items-center border-b border-[#C59B27]/40 print:hidden">
-        <Link href="/" className="font-bold tracking-wider hover:text-[#C59B27] flex items-center gap-2">
+        <Link href="/dissent-dias" className="font-bold tracking-wider hover:text-[#C59B27] flex items-center gap-2">
           <span>🏛️</span>
-          <span>peopleandyouth.org</span>
+          <span>peopleandyouth.org / Editorial Portal</span>
         </Link>
         <span className="text-gray-400 text-[10px]">SOVEREIGN WATERMARKED ESSAY • NO UNAUTHORIZED REPRODUCTION</span>
       </div>
 
+      {/* ESSAY CANVAS */}
       <div className="max-w-[210mm] mx-auto my-6 bg-white p-8 sm:p-16 shadow-2xl page-watermark-layer border border-gray-200 relative">
+        
         <div className="text-center pb-4 mb-8 border-b border-gray-200">
           <div className="text-xs font-bold tracking-[3px] uppercase text-[#0B192C] font-sans">Dissent Dias — by peopleandyouth.org</div>
           <div className="text-[10px] tracking-[2px] uppercase text-[#5B6470] mt-1 font-sans">Peopleandyouth · At the Heart of Change · Question | Reflect | Act</div>
@@ -103,6 +128,7 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
           </div>
         </div>
 
+        {/* ESSAY BODY */}
         {essay?.raw_html ? (
           <div className="prose prose-lg max-w-none text-[#222222] leading-relaxed font-serif" dangerouslySetInnerHTML={{ __html: essay.raw_html }} />
         ) : (
@@ -112,12 +138,15 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
               <p className="mb-2">It is a soliloquy — a conversation with oneself, written in the hope that others may find reflections of their own questions within it.</p>
               <p>Ideas are not conclusions to be accepted; they are invitations to think.</p>
             </div>
+
             <h2 className="text-[#0B192C] text-2xl font-bold border-b border-gray-200 pb-2 mt-8">I. The Age of False Dichotomies</h2>
             <p>Our age is fascinated by binaries. We are encouraged to choose between Left and Right, Capitalism and Socialism, Tradition and Modernity, Desire and Suppression, as though human civilization advances only by choosing one extreme over another.</p>
             <p>Yet history tells a different story. Every significant transformation has emerged not from the victory of one absolute over another, but from the dialogue between opposing forces.</p>
+
             <blockquote className="bg-[#F4F6F9] border-l-4 border-[#C59B27] my-6 p-5 italic font-bold text-[#0B192C]">
               "True capitalism and true socialism are not enemies. Their highest forms meet in synthesis."
             </blockquote>
+
             <p>The future rarely belongs to ideological purity. It belongs to intellectual evolution.</p>
           </div>
         )}
@@ -127,7 +156,9 @@ export default function WatermarkedEssayReaderPage({ params }: { params: { slug:
           <div className="text-xs text-[#5B6470] max-w-md mx-auto mt-1">{essay?.author_bio || 'Founder at peopleandyouth.org'}</div>
           <div className="text-xs text-[#C59B27] font-bold mt-1">peopleandyouth.org</div>
         </div>
+
       </div>
+
     </main>
   );
 }

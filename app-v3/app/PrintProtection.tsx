@@ -2,18 +2,31 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function PrintProtection({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (pathname?.startsWith('/admin') || (typeof window !== 'undefined' && localStorage.getItem('py_admin_authorized') === 'true')) {
+    checkAdminStatus();
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      checkAdminStatus();
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, [pathname]);
+
+  const checkAdminStatus = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.user_metadata?.role === 'admin' || pathname?.startsWith('/admin')) {
       setIsAdmin(true);
     } else {
       setIsAdmin(false);
     }
-  }, [pathname]);
+  };
 
   useEffect(() => {
     if (isAdmin) return;
