@@ -1,124 +1,118 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
 
-export default function DigitalPassportPage() {
-  const [passport, setPassport] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchPassport();
-  }, []);
-
-  const fetchPassport = async () => {
-    setLoading(true);
-    const { data } = await supabase.from('digital_passports').select('*').limit(1).single();
-
-    if (data) {
-      setPassport(data);
-    } else {
-      // Default Seed Passport
-      setPassport({
-        full_name: 'Swaraj Shandilya',
-        passport_number: 'PY-PASS-2026-0001',
-        member_tier: 'Founder & Executive Lead',
-        skills: ['Public Policy', 'RTI Litigation', 'System Architecture', 'Civic Technology'],
-        leadership_score: 980,
-        volunteer_hours: 340,
-        research_index: 42,
-        achievements: ['Founder at peopleandyouth.org', 'PIL Petition Author', 'Master Systems Architect']
-      });
-    }
-    setLoading(false);
-  };
+export default function CivicPassportShowcasePage() {
+  const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs p-6 sm:p-12 space-y-8">
-      <header className="max-w-4xl mx-auto border-b border-white/10 pb-6 flex justify-between items-center">
-        <div>
-          <span className="text-amber-400 font-bold uppercase tracking-widest text-[10px] block">
-            SOVEREIGN CITIZEN & MEMBER ID
+    <main className="min-h-screen bg-[#030611] text-white font-mono text-xs selection:bg-amber-400 selection:text-black flex flex-col justify-between">
+      {/* HEADER BAR */}
+      <div className="border-b border-white/10 bg-[#070b19] px-6 py-2 flex justify-between items-center text-[10px] text-gray-400">
+        <Link href="/" className="text-amber-400 font-bold hover:underline">← Main Newsroom</Link>
+        <span>PEOPLEANDYOUTH.ORG &middot; CIVIC PASSPORT SHOWCASE</span>
+      </div>
+
+      <div className="max-w-5xl mx-auto p-6 sm:p-12 space-y-12">
+        <header className="text-center space-y-3">
+          <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-400 font-bold text-[10px] uppercase rounded-full tracking-widest">
+            DIGITAL PASSPORT IDENTIFICATION
           </span>
-          <h1 className="text-3xl font-extrabold text-white mt-1">Digital Passport</h1>
-        </div>
-        <Link href="/dissent-dias" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-gray-200">
-          ← Editorial Portal
-        </Link>
-      </header>
+          <h1 className="text-4xl sm:text-5xl font-black uppercase font-serif">Sovereign Civic Passport</h1>
+          <p className="text-gray-400 text-xs italic font-serif max-w-xl mx-auto">
+            Click card below to flip between member identity pass and social connect verification QR codes.
+          </p>
+        </header>
 
-      {loading ? (
-        <div className="py-20 text-center text-gray-500 max-w-4xl mx-auto">Loading Passport Ledger...</div>
-      ) : (
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#0a1024] to-[#111936] border-2 border-amber-400/40 p-8 sm:p-12 rounded-3xl shadow-2xl space-y-8 relative overflow-hidden">
-          {/* PASSPORT WATERMARK EMBLEM */}
-          <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-9xl font-black uppercase text-amber-400">
-            PY
-          </div>
+        {/* 3D FLIPPING CARD CONTAINER */}
+        <div className="flex flex-col items-center justify-center space-y-6">
+          <div
+            onClick={() => setIsFlipped(!isFlipped)}
+            className="w-full max-w-md h-72 cursor-pointer perspective-1000 group"
+          >
+            <div
+              className={`relative w-full h-full duration-700 ease-out transform-style-3d transition-transform ${
+                isFlipped ? 'rotate-y-180' : ''
+              }`}
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              }}
+            >
+              {/* FRONT SIDE */}
+              <div
+                className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0a1024] via-[#0f1733] to-[#1a2754] border-2 border-amber-400/60 rounded-3xl p-6 shadow-2xl flex flex-col justify-between"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-amber-400 font-bold text-[9px] uppercase tracking-widest block">PEOPLE & YOUTH</span>
+                    <h3 className="text-lg font-black text-white uppercase font-serif">Civic Passport</h3>
+                  </div>
+                  <span className="px-2.5 py-1 bg-amber-400 text-black font-extrabold text-[9px] rounded uppercase">₹499 MEMBER</span>
+                </div>
 
-          <div className="flex flex-wrap justify-between items-start gap-6 border-b border-white/10 pb-6">
-            <div>
-              <span className="px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 font-bold uppercase text-[9px] border border-amber-400/30">
-                {passport.member_tier}
-              </span>
-              <h2 className="text-3xl font-extrabold text-white mt-3">{passport.full_name}</h2>
-              <p className="text-amber-400 font-mono text-xs mt-1">ID: {passport.passport_number}</p>
-            </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] text-gray-400 uppercase block">Passport Holder</span>
+                  <div className="text-base font-bold text-white">Swaraj Shandilya</div>
+                  <div className="text-[10px] text-amber-300 font-mono">ID: PY-PASSPORT-2026-8841</div>
+                </div>
 
-            {/* QR CODE DISPLAY */}
-            <div className="bg-white p-3 rounded-2xl flex flex-col items-center justify-center space-y-1">
-              <div className="w-24 h-24 bg-black rounded-lg flex items-center justify-center text-[10px] text-white text-center p-2 font-bold leading-tight">
-                VERIFIED MEMBER QR CODE
+                <div className="flex justify-between items-end border-t border-white/10 pt-3 text-[9px] text-gray-400">
+                  <span>ISSUED BY: INSTITUTION BOARD</span>
+                  <span className="text-amber-400 font-bold uppercase">CLICK TO FLIP CARD 🔄</span>
+                </div>
               </div>
-              <span className="text-[8px] text-black font-bold uppercase tracking-wider">PY-AUTH-SECURE</span>
-            </div>
-          </div>
 
-          {/* SCORES MATRIX */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-1">
-              <span className="text-gray-400 text-[10px] uppercase">Leadership Score</span>
-              <div className="text-3xl font-extrabold text-amber-400">{passport.leadership_score}</div>
-            </div>
+              {/* BACK SIDE (SOCIAL MEDIA QR CODES) */}
+              <div
+                className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#070b19] via-[#0b142d] to-[#040711] border-2 border-amber-400/60 rounded-3xl p-6 shadow-2xl flex flex-col justify-between"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                }}
+              >
+                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <span className="text-amber-400 font-bold text-[9px] uppercase">VERIFIED CONNECT CHANNELS</span>
+                  <span className="text-[9px] text-gray-400">SCAN OR CLICK</span>
+                </div>
 
-            <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-1">
-              <span className="text-gray-400 text-[10px] uppercase">Volunteer Hours</span>
-              <div className="text-3xl font-extrabold text-emerald-400">{passport.volunteer_hours} hrs</div>
-            </div>
+                {/* 4 SOCIAL CHANNELS GRID */}
+                <div className="grid grid-cols-2 gap-3">
+                  <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
+                    <span className="text-base">📷</span>
+                    <div><span className="text-white font-bold block text-[10px]">Instagram</span><span className="text-gray-400 text-[8px]">@peopleandyouth</span></div>
+                  </a>
 
-            <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-1">
-              <span className="text-gray-400 text-[10px] uppercase">Research Index</span>
-              <div className="text-3xl font-extrabold text-blue-400">{passport.research_index} pts</div>
-            </div>
-          </div>
+                  <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
+                    <span className="text-base">▶️</span>
+                    <div><span className="text-white font-bold block text-[10px]">YouTube</span><span className="text-gray-400 text-[8px]">@peopleandyouth</span></div>
+                  </a>
 
-          {/* SKILLS & ACHIEVEMENTS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Verified Competencies</h3>
-              <div className="flex flex-wrap gap-2">
-                {passport.skills?.map((skill: string, idx: number) => (
-                  <span key={idx} className="px-3 py-1 bg-white/10 border border-white/15 rounded-lg text-white text-[11px]">
-                    {skill}
-                  </span>
-                ))}
+                  <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
+                    <span className="text-base">💼</span>
+                    <div><span className="text-white font-bold block text-[10px]">LinkedIn</span><span className="text-gray-400 text-[8px]">Swaraj Shandilya</span></div>
+                  </a>
+
+                  <a href="mailto:contact@peopleandyouth.org" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
+                    <span className="text-base">✉️</span>
+                    <div><span className="text-white font-bold block text-[10px]">Email</span><span className="text-gray-400 text-[8px]">contact@...</span></div>
+                  </a>
+                </div>
+
+                <div className="text-center text-[9px] text-amber-400 font-bold uppercase pt-1">
+                  Click card to return to front identity pass
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Institutional Distinctions</h3>
-              <ul className="space-y-1 text-gray-300 text-[11px]">
-                {passport.achievements?.map((ach: string, idx: number) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="text-amber-400">🏅</span> {ach}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <footer className="border-t border-white/10 bg-[#040711] py-6 px-6 text-center text-gray-500 text-[10px]">
+        &copy; 2026 People & Youth &middot; Civic Passport ID Engine &middot; www.peopleandyouth.org
+      </footer>
     </main>
   );
 }
