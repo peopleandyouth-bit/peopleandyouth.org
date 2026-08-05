@@ -1,373 +1,364 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function CimsAdminDashboard() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+export default function AuthenticatedCIMSPage() {
+  const router = useRouter();
+
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState<any[]>([]);
+
+  // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const [articles, setArticles] = useState<any[]>([
-    { id: '1', slug: 'constitutional-precedents-dpi', title: 'Constitutional Morality in Digital Public Infrastructure', content_type: 'Policy Brief', status: 'published', views_count: 1240 },
-    { id: '2', slug: 'pmkvy-cag-audit-report', title: 'Empirical Audit of PMKVY Skill Initiatives', content_type: 'Research Paper', status: 'in_review', views_count: 890 },
-    { id: '3', slug: 'dissent-and-governance-2026', title: 'Dissent & Morality in Digital Governance', content_type: 'Editorial', status: 'draft', views_count: 0 },
-  ]);
-
-  const [formData, setFormData] = useState({
-    title: '',
-    subtitle: '',
-    contentType: 'policy_brief',
-    status: 'published',
-    abstract: '',
-    bodyMarkdown: '',
-    featuredImage: '',
-    pdfUrl: '',
-    tags: 'Public Policy, Governance'
-  });
+  const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [domain, setDomain] = useState('Philosophy & Public Policy');
+  const [rawHtml, setRawHtml] = useState('<p>Write article content here...</p>');
+  const [status, setStatus] = useState<'published' | 'draft'>('published');
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    fetchArticles();
+    checkAuthAndLoad();
   }, []);
 
-  const fetchArticles = async () => {
-    try {
-      const { data } = await supabase
-        .from('cims_articles')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const checkAuthAndLoad = async () => {
+    setLoading(true);
 
-      if (data && data.length > 0) {
-        setArticles(data);
-      }
-    } catch (err) {
-      console.error(err);
+    // 1. Verify Active Admin Session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push('/admin/login');
+      return;
+    }
+
+    setUser(session.user);
+
+    // 2. Load Live Records from Supabase PostgreSQL
+    await fetchLiveArticles();
+    setLoading(false);
+  };
+
+  const fetchLiveArticles = async () => {
+    const { data, error } = await supabase
+      .from('institution_content')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setArticles(data);
     }
   };
 
-  const generatedSlug = formData.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    const generatedSlug = val
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+    setSlug(generatedSlug);
+  };
 
-  const liveArticleUrl = `https://peopleandyouth.org/articles/${generatedSlug || 'your-article-slug'}`;
-
-  const handleCreateAsset = async (e: React.FormEvent) => {
+  const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!title || !slug || !rawHtml) {
+      setMsg({ type: 'error', text: 'Title, Slug, and Body Content are required.' });
+      return;
+    }
 
-    setIsSaving(true);
-    setSuccessMessage(null);
-
-    const wordCount = formData.bodyMarkdown.trim().split(/\s+/).filter(Boolean).length;
-    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
-
-    const newAsset = {
-      slug: generatedSlug,
-      title: formData.title,
-      subtitle: formData.subtitle,
-      content_type: formData.contentType,
-      status: formData.status,
-      abstract: formData.abstract,
-      body_markdown: formData.bodyMarkdown || 'Long-form empirical body text.',
-      featured_image: formData.featuredImage,
-      pdf_url: formData.pdfUrl,
-      reading_time_minutes: readingTime,
-      tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-      published_at: formData.status === 'published' ? new Date().toISOString() : null,
-      views_count: 0
-    };
+    setSaving(true);
+    setMsg(null);
 
     try {
-      const { data } = await supabase
-        .from('cims_articles')
-        .insert([newAsset])
-        .select();
+      const authorEmailName = user?.email ? user.email.split('@')[0] : 'Swaraj Shandilya';
 
-      setArticles(prev => [data ? data[0] : { ...newAsset, id: `local-${Date.now()}` }, ...prev]);
-      setSuccessMessage(`✓ Asset Published! Live Permalink: /articles/${generatedSlug}`);
-      
-      setFormData({
-        title: '', subtitle: '', contentType: 'policy_brief',
-        status: 'published', abstract: '', bodyMarkdown: '',
-        featuredImage: '', pdfUrl: '', tags: 'Public Policy, Governance'
-      });
+      const { error } = await supabase.from('institution_content').insert([
+        {
+          title,
+          slug,
+          subtitle,
+          domain,
+          entity_type: 'article',
+          author_name: authorEmailName,
+          raw_html: rawHtml,
+          status,
+        },
+      ]);
+
+      if (error) throw error;
+
+      setMsg({ type: 'success', text: `Published successfully! Live at /articles/${slug}` });
+      setTitle('');
+      setSlug('');
+      setSubtitle('');
+      setRawHtml('<p>Write article content here...</p>');
       setIsModalOpen(false);
 
+      fetchLiveArticles();
     } catch (err: any) {
-      console.error(err);
+      setMsg({ type: 'error', text: err.message || 'Failed to save record to database.' });
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to permanently delete this publication record?')) return;
+
+    const { error } = await supabase.from('institution_content').delete().eq('id', id);
+    if (!error) {
+      fetchLiveArticles();
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    document.cookie = 'sb-access-token=; path=/; max-age=0';
+    document.cookie = 'sb-refresh-token=; path=/; max-age=0';
+    router.push('/admin/login');
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#070b19] text-white flex items-center justify-center font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <span>Verifying Credentials & Synchronizing Database...</span>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-[#070b19] text-white flex relative selection:bg-cyan-500 selection:text-black">
-      
-      {/* EXPANDED FULL-HEIGHT LEFT SIDEBAR */}
-      <aside className="w-72 bg-[#050814] border-r border-white/10 p-6 flex flex-col justify-between shrink-0 font-mono text-xs sticky top-0 h-screen overflow-y-auto z-30">
+    <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs flex">
+      {/* SIDEBAR NAVIGATION */}
+      <aside className="w-64 border-r border-white/10 p-6 flex flex-col justify-between bg-[#040711] hidden md:flex">
         <div className="space-y-6">
-          
-          <div className="border-b border-cyan-500/30 pb-5">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">SOVEREIGN CIMS v2.0</span>
-            </div>
-            <h1 className="text-lg font-extrabold text-white mt-1 tracking-tight">Institutional HQ</h1>
-            <p className="text-[10px] text-gray-400 mt-0.5">Control Centre &amp; Publishing Engine</p>
+          <div>
+            <span className="text-amber-400 font-bold uppercase text-[9px] tracking-widest block">
+              AUTHENTICATED CONSOLE
+            </span>
+            <h1 className="text-lg font-extrabold text-white mt-1">CIMS Admin HQ</h1>
+            <p className="text-gray-500 text-[10px] truncate mt-0.5">{user?.email}</p>
           </div>
 
-          {/* COMPLETE EXPANDED MODULE NAVIGATION */}
-          <nav className="space-y-1.5">
-            {[
-              { id: 'dashboard', label: '📊 Institutional Dashboard', badge: null },
-              { id: 'content', label: '📝 Content & Articles', badge: articles.length.toString() },
-              { id: 'editorial', label: '✍️ Editorial & Dissent Dias', badge: null },
-              { id: 'research', label: '🔬 Research & Policy Briefs', badge: null },
-              { id: 'caves', label: '🏛️ 17 Knowledge Caves', badge: '17' },
-              { id: 'mountains', label: '🏔️ 4 Mountain Ranges', badge: '4' },
-              { id: 'journals', label: '📚 14 Renaissance Journals', badge: '14' },
-              { id: 'media', label: '📁 Media & PDF Repository', badge: null },
-              { id: 'users', label: '👥 User & Role Permissions', badge: '22 Roles' },
-              { id: 'careers', label: '💼 Talent & Applications', badge: '5' },
-              { id: 'analytics', label: '📈 Metrics & Analytics', badge: null },
-              { id: 'ai', label: '🤖 Admin AI Co-Pilot', badge: 'RAG' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full text-left px-3.5 py-3 rounded-xl transition-all flex items-center justify-between border ${
-                  activeTab === item.id 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black border-cyan-400 font-extrabold shadow-lg shadow-cyan-500/20' 
-                    : 'text-gray-300 border-transparent hover:bg-white/5 hover:border-white/10'
-                }`}
-              >
-                <span className="truncate pr-1">{item.label}</span>
-                {item.badge && (
-                  <span className={`px-2 py-0.5 text-[9px] rounded-md shrink-0 font-mono font-bold ${
-                    activeTab === item.id ? 'bg-black/30 text-black' : 'bg-white/10 text-cyan-300'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            ))}
+          <nav className="space-y-2">
+            <Link href="/admin/cims" className="block px-3.5 py-2.5 rounded-xl bg-amber-400 text-black font-extrabold">
+              📰 CIMS Publisher
+            </Link>
+            <Link href="/admin/dashboard" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
+              📊 Master Dashboard
+            </Link>
+            <Link href="/admin/policy" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
+              ⚖️ Policy Repository
+            </Link>
+            <Link href="/admin/print" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
+              🖨️ Print Studio
+            </Link>
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-white/10 space-y-2">
-          <Link href="/admin" className="text-gray-400 hover:text-cyan-300 block transition-colors">← Main Admin Control</Link>
-          <Link href="/" className="text-gray-500 hover:text-white block transition-colors">🌐 Public Platform</Link>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full py-2.5 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl font-bold hover:bg-red-500/30 transition-all"
+        >
+          🚪 End Session
+        </button>
       </aside>
 
-      {/* MAIN CONTENT PANEL */}
-      <section className="flex-1 p-8 space-y-8 overflow-y-auto">
-        
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
+      {/* MAIN WORKSPACE */}
+      <div className="flex-1 p-6 sm:p-10 space-y-6 overflow-y-auto">
+        <div className="flex flex-wrap justify-between items-center border-b border-white/10 pb-6 gap-4">
           <div>
-            <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">CIMS OPERATIONS HUB</span>
-            <h2 className="text-2xl font-extrabold text-white uppercase mt-1">{activeTab.replace('_', ' ')} Workspace</h2>
+            <span className="text-amber-400 font-bold uppercase text-[10px]">SOVEREIGN CIMS V2.0</span>
+            <h2 className="text-2xl font-extrabold text-white">DASHBOARD WORKSPACE</h2>
           </div>
 
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-cyan-400 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-xs shadow-xl shadow-cyan-500/20 transform hover:scale-105 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold hover:from-amber-300 transition-all shadow-xl"
           >
-            <span>✨</span>
-            <span>+ Create New Article / Paper</span>
+            ✨ + Create New Article / Paper
           </button>
         </div>
 
-        {successMessage && (
-          <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-xs font-mono flex justify-between items-center">
-            <span>{successMessage}</span>
-            <button onClick={() => setSuccessMessage(null)} className="text-gray-400 hover:text-white">✖</button>
+        {msg && (
+          <div
+            className={`p-3 text-center rounded-xl font-bold ${
+              msg.type === 'success'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                : 'bg-red-500/20 text-red-300 border border-red-500/30'
+            }`}
+          >
+            {msg.text}
           </div>
         )}
 
-        {/* ARTICLES TABLE */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-          <div className="flex justify-between items-center border-b border-white/10 pb-3 font-mono">
-            <h3 className="text-sm font-bold text-white uppercase">Published Assets &amp; Permalinks</h3>
-            <span className="text-xs text-cyan-400">{articles.length} Total Works</span>
-          </div>
-          
-          <div className="space-y-3 font-mono text-xs">
-            {articles.map((art) => (
-              <div key={art.id} className="bg-[#0b1228] p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white">{art.title}</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-400">
-                    <span className="text-cyan-400">Type: {art.content_type?.replace('_', ' ').toUpperCase()}</span>
-                    <span>Views: {art.views_count || 0}</span>
-                    <Link href={`/articles/${art.slug}`} target="_blank" className="text-amber-300 font-bold hover:underline">
-                      🔗 Direct Article Permalink: /articles/{art.slug} ↗
-                    </Link>
-                  </div>
+        {/* MODAL FORM */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <form
+              onSubmit={handleCreateArticle}
+              className="bg-[#0a1024] border border-white/20 p-6 rounded-2xl max-w-2xl w-full space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                <h3 className="text-sm font-bold text-amber-400 uppercase">Publish New Article to Database</h3>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-400 text-[10px] uppercase mb-1">Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
+                    placeholder="Article Title..."
+                    className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
                 </div>
 
-                <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold shrink-0 ${
-                  art.status === 'published' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' :
-                  'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                }`}>
-                  {art.status || 'published'}
-                </span>
+                <div>
+                  <label className="block text-gray-400 text-[10px] uppercase mb-1">URL Slug</label>
+                  <input
+                    type="text"
+                    required
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-amber-300 focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-      </section>
-
-      {/* CREATE ARTICLE MODAL OVERLAY */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#0a1228] border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 max-w-3xl w-full space-y-6 shadow-2xl my-8">
-            
-            <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <div>
-                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold block">LONG-FORM PUBLISHING WORKSPACE</span>
-                <h3 className="text-xl font-extrabold text-white">Create Premium Article / Paper</h3>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-white text-lg font-mono px-2 py-1 bg-white/10 rounded-lg"
-              >
-                ✖
-              </button>
-            </div>
-
-            <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/30 font-mono text-xs space-y-1">
-              <span className="text-cyan-400 font-bold block">🔗 Direct Article Permalinks:</span>
-              <span className="text-gray-300 font-bold select-all block break-all">{liveArticleUrl}</span>
-            </div>
-
-            <form onSubmit={handleCreateAsset} className="space-y-4 font-mono text-xs">
-              <div>
-                <label className="block text-gray-300 uppercase mb-1">Article Title *</label>
+                <label className="block text-gray-400 text-[10px] uppercase mb-1">Subtitle / Excerpt</label>
                 <input
                   type="text"
-                  value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Constitutional Morality in Digital Public Infrastructure"
-                  className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500"
-                  required
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  placeholder="Summary or thesis statement..."
+                  className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-300 uppercase mb-1">Content Type *</label>
-                  <select
-                    value={formData.contentType}
-                    onChange={e => setFormData({ ...formData, contentType: e.target.value })}
-                    className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-cyan-300 font-bold focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="policy_brief">Policy Brief</option>
-                    <option value="research_paper">Research Paper</option>
-                    <option value="editorial">Editorial / Essay</option>
-                    <option value="white_paper">White Paper</option>
-                    <option value="case_study">Case Study</option>
-                    <option value="report">Institutional Report</option>
-                  </select>
+                  <label className="block text-gray-400 text-[10px] uppercase mb-1">Domain Category</label>
+                  <input
+                    type="text"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-white focus:border-amber-400 focus:outline-none"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 uppercase mb-1">Status *</label>
+                  <label className="block text-gray-400 text-[10px] uppercase mb-1">Status</label>
                   <select
-                    value={formData.status}
-                    onChange={e => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-3 text-emerald-300 font-bold focus:outline-none focus:border-cyan-500"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as 'published' | 'draft')}
+                    className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-amber-400 font-bold focus:outline-none"
                   >
-                    <option value="published">Published (Live at Permalink)</option>
-                    <option value="in_review">In Review</option>
+                    <option value="published">Published</option>
                     <option value="draft">Draft</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-300 uppercase mb-1">Executive Abstract *</label>
-                <textarea
-                  rows={2}
-                  value={formData.abstract}
-                  onChange={e => setFormData({ ...formData, abstract: e.target.value })}
-                  placeholder="Pull-quote highlight summary..."
-                  className="w-full bg-[#070b19] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-amber-400 font-bold uppercase">Article Body (10,000 Capacity Workspace) *</label>
-                  <span className={`font-mono text-[10px] ${formData.bodyMarkdown.length > 10000 ? 'text-red-400 font-bold' : 'text-gray-400'}`}>
-                    {formData.bodyMarkdown.length} / 10,000 Characters
-                  </span>
-                </div>
+                <label className="block text-gray-400 text-[10px] uppercase mb-1">HTML Content Body</label>
                 <textarea
                   rows={8}
-                  maxLength={10000}
-                  value={formData.bodyMarkdown}
-                  onChange={e => setFormData({ ...formData, bodyMarkdown: e.target.value })}
-                  placeholder="Type or paste article body text (Markdown supported)..."
-                  className="w-full bg-[#070b19] border border-white/10 rounded-xl p-4 text-white font-sans text-xs focus:outline-none focus:border-cyan-500 leading-relaxed"
                   required
+                  value={rawHtml}
+                  onChange={(e) => setRawHtml(e.target.value)}
+                  className="w-full bg-[#030611] border border-white/20 rounded-lg p-3 text-amber-100 font-mono text-[11px] focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-cyan-300 uppercase mb-1">📄 Attach PDF Whitepaper URL</label>
-                  <input
-                    type="url"
-                    value={formData.pdfUrl}
-                    onChange={e => setFormData({ ...formData, pdfUrl: e.target.value })}
-                    placeholder="https://.../report.pdf"
-                    className="w-full bg-[#070b19] border border-cyan-500/40 rounded-xl px-4 py-2.5 text-cyan-300 focus:outline-none focus:border-cyan-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-300 uppercase mb-1">🖼️ Featured Cover Image URL</label>
-                  <input
-                    type="url"
-                    value={formData.featuredImage}
-                    onChange={e => setFormData({ ...formData, featuredImage: e.target.value })}
-                    placeholder="https://.../cover.jpg"
-                    className="w-full bg-[#070b19] border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-white/10 text-gray-300 font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-cyan-400 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold shadow-lg shadow-cyan-500/20"
-                >
-                  {isSaving ? 'Publishing...' : '✨ Publish Article to Live URL →'}
-                </button>
-              </div>
-
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full py-3 rounded-xl bg-amber-400 text-black font-extrabold uppercase hover:bg-amber-300 transition-all shadow-lg"
+              >
+                {saving ? 'Publishing to Database...' : '🚀 Publish Record Live'}
+              </button>
             </form>
-
           </div>
-        </div>
-      )}
+        )}
 
+        {/* LIVE DATABASE LEDGER */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center border-b border-white/10 pb-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              PUBLISHED ASSETS & PERMALINKS ({articles.length} Total Works)
+            </h3>
+            <span className="text-[10px] text-emerald-400 font-bold">• CONNECTED TO POSTGRESQL</span>
+          </div>
+
+          {articles.length === 0 ? (
+            <div className="py-12 text-center border border-dashed border-white/10 rounded-2xl text-gray-500">
+              No live publications found in database. Click "+ Create New Article / Paper" to publish your first record.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {articles.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white/5 border border-white/10 p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4 hover:border-amber-400/50 transition-all"
+                >
+                  <div className="space-y-1">
+                    <span className="px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 font-bold text-[9px] uppercase">
+                      {item.domain || item.entity_type}
+                    </span>
+                    <h4 className="text-base font-bold text-white">{item.title}</h4>
+                    <p className="text-[10px] text-gray-400">
+                      Direct Permalink:{' '}
+                      <a
+                        href={`/articles/${item.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-amber-300 underline font-mono"
+                      >
+                        /articles/{item.slug} ↗
+                      </a>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase ${
+                        item.status === 'published'
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : 'bg-amber-500/20 text-amber-300'
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-colors text-[10px]"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </main>
   );
 }

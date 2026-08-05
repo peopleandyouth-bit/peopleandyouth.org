@@ -18,27 +18,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('slug', slug)
     .single();
 
-  if (!article) {
-    const { data: essay } = await supabase
-      .from('watermarked_essays')
-      .select('*')
-      .eq('slug', slug)
-      .single();
-
-    if (essay) {
-      return {
-        title: `${essay.title} | People & Youth`,
-        description: essay.subtitle || `Official record by ${essay.author_name}`,
-      };
-    }
-
-    return { title: 'Article Not Found | People & Youth' };
+  if (article) {
+    return {
+      title: `${article.title} | People & Youth`,
+      description: article.subtitle || `Published by ${article.author_name}`,
+    };
   }
 
-  return {
-    title: `${article.title} | People & Youth`,
-    description: article.subtitle || `Published by ${article.author_name}`,
-  };
+  const { data: essay } = await supabase
+    .from('watermarked_essays')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (essay) {
+    return {
+      title: `${essay.title} | People & Youth`,
+      description: essay.subtitle || `Official record by ${essay.author_name}`,
+    };
+  }
+
+  return { title: 'Article Not Found | People & Youth' };
 }
 
 export default async function DynamicArticlePage({ params }: Props) {
@@ -60,7 +60,7 @@ export default async function DynamicArticlePage({ params }: Props) {
     id?: string;
   } | null = null;
 
-  // 1. Query 'institution_content' (CIMS / Universal CMS)
+  // 1. Query 'institution_content' (CIMS Master Ledger)
   const { data: cimsData } = await supabase
     .from('institution_content')
     .select('*')
@@ -79,7 +79,7 @@ export default async function DynamicArticlePage({ params }: Props) {
       id: cimsData.id,
     };
   } else {
-    // 2. Query 'watermarked_essays' (Split-Screen Publisher)
+    // 2. Fallback query 'watermarked_essays'
     const { data: essayData } = await supabase
       .from('watermarked_essays')
       .select('*')
@@ -97,30 +97,9 @@ export default async function DynamicArticlePage({ params }: Props) {
         raw_html: essayData.raw_html,
         id: essayData.id,
       };
-    } else {
-      // 3. Query legacy 'articles' table
-      const { data: legacyData } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-
-      if (legacyData) {
-        record = {
-          title: legacyData.title,
-          subtitle: legacyData.subtitle || legacyData.excerpt,
-          category: legacyData.category || 'ARTICLE',
-          author_name: legacyData.author_name || 'Swaraj Shandilya',
-          read_time: legacyData.read_time || '~5 min read',
-          created_at: legacyData.created_at,
-          raw_html: legacyData.content || legacyData.raw_html,
-          id: legacyData.id,
-        };
-      }
     }
   }
 
-  // If no record matched the requested slug across all tables, return 404
   if (!record) {
     notFound();
   }
@@ -133,7 +112,7 @@ export default async function DynamicArticlePage({ params }: Props) {
             ← Editorial Portal
           </Link>
           <span className="text-white/20">|</span>
-          <Link href="/admin/cms" className="text-gray-400 hover:text-amber-400 transition-colors">
+          <Link href="/admin/cims" className="text-gray-400 hover:text-amber-400 transition-colors">
             ⚙️ CIMS HQ
           </Link>
         </div>
