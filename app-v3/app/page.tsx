@@ -105,7 +105,7 @@ export default function UnifiedSovereignHomepage() {
               <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">📷 Instagram</a>
               <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">▶️ YouTube</a>
               <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">💼 LinkedIn</a>
-              <a href="mailto:peopleandyouth@gmail.com" className="hover:text-amber-400 transition-colors">✉️ Email</a>
+              <a href="mailto:contact@peopleandyouth.org" className="hover:text-amber-400 transition-colors">✉️ Email</a>
             </div>
 
             <Link href="/passport" className="text-amber-300 font-bold hover:underline">🪪 Civic Passport</Link>
@@ -391,7 +391,7 @@ export default function UnifiedSovereignHomepage() {
               <p>📷 Instagram: <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="text-amber-300 font-bold hover:underline">@peopleandyouth</a></p>
               <p>▶️ YouTube: <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="text-amber-300 font-bold hover:underline">@peopleandyouth</a></p>
               <p>💼 LinkedIn: <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="text-amber-300 font-bold hover:underline">Swaraj Shandilya</a></p>
-              <p>✉️ Email: <a href="mailto:peopleandyouth@gmail.com" className="text-amber-300 font-bold hover:underline">peopleandyouth@gmail.com</a></p>
+              <p>✉️ Email: <a href="mailto:contact@peopleandyouth.org" className="text-amber-300 font-bold hover:underline">contact@peopleandyouth.org</a></p>
             </div>
           </div>
         </div>

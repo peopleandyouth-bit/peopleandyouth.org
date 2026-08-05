@@ -482,7 +482,7 @@ export default function PublicationReaderWithAuthModal() {
               <span><b>Instagram:</b> instagram.com/peopleandyouth</span>
               <span><b>YouTube:</b> youtube.com/@peopleandyouth</span>
               <span><b>LinkedIn:</b> Swaraj Shandilya</span>
-              <span><b>Email:</b> peopleandyouth@gmail.com</span>
+              <span><b>Email:</b> contact@peopleandyouth.org</span>
             </div>
             <div className="footer-tagline">Question. Reflect. Act.</div>
           </div>
