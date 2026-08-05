@@ -5,6 +5,27 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
+const ELABORATE_CATEGORIES = [
+  "Philosophy & Public Policy",
+  "Political Theory & Ethics",
+  "Law & Constitutional Frameworks",
+  "RTI & Statutory Audits",
+  "Judicial Reform & PIL",
+  "Public Economics & Finance",
+  "CAG Audits & Fiscal Policy",
+  "Trade & Macroeconomics",
+  "Demographic Capital & Youth Policy",
+  "AI Policy & Ethics",
+  "Technology & Cyber Law",
+  "Civic Technology",
+  "Foreign Policy & Geopolitics",
+  "Global Affairs & Strategic Security",
+  "Climate Economics & Sustainability",
+  "Educational Systems & Governance",
+  "Science & Strategic Innovation",
+  "Institutional Critique & Reform"
+];
+
 export default function SplitScreenPublisherPage() {
   const router = useRouter();
 
@@ -249,6 +270,7 @@ export default function SplitScreenPublisherPage() {
       )}
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+        {/* LEFT COLUMN: FORM */}
         <div className="p-6 overflow-y-auto space-y-4 border-r border-white/10 bg-[#070b19]">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -286,14 +308,20 @@ export default function SplitScreenPublisherPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* ELABORATE CATEGORY DROPDOWN MENU */}
             <div>
-              <label className="block text-gray-400 uppercase text-[10px] mb-1">Category</label>
-              <input
-                type="text"
+              <label className="block text-gray-400 uppercase text-[10px] mb-1">Category Select</label>
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-white/5 border border-white/15 rounded-lg p-2.5 text-white focus:border-amber-400 focus:outline-none"
-              />
+                className="w-full bg-[#070b19] border border-amber-400/50 rounded-lg p-2.5 text-amber-300 font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+              >
+                {ELABORATE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat} className="bg-[#070b19] text-white font-mono">
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -366,7 +394,7 @@ export default function SplitScreenPublisherPage() {
               </button>
               <button
                 type="button"
-                onClick={() => insertFormatting('<blockquote className="border-l-4 border-amber-500 pl-4 italic">', '</blockquote>')}
+                onClick={() => insertFormatting('<blockquote class="border-l-4 border-amber-500 pl-4 italic">', '</blockquote>')}
                 className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded"
               >
                 Quote
@@ -383,6 +411,7 @@ export default function SplitScreenPublisherPage() {
           </div>
         </div>
 
+        {/* RIGHT COLUMN: LIVE PARALLEL PREVIEW */}
         <div className="p-6 overflow-y-auto bg-[#11162b] space-y-4">
           <div className="flex justify-between items-center text-[10px] uppercase text-gray-400 tracking-wider">
             <span>Live Watermarked Reader Preview</span>
@@ -397,8 +426,9 @@ export default function SplitScreenPublisherPage() {
             </div>
 
             <header className="border-b border-gray-300 pb-4 mb-6 text-center relative z-10 font-sans">
+              {/* REAL-TIME DYNAMIC CATEGORY RENDER */}
               <div className="text-[10px] font-bold tracking-widest uppercase text-amber-800 mb-1">
-                {category || 'Category'}
+                {category}
               </div>
               <h1 className="text-2xl font-extrabold text-[#0B192C] leading-tight mb-2">
                 {title || 'Untitled Essay'}
