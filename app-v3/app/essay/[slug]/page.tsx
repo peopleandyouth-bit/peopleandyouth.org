@@ -381,7 +381,7 @@ export default function PublicationReaderWithAuthModal() {
 
         {/* AUTHENTICATION / SIGNUP MODAL FOR DOWNLOAD (PRD #2) */}
         {isAuthModalOpen && (
-          <div className="no-print" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', itemsCenter: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
+          <div className="no-print" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }}>
             <form onSubmit={handleSignupAndDownload} style={{ background: '#0B192C', border: '1px solid #C59B27', padding: '24px', borderRadius: '12px', maxWidth: '420px', width: '100%', color: '#ffffff', fontFamily: 'monospace', fontSize: '12px' }}>
               <h3 style={{ color: '#C59B27', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 6px 0' }}>
                 Create Free Account to Download
