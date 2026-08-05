@@ -9,7 +9,6 @@ export default function PolicyRepositoryAdminPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [uploading, setUploading] = useState<boolean>(false);
 
-  // Form States
   const [title, setTitle] = useState('');
   const [documentType, setDocumentType] = useState('RTI Filing');
   const [summary, setSummary] = useState('');
@@ -45,7 +44,8 @@ export default function PolicyRepositoryAdminPage() {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `policy-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      const randomString = Math.random().toString(36).substring(2, 7);
+      const fileName = `policy-${Date.now()}-${randomString}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('essay-assets')
@@ -114,7 +114,6 @@ export default function PolicyRepositoryAdminPage() {
 
   return (
     <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs p-6 sm:p-10 space-y-8">
-      {/* HEADER */}
       <div className="flex flex-wrap justify-between items-center border-b border-white/10 pb-6 gap-4 max-w-6xl mx-auto">
         <div>
           <span className="text-amber-400 font-bold uppercase tracking-widest text-[10px] block">
@@ -134,7 +133,6 @@ export default function PolicyRepositoryAdminPage() {
         </Link>
       </div>
 
-      {/* FEEDBACK BANNER */}
       {message && (
         <div
           className={`max-w-6xl mx-auto p-3 text-center rounded-xl font-bold ${
@@ -147,9 +145,7 @@ export default function PolicyRepositoryAdminPage() {
         </div>
       )}
 
-      {/* FORM & LIST CONTAINER */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* NEW RECORD FORM */}
         <form onSubmit={handleSubmit} className="lg:col-span-1 bg-white/5 border border-white/10 p-6 rounded-2xl space-y-4">
           <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider border-b border-white/10 pb-2">
             Log New Legal / Policy Record
@@ -242,7 +238,6 @@ export default function PolicyRepositoryAdminPage() {
           </button>
         </form>
 
-        {/* EXISTING DOCUMENTS LIST */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-white/10 pb-2">
             Archival Document Ledger ({documents.length})

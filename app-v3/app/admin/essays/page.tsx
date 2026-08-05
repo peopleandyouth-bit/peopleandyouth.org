@@ -106,7 +106,6 @@ export default function SplitScreenPublisherPage() {
     }, 50);
   };
 
-  // Handle Image File Upload to Supabase Storage
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,22 +115,21 @@ export default function SplitScreenPublisherPage() {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36.substring(2, 9))}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const randomString = Math.random().toString(36).substring(2, 9);
+      const fileName = `${Date.now()}-${randomString}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('essay-assets')
-        .upload(filePath, file);
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabase.storage
         .from('essay-assets')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       const publicUrl = publicUrlData.publicUrl;
 
-      // Inject image tag into rawHtml
       const imageTag = `\n<figure class="my-6"><img src="${publicUrl}" alt="Embedded Asset" class="rounded-xl shadow-lg w-full" /><figcaption class="text-center text-xs text-gray-500 mt-2">Official Archive Visual Asset</figcaption></figure>\n`;
       setRawHtml((prev) => prev + imageTag);
       setMessage({ type: 'success', text: 'Image uploaded and injected successfully!' });
@@ -139,7 +137,6 @@ export default function SplitScreenPublisherPage() {
       setMessage({ type: 'error', text: err.message || 'Image upload failed.' });
     } finally {
       setUploading(false);
-      // Reset file input
       e.target.value = '';
     }
   };
@@ -322,7 +319,6 @@ export default function SplitScreenPublisherPage() {
             </div>
           </div>
 
-          {/* RICH-TEXT FORMATTING TOOLBAR & MEDIA UPLOADER */}
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <label className="block text-gray-400 uppercase text-[10px]">HTML Body & Media Uploader</label>
@@ -418,7 +414,7 @@ export default function SplitScreenPublisherPage() {
 
             <div
               className="prose prose-sm max-w-none text-[#222222] leading-relaxed relative z-10 font-serif"
-              dangerouslySetInnerHTML={{ __html: rawHtml || '<p className="text-gray-400">Preview empty...</p>' }}
+              dangerouslySetInnerHTML={{ __html: rawHtml || '<p class="text-gray-400">Preview empty...</p>' }}
             />
           </article>
         </div>
