@@ -46,6 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DynamicEssayReaderPage({ params }: Props) {
   const { slug } = await params;
 
+  // Increment view counter atomically in background
+  try {
+    await supabase.rpc('increment_essay_views', { essay_slug: slug });
+  } catch (e) {
+    console.error('Failed to register telemetry view:', e);
+  }
+
+  // Fetch updated document record
   const { data: essay, error } = await supabase
     .from('watermarked_essays')
     .select('*')
@@ -60,9 +68,15 @@ export default async function DynamicEssayReaderPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-[#070b19] text-white font-serif p-4 sm:p-8 select-none">
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center font-mono text-xs border-b border-white/10 pb-4">
-        <Link href="/dissent-dias" className="text-gray-400 hover:text-amber-400 transition-colors">
-          ← Editorial Portal
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/dissent-dias" className="text-gray-400 hover:text-amber-400 transition-colors">
+            ← Editorial Portal
+          </Link>
+          <span className="text-white/20">|</span>
+          <Link href="/policy" className="text-gray-400 hover:text-amber-400 transition-colors">
+            ⚖️ Policy Archive
+          </Link>
+        </div>
         <span className="text-amber-400 font-bold uppercase tracking-wider">{essay.category}</span>
       </div>
 
@@ -84,6 +98,8 @@ export default async function DynamicEssayReaderPage({ params }: Props) {
             <span>{essay.read_time}</span>
             <span>•</span>
             <span>{new Date(essay.created_at).toLocaleDateString()}</span>
+            <span>•</span>
+            <span className="text-amber-800 font-bold">👁️ {essay.views || 1} Reads</span>
           </div>
         </header>
 
