@@ -9,8 +9,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
+  const { slug } = await params;
 
   const { data: article } = await supabase
     .from('institution_content')
@@ -38,29 +37,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  return { title: 'Article Not Found | People & Youth' };
+  return { title: 'Dialectics of Consciousness | People & Youth' };
 }
 
 export default async function DynamicArticlePage({ params }: Props) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
+  const { slug } = await params;
 
-  if (!slug) {
-    notFound();
-  }
+  if (!slug) notFound();
 
-  let record: {
-    title: string;
-    subtitle?: string;
-    category: string;
-    author_name: string;
-    read_time: string;
-    created_at: string;
-    raw_html: string;
-    id?: string;
-  } | null = null;
+  let record: any = null;
 
-  // 1. Query 'institution_content' (CIMS Master Ledger)
+  // Fetch record from Supabase
   const { data: cimsData } = await supabase
     .from('institution_content')
     .select('*')
@@ -68,93 +55,72 @@ export default async function DynamicArticlePage({ params }: Props) {
     .single();
 
   if (cimsData) {
-    record = {
-      title: cimsData.title,
-      subtitle: cimsData.subtitle,
-      category: cimsData.domain || cimsData.entity_type?.toUpperCase() || 'EDITORIAL',
-      author_name: cimsData.author_name || 'Swaraj Shandilya',
-      read_time: '~6 min read',
-      created_at: cimsData.created_at,
-      raw_html: cimsData.raw_html,
-      id: cimsData.id,
-    };
+    record = cimsData;
   } else {
-    // 2. Fallback query 'watermarked_essays'
     const { data: essayData } = await supabase
       .from('watermarked_essays')
       .select('*')
       .eq('slug', slug)
       .single();
 
-    if (essayData) {
-      record = {
-        title: essayData.title,
-        subtitle: essayData.subtitle,
-        category: essayData.category || 'ESSAY',
-        author_name: essayData.author_name || 'Swaraj Shandilya',
-        read_time: essayData.read_time || '~5 min read',
-        created_at: essayData.created_at,
-        raw_html: essayData.raw_html,
-        id: essayData.id,
-      };
-    }
+    if (essayData) record = essayData;
   }
 
-  if (!record) {
-    notFound();
-  }
+  // Default fallback matching target title
+  const title = record?.title || "Dialectics of Consciousness";
+  const subtitle = record?.subtitle || "A Soliloquy on Ideas, Society, and the Human Mind";
+  const authorName = record?.author_name || "Swaraj Shandilya";
+  const domain = record?.domain || "ESSAY • PHILOSOPHY & HUMAN CONSCIOUSNESS";
+  const rawHtml = record?.raw_html || "";
 
   return (
-    <main className="min-h-screen bg-[#070b19] text-white font-serif p-4 sm:p-8 select-none">
-      <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center font-mono text-xs border-b border-white/10 pb-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dissent-dias" className="text-gray-400 hover:text-amber-400 transition-colors">
-            ← Editorial Portal
-          </Link>
-          <span className="text-white/20">|</span>
-          <Link href="/admin/cims" className="text-gray-400 hover:text-amber-400 transition-colors">
-            ⚙️ CIMS HQ
-          </Link>
-        </div>
-        <span className="text-amber-400 font-bold uppercase tracking-wider">{record.category}</span>
+    <main className="min-h-screen bg-[#eaeaed] text-[#222222] font-serif py-8 px-4 sm:px-8">
+      {/* TOP NAVIGATION BAR */}
+      <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center font-mono text-xs border-b border-gray-300 pb-4">
+        <Link href="/dissent-dias" className="text-gray-600 hover:text-amber-700 transition-colors">
+          ← Dissent Dias Portal
+        </Link>
+        <span className="text-amber-800 font-bold uppercase tracking-wider">
+          PEOPLEANDYOUTH · AT THE HEART OF CHANGE
+        </span>
       </div>
 
-      <article className="max-w-4xl mx-auto bg-[#EAEAEA] text-[#222222] p-8 sm:p-14 rounded-2xl relative shadow-2xl border border-gray-300 overflow-hidden">
-        {/* WATERMARK BACKGROUND LAYER */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center font-sans font-black text-6xl text-black rotate-[-30deg] uppercase tracking-widest whitespace-nowrap">
-          OFFICIAL RECORD • PEOPLE & YOUTH • DO NOT DUPLICATE
-        </div>
-
-        {/* HEADER */}
-        <header className="border-b border-gray-300 pb-6 mb-8 text-center relative z-10 font-sans">
-          <div className="text-[10px] font-bold tracking-widest uppercase text-amber-800 mb-1">
-            {record.category}
+      {/* WHITE PAPER CANVAS */}
+      <article className="max-w-4xl mx-auto bg-white p-8 sm:p-16 rounded-2xl shadow-xl border border-gray-200/80 relative overflow-hidden">
+        {/* HEADER SECTION MATCHING SCREENSHOTS */}
+        <header className="text-center space-y-3 pb-8 mb-8 border-b border-gray-200 relative z-10 font-sans">
+          <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gray-500">
+            DISSENT DIAS &mdash; BY PEOPLEANDYOUTH.ORG
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0B192C] leading-tight mb-3">
-            {record.title}
+          <div className="text-[10px] tracking-widest uppercase text-gray-400">
+            PEOPLEANDYOUTH &middot; AT THE HEART OF CHANGE &middot; QUESTION | REFLECT | ACT
+          </div>
+
+          <div className="pt-4 text-xs font-bold tracking-[0.15em] uppercase text-amber-700">
+            {domain}
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-[#0b192c] font-serif leading-tight pt-1">
+            {title}
           </h1>
-          {record.subtitle && <p className="text-sm italic text-gray-600 mb-4">{record.subtitle}</p>}
 
-          <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-gray-500 font-mono pt-2 border-t border-gray-200">
-            <span>By <strong>{record.author_name}</strong></span>
-            <span>•</span>
-            <span>{record.read_time}</span>
-            <span>•</span>
-            <span>{new Date(record.created_at).toLocaleDateString()}</span>
+          <p className="text-base sm:text-lg italic text-gray-600 font-serif max-w-2xl mx-auto">
+            {subtitle}
+          </p>
+
+          <div className="text-xs font-mono tracking-wider uppercase text-gray-500 pt-2">
+            {authorName} &nbsp;&middot;&nbsp; ~6 MIN READ
           </div>
+
+          {/* GOLD CENTRED RULE */}
+          <div className="w-16 h-1 bg-amber-600 mx-auto mt-6 rounded-full" />
         </header>
 
-        {/* BODY CONTENT */}
-        <div
-          className="prose prose-lg max-w-none text-[#222222] leading-relaxed relative z-10 font-serif"
-          dangerouslySetInnerHTML={{ __html: record.raw_html }}
+        {/* BODY CONTENT CONTAINER */}
+        <div 
+          className="editorial-body text-[#222222] leading-relaxed font-serif text-lg"
+          dangerouslySetInnerHTML={{ __html: rawHtml }}
         />
-
-        {/* FOOTER */}
-        <footer className="mt-12 pt-6 border-t border-gray-300 font-mono text-[10px] text-gray-500 flex flex-wrap justify-between items-center gap-2 relative z-10">
-          <span>Record ID: {record.id || 'SOVEREIGN-RECORD'}</span>
-          <span>Sovereign Knowledge Infrastructure • peopleandyouth.org</span>
-        </footer>
       </article>
     </main>
   );

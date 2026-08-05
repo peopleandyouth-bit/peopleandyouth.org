@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export default function DissentDiasPage() {
   const [essays, setEssays] = useState<any[]>([]);
@@ -72,7 +72,7 @@ export default function DissentDiasPage() {
             href="/admin/login"
             className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all text-gray-300"
           >
-            🔐 Admin Console
+            ðŸ” Admin Console
           </Link>
         </div>
 
@@ -92,7 +92,7 @@ export default function DissentDiasPage() {
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
               >
-                ✕
+                âœ•
               </button>
             )}
           </div>
@@ -125,7 +125,7 @@ export default function DissentDiasPage() {
           </div>
         ) : filteredEssays.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl p-8 space-y-3">
-            <div className="text-2xl">🔍</div>
+            <div className="text-2xl">ðŸ”</div>
             <p className="text-gray-400 text-sm">No essays match your current filter or search criteria.</p>
             <button
               onClick={() => {
