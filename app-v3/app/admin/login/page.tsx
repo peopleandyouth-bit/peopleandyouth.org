@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function AdminLoginPage() {
@@ -10,12 +9,29 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if already authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        syncCookies(session);
+        router.push('/admin/dashboard');
+      }
+    });
+  }, [router]);
+
+  const syncCookies = (session: any) => {
+    if (!session) return;
+    const maxAge = 60 * 60 * 24 * 7; // 7 Days
+    document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`;
+    document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg('');
+    setErrorMsg(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -25,11 +41,22 @@ export default function AdminLoginPage() {
 
       if (error) {
         setErrorMsg(error.message);
-      } else if (data.session) {
-        router.push('/admin/essays');
+        setLoading(false);
+        return;
+      }
+
+      if (data.session) {
+        syncCookies(data.session);
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+          if (session) syncCookies(session);
+        });
+
+        router.push('/admin/dashboard');
+        router.refresh();
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'An unexpected authentication error occurred.');
+      setErrorMsg(err.message || 'Authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -37,62 +64,60 @@ export default function AdminLoginPage() {
 
   return (
     <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white/5 border border-white/10 p-8 rounded-2xl shadow-2xl space-y-6">
-        
-        <div className="text-center space-y-2 border-b border-white/10 pb-4">
-          <span className="text-amber-400 font-bold uppercase tracking-widest text-[10px] block">
-            SOVEREIGN ACCESS CONTROL
+      <div className="bg-white/5 border border-white/10 p-8 rounded-2xl max-w-md w-full space-y-6 shadow-2xl">
+        <div className="text-center space-y-1">
+          <span className="text-amber-400 font-bold uppercase tracking-widest text-[10px]">
+            SOVEREIGN CONTROL CONSOLE
           </span>
           <h1 className="text-2xl font-extrabold text-white">Admin Authentication</h1>
-          <p className="text-gray-400 text-[10px]">peopleandyouth.org Control Console</p>
+          <p className="text-gray-400 text-[11px]">Sign in to access the Institution Operating System (IOS)</p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-500/10 border border-red-500/40 text-red-300 rounded-lg text-center font-bold">
-            ❌ {errorMsg}
+          <div className="p-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl text-center font-bold">
+            {errorMsg}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-gray-400 uppercase mb-1">Admin Email</label>
+            <label className="block text-gray-400 uppercase text-[10px] mb-1">Email Address</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@peopleandyouth.org"
-              className="w-full bg-[#070b19] border border-white/20 rounded-lg p-3 text-white focus:border-amber-400 focus:outline-none"
+              className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-gray-400 uppercase mb-1">Password</label>
+            <label className="block text-gray-400 uppercase text-[10px] mb-1">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full bg-[#070b19] border border-white/20 rounded-lg p-3 text-white focus:border-amber-400 focus:outline-none"
+              className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold uppercase tracking-wider hover:from-amber-300 transition-all shadow-xl mt-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold uppercase tracking-wider hover:from-amber-300 transition-all shadow-xl"
           >
-            {loading ? 'Authenticating Session...' : '🔓 Sign In to Admin Console'}
+            {loading ? 'Authenticating...' : '🔐 Sign In to Console'}
           </button>
         </form>
 
-        <div className="pt-2 text-center">
-          <Link href="/dissent-dias" className="text-gray-400 hover:text-amber-400 transition-colors">
-            ← Return to Public Editorial Portal
-          </Link>
+        <div className="text-center pt-2 border-t border-white/10">
+          <a href="/dissent-dias" className="text-gray-500 hover:text-amber-400 transition-colors text-[10px]">
+            ← Return to Public Portal
+          </a>
         </div>
-
       </div>
     </main>
   );
