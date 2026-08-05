@@ -15,11 +15,12 @@ export default function AuthenticatedCIMSPage() {
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [domain, setDomain] = useState('Philosophy & Public Policy');
-  const [rawHtml, setRawHtml] = useState('<p>Write article content here...</p>');
+  const [rawHtml, setRawHtml] = useState('<p>Write article content or upload an HTML/PDF file below...</p>');
   const [status, setStatus] = useState<'published' | 'draft'>('published');
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -30,7 +31,6 @@ export default function AuthenticatedCIMSPage() {
   const checkAuthAndLoad = async () => {
     setLoading(true);
 
-    // 1. Verify Active Admin Session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       router.push('/admin/login');
@@ -38,8 +38,6 @@ export default function AuthenticatedCIMSPage() {
     }
 
     setUser(session.user);
-
-    // 2. Load Live Records from Supabase PostgreSQL
     await fetchLiveArticles();
     setLoading(false);
   };
@@ -64,6 +62,83 @@ export default function AuthenticatedCIMSPage() {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
     setSlug(generatedSlug);
+  };
+
+  // HTML & PDF FILE INGESTION HANDLER
+  const handleDocumentImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    setMsg(null);
+
+    if (fileExt === 'html' || fileExt === 'htm') {
+      // 1. INGEST HTML FILE
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setRawHtml(content);
+
+        // Auto-extract Title if missing
+        const derivedTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        if (!title) {
+          handleTitleChange(derivedTitle.charAt(0).toUpperCase() + derivedTitle.slice(1));
+        }
+
+        setMsg({ type: 'success', text: `HTML document "${file.name}" loaded into editor!` });
+      };
+      reader.readAsText(file);
+    } else if (fileExt === 'pdf') {
+      // 2. INGEST PDF FILE
+      setUploadingFile(true);
+      try {
+        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('essay-assets')
+          .upload(fileName, file, { contentType: 'application/pdf' });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('essay-assets')
+          .getPublicUrl(fileName);
+
+        const pdfUrl = publicUrlData.publicUrl;
+
+        // Construct Embedded Responsive PDF Viewer Wrapper
+        const pdfEmbedHtml = `
+<div class="pdf-viewer-wrapper my-8 font-sans">
+  <div class="flex justify-between items-center bg-[#0B192C] text-white p-4 rounded-t-xl border-b-2 border-[#C59B27]">
+    <div class="flex items-center gap-2">
+      <span class="text-amber-400 font-bold">📄 OFFICIAL PDF DOCUMENT:</span>
+      <span class="font-mono text-xs text-gray-300">${file.name}</span>
+    </div>
+    <a href="${pdfUrl}" target="_blank" download class="px-4 py-1.5 bg-[#C59B27] text-black font-extrabold text-xs rounded hover:bg-yellow-400 transition-colors uppercase">
+      Download PDF 📥
+    </a>
+  </div>
+  <iframe src="${pdfUrl}" class="w-full h-[850px] rounded-b-xl border border-gray-300 shadow-xl" title="${file.name}"></iframe>
+</div>`;
+
+        setRawHtml(pdfEmbedHtml);
+
+        const derivedTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        if (!title) {
+          handleTitleChange(derivedTitle.charAt(0).toUpperCase() + derivedTitle.slice(1));
+        }
+
+        setMsg({ type: 'success', text: `PDF uploaded successfully! Viewer embedded.` });
+      } catch (err: any) {
+        setMsg({ type: 'error', text: err.message || 'PDF upload failed.' });
+      } finally {
+        setUploadingFile(false);
+      }
+    } else {
+      setMsg({ type: 'error', text: 'Please select a valid .html or .pdf document file.' });
+    }
+
+    e.target.value = '';
   };
 
   const handleCreateArticle = async (e: React.FormEvent) => {
@@ -94,11 +169,11 @@ export default function AuthenticatedCIMSPage() {
 
       if (error) throw error;
 
-      setMsg({ type: 'success', text: `Published successfully! Live at /articles/${slug}` });
+      setMsg({ type: 'success', text: `Publication record created! Live at /articles/${slug}` });
       setTitle('');
       setSlug('');
       setSubtitle('');
-      setRawHtml('<p>Write article content here...</p>');
+      setRawHtml('<p>Write article content or upload an HTML/PDF file below...</p>');
       setIsModalOpen(false);
 
       fetchLiveArticles();
@@ -201,7 +276,7 @@ export default function AuthenticatedCIMSPage() {
           </div>
         )}
 
-        {/* MODAL FORM */}
+        {/* PUBLISH MODAL WITH HTML / PDF IMPORT */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <form
@@ -209,10 +284,30 @@ export default function AuthenticatedCIMSPage() {
               className="bg-[#0a1024] border border-white/20 p-6 rounded-2xl max-w-2xl w-full space-y-4 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                <h3 className="text-sm font-bold text-amber-400 uppercase">Publish New Article to Database</h3>
+                <h3 className="text-sm font-bold text-amber-400 uppercase">Publish New Publication Record</h3>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">
                   ✕
                 </button>
+              </div>
+
+              {/* FILE IMPORT BAR (.HTML or .PDF) */}
+              <div className="bg-[#070b19] border border-amber-400/30 p-4 rounded-xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-amber-300 font-bold uppercase text-[10px]">
+                    📥 Import External Document (.HTML or .PDF)
+                  </label>
+                  <span className="text-[9px] text-gray-400">Auto-Extracts Content / Embeds PDF</span>
+                </div>
+                <input
+                  type="file"
+                  accept=".html,.htm,.pdf"
+                  onChange={handleDocumentImport}
+                  disabled={uploadingFile}
+                  className="w-full text-xs text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-400 file:text-black hover:file:bg-amber-300 cursor-pointer"
+                />
+                {uploadingFile && (
+                  <p className="text-[10px] text-amber-400 font-bold animate-pulse">Uploading PDF to Supabase Storage...</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -223,7 +318,7 @@ export default function AuthenticatedCIMSPage() {
                     required
                     value={title}
                     onChange={(e) => handleTitleChange(e.target.value)}
-                    placeholder="Article Title..."
+                    placeholder="Publication Title..."
                     className="w-full bg-[#070b19] border border-white/20 rounded-lg p-2.5 text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
@@ -276,7 +371,7 @@ export default function AuthenticatedCIMSPage() {
               </div>
 
               <div>
-                <label className="block text-gray-400 text-[10px] uppercase mb-1">HTML Content Body</label>
+                <label className="block text-gray-400 text-[10px] uppercase mb-1">HTML Content Body / Markup</label>
                 <textarea
                   rows={8}
                   required
@@ -288,7 +383,7 @@ export default function AuthenticatedCIMSPage() {
 
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || uploadingFile}
                 className="w-full py-3 rounded-xl bg-amber-400 text-black font-extrabold uppercase hover:bg-amber-300 transition-all shadow-lg"
               >
                 {saving ? 'Publishing to Database...' : '🚀 Publish Record Live'}
