@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function AuthenticatedCIMSPage() {
+export default function FullyRestoredSovereignCIMSPage() {
   const router = useRouter();
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [articles, setArticles] = useState<any[]>([]);
 
-  // Modal & Form States
+  // Modal & Document Import States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -20,7 +20,7 @@ export default function AuthenticatedCIMSPage() {
   const [slug, setSlug] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [domain, setDomain] = useState('Philosophy & Public Policy');
-  const [rawHtml, setRawHtml] = useState('<p>Write article content or upload an HTML/PDF file below...</p>');
+  const [rawHtml, setRawHtml] = useState('<p>Write article content or import HTML/PDF file below...</p>');
   const [status, setStatus] = useState<'published' | 'draft'>('published');
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -64,7 +64,6 @@ export default function AuthenticatedCIMSPage() {
     setSlug(generatedSlug);
   };
 
-  // HTML & PDF FILE INGESTION HANDLER
   const handleDocumentImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -73,23 +72,20 @@ export default function AuthenticatedCIMSPage() {
     setMsg(null);
 
     if (fileExt === 'html' || fileExt === 'htm') {
-      // 1. INGEST HTML FILE
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
         setRawHtml(content);
 
-        // Auto-extract Title if missing
         const derivedTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
         if (!title) {
           handleTitleChange(derivedTitle.charAt(0).toUpperCase() + derivedTitle.slice(1));
         }
 
-        setMsg({ type: 'success', text: `HTML document "${file.name}" loaded into editor!` });
+        setMsg({ type: 'success', text: `HTML document "${file.name}" imported into editor!` });
       };
       reader.readAsText(file);
     } else if (fileExt === 'pdf') {
-      // 2. INGEST PDF FILE
       setUploadingFile(true);
       try {
         const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -106,7 +102,6 @@ export default function AuthenticatedCIMSPage() {
 
         const pdfUrl = publicUrlData.publicUrl;
 
-        // Construct Embedded Responsive PDF Viewer Wrapper
         const pdfEmbedHtml = `
 <div class="pdf-viewer-wrapper my-8 font-sans">
   <div class="flex justify-between items-center bg-[#0B192C] text-white p-4 rounded-t-xl border-b-2 border-[#C59B27]">
@@ -128,14 +123,14 @@ export default function AuthenticatedCIMSPage() {
           handleTitleChange(derivedTitle.charAt(0).toUpperCase() + derivedTitle.slice(1));
         }
 
-        setMsg({ type: 'success', text: `PDF uploaded successfully! Viewer embedded.` });
+        setMsg({ type: 'success', text: `PDF uploaded successfully to storage!` });
       } catch (err: any) {
         setMsg({ type: 'error', text: err.message || 'PDF upload failed.' });
       } finally {
         setUploadingFile(false);
       }
     } else {
-      setMsg({ type: 'error', text: 'Please select a valid .html or .pdf document file.' });
+      setMsg({ type: 'error', text: 'Please select a valid .html or .pdf document.' });
     }
 
     e.target.value = '';
@@ -169,11 +164,11 @@ export default function AuthenticatedCIMSPage() {
 
       if (error) throw error;
 
-      setMsg({ type: 'success', text: `Publication record created! Live at /articles/${slug}` });
+      setMsg({ type: 'success', text: `Published successfully! Live at /articles/${slug}` });
       setTitle('');
       setSlug('');
       setSubtitle('');
-      setRawHtml('<p>Write article content or upload an HTML/PDF file below...</p>');
+      setRawHtml('<p>Write article content or import HTML/PDF file below...</p>');
       setIsModalOpen(false);
 
       fetchLiveArticles();
@@ -205,7 +200,7 @@ export default function AuthenticatedCIMSPage() {
       <main className="min-h-screen bg-[#070b19] text-white flex items-center justify-center font-mono text-xs">
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-          <span>Verifying Credentials & Synchronizing Database...</span>
+          <span>Verifying Credentials & Loading Sovereign CIMS...</span>
         </div>
       </main>
     );
@@ -213,46 +208,84 @@ export default function AuthenticatedCIMSPage() {
 
   return (
     <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs flex">
-      {/* SIDEBAR NAVIGATION */}
-      <aside className="w-64 border-r border-white/10 p-6 flex flex-col justify-between bg-[#040711] hidden md:flex">
+      {/* FULL RESTORED SOVEREIGN CIMS SIDEBAR */}
+      <aside className="w-72 border-r border-white/10 p-6 flex flex-col justify-between bg-[#040711] hidden md:flex shrink-0">
         <div className="space-y-6">
           <div>
             <span className="text-amber-400 font-bold uppercase text-[9px] tracking-widest block">
-              AUTHENTICATED CONSOLE
+              SOVEREIGN CIMS V2.0
             </span>
-            <h1 className="text-lg font-extrabold text-white mt-1">CIMS Admin HQ</h1>
-            <p className="text-gray-500 text-[10px] truncate mt-0.5">{user?.email}</p>
+            <h1 className="text-lg font-extrabold text-white mt-1">Institutional HQ</h1>
+            <p className="text-gray-500 text-[10px]">Control Centre & Publishing Engine</p>
           </div>
 
-          <nav className="space-y-2">
-            <Link href="/admin/cims" className="block px-3.5 py-2.5 rounded-xl bg-amber-400 text-black font-extrabold">
-              📰 CIMS Publisher
+          <nav className="space-y-1 text-gray-300">
+            <Link href="/admin/dashboard" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>📊 Institutional Dashboard</span>
             </Link>
-            <Link href="/admin/dashboard" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
-              📊 Master Dashboard
+
+            <Link href="/admin/cims" className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-400 text-black font-extrabold shadow-md">
+              <span>📰 Content & Articles</span>
+              <span className="bg-black/20 text-black px-1.5 py-0.5 rounded text-[9px] font-bold">{articles.length}</span>
             </Link>
-            <Link href="/admin/policy" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
-              ⚖️ Policy Repository
+
+            <Link href="/dissent-dias" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>📜 Editorial & Dissent Dias</span>
             </Link>
-            <Link href="/admin/print" className="block px-3.5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 transition-colors">
-              🖨️ Print Studio
+
+            <Link href="/policy-lab" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>⚖️ Research & Policy Briefs</span>
+            </Link>
+
+            {/* PROJECT HIMALAYA: KNOWLEDGE CAVES */}
+            <Link href="/caves" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors text-amber-300 font-bold">
+              <span>🏛️ Knowledge Caves</span>
+              <span className="bg-amber-400/10 border border-amber-400/30 text-amber-400 px-1.5 py-0.5 rounded text-[9px]">17</span>
+            </Link>
+
+            {/* PROJECT HIMALAYA: MOUNTAIN RANGES */}
+            <Link href="/mountains" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors text-amber-300 font-bold">
+              <span>🏔️ Mountain Ranges</span>
+              <span className="bg-amber-400/10 border border-amber-400/30 text-amber-400 px-1.5 py-0.5 rounded text-[9px]">4</span>
+            </Link>
+
+            <Link href="/journals" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>📚 Renaissance Journals</span>
+              <span className="bg-white/10 text-gray-400 px-1.5 py-0.5 rounded text-[9px]">14</span>
+            </Link>
+
+            <Link href="/admin/print" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>📁 Media & PDF Repository</span>
+            </Link>
+
+            <Link href="/admin/users" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>👥 User & Role Permissions</span>
+              <span className="bg-white/10 text-gray-400 px-1.5 py-0.5 rounded text-[9px]">22 Roles</span>
+            </Link>
+
+            <Link href="/careers" className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-colors">
+              <span>💼 Talent & Applications</span>
+              <span className="bg-white/10 text-gray-400 px-1.5 py-0.5 rounded text-[9px]">5</span>
             </Link>
           </nav>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="w-full py-2.5 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl font-bold hover:bg-red-500/30 transition-all"
-        >
-          🚪 End Session
-        </button>
+        <div className="space-y-3 pt-4 border-t border-white/10">
+          <p className="text-[9px] text-gray-500 truncate">{user?.email}</p>
+          <button
+            onClick={handleLogout}
+            className="w-full py-2 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl font-bold hover:bg-red-500/30 transition-all text-center"
+          >
+            🚪 End Session
+          </button>
+        </div>
       </aside>
 
       {/* MAIN WORKSPACE */}
       <div className="flex-1 p-6 sm:p-10 space-y-6 overflow-y-auto">
         <div className="flex flex-wrap justify-between items-center border-b border-white/10 pb-6 gap-4">
           <div>
-            <span className="text-amber-400 font-bold uppercase text-[10px]">SOVEREIGN CIMS V2.0</span>
+            <span className="text-amber-400 font-bold uppercase text-[10px]">CIMS OPERATIONS HUB</span>
             <h2 className="text-2xl font-extrabold text-white">DASHBOARD WORKSPACE</h2>
           </div>
 
@@ -276,7 +309,7 @@ export default function AuthenticatedCIMSPage() {
           </div>
         )}
 
-        {/* PUBLISH MODAL WITH HTML / PDF IMPORT */}
+        {/* CREATE PUBLICATION MODAL WITH HTML / PDF IMPORT */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <form
@@ -290,7 +323,7 @@ export default function AuthenticatedCIMSPage() {
                 </button>
               </div>
 
-              {/* FILE IMPORT BAR (.HTML or .PDF) */}
+              {/* DOCUMENT IMPORT SECTION */}
               <div className="bg-[#070b19] border border-amber-400/30 p-4 rounded-xl space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-amber-300 font-bold uppercase text-[10px]">
