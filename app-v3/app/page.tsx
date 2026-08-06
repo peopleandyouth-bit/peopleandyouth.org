@@ -471,7 +471,7 @@ export default function CompleteMasterHeadquartersPage() {
         </section>
 
         {/* 8. DIGITAL HEADQUARTERS DIVISIONS GRID */}
-        <div className="max-w-7xl mx-auto p-6 sm:p-12 space-y-12">
+        <div className="max-w-7xl mx-auto p-6 sm:p-12 space-y-12 border-b border-white/10">
           {headquartersStructure.map((section: any) => (
             <section key={section.id} id={section.id} className="space-y-4">
               <div className="flex justify-between items-end border-b border-white/10 pb-3">
@@ -495,9 +495,33 @@ export default function CompleteMasterHeadquartersPage() {
             </section>
           ))}
         </div>
+
+        {/* 9. NAVY BLUE CARD SNIPPET (AT THE HEART OF CHANGE) */}
+        <section className="max-w-4xl mx-auto p-6 sm:p-10 my-8">
+          <div className="bg-[#0B192C] border border-[#C59B27]/40 p-8 sm:p-12 rounded-3xl text-center space-y-6 shadow-2xl">
+            <h3 className="text-amber-400 font-extrabold uppercase tracking-widest text-sm sm:text-base font-mono">
+              PEOPLEANDYOUTH.ORG — AT THE HEART OF CHANGE
+            </h3>
+
+            <p className="text-gray-200 text-xs sm:text-sm font-serif max-w-xl mx-auto leading-relaxed">
+              Join us in building a culture of reasoned dialogue, intellectual curiosity, and responsible action.
+            </p>
+
+            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-xs font-mono text-gray-300 pt-2 border-t border-white/10">
+              <p><strong className="text-amber-400">Instagram:</strong> <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">instagram.com/peopleandyouth</a></p>
+              <p><strong className="text-amber-400">YouTube:</strong> <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">youtube.com/@peopleandyouth</a></p>
+              <p><strong className="text-amber-400">LinkedIn:</strong> <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="hover:underline">Swaraj Shandilya</a></p>
+              <p><strong className="text-amber-400">Email:</strong> <a href="mailto:contact@peopleandyouth.org" className="hover:underline">contact@peopleandyouth.org</a></p>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 text-amber-400 font-black text-xs sm:text-sm tracking-widest uppercase font-mono">
+              QUESTION. REFLECT. ACT.
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* 9. RICH FOOTER */}
+      {/* 10. RICH FOOTER */}
       <footer className="border-t border-white/10 bg-[#040711] py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-[10px] text-gray-500 font-mono gap-4">
           <span>&copy; 2026 People & Youth &middot; www.peopleandyouth.org &middot; All Rights Reserved.</span>
