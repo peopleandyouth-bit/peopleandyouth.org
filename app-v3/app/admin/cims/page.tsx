@@ -162,6 +162,7 @@ export default function AdminCimsConsolePage() {
       category,
       content: contentHtml,
       author_name: authorName,
+      author_email: 'contact@peopleandyouth.org', // <-- FIX: Added missing field
       created_at: new Date().toISOString()
     };
 
