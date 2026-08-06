@@ -90,7 +90,7 @@ export default function CivicPassportShowcasePage() {
                     <div><span className="text-white font-bold block text-[10px]">YouTube</span><span className="text-gray-400 text-[8px]">@peopleandyouth</span></div>
                   </a>
 
-                  <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
+                  <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-amber-400 transition-colors flex items-center gap-2">
                     <span className="text-base">💼</span>
                     <div><span className="text-white font-bold block text-[10px]">LinkedIn</span><span className="text-gray-400 text-[8px]">Swaraj Shandilya</span></div>
                   </a>

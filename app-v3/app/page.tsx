@@ -405,7 +405,7 @@ export default function CompleteMasterHeadquartersPage() {
                         <div><span className="text-white font-bold block">YouTube</span><span className="text-gray-400 text-[7px]">@peopleandyouth</span></div>
                       </a>
 
-                      <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
+                      <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
                         <span>💼</span>
                         <div><span className="text-white font-bold block">LinkedIn</span><span className="text-gray-400 text-[7px]">Swaraj Shandilya</span></div>
                       </a>
@@ -510,7 +510,7 @@ export default function CompleteMasterHeadquartersPage() {
             <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-xs font-mono text-gray-300 pt-2 border-t border-white/10">
               <p><strong className="text-amber-400">Instagram:</strong> <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">instagram.com/peopleandyouth</a></p>
               <p><strong className="text-amber-400">YouTube:</strong> <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">youtube.com/@peopleandyouth</a></p>
-              <p><strong className="text-amber-400">LinkedIn:</strong> <a href="https://linkedin.com/in/swarajshandilya" target="_blank" rel="noreferrer" className="hover:underline">Swaraj Shandilya</a></p>
+              <p><strong className="text-amber-400">LinkedIn:</strong> <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="hover:underline">Swaraj Shandilya</a></p>
               <p><strong className="text-amber-400">Email:</strong> <a href="mailto:contact@peopleandyouth.org" className="hover:underline">contact@peopleandyouth.org</a></p>
             </div>
 
