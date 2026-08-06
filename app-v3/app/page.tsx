@@ -100,9 +100,9 @@ export default function DigitalHeadquartersPage() {
       ]
     },
     {
-      id: 'mountains',
-      title: 'Knowledge Mountain Ranges',
-      subtitle: '8 Sovereign Thematic Ranges',
+      id: 'realms',
+      title: 'Knowledge Realms',
+      subtitle: '18 Sovereign Thematic Realms',
       items: [
         'Himalaya Range', 'Aravalli Range', 'Vindhya Range', 'Satpura Range',
         'Nilgiri Range', 'Eastern Ghats Range', 'Western Ghats Range',
@@ -232,14 +232,14 @@ export default function DigitalHeadquartersPage() {
       <div className="border-b border-white/10 bg-[#070b19] px-6 py-2.5 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
         <div className="flex items-center gap-3">
           <span className="text-amber-400 font-bold tracking-widest">PEOPLEANDYOUTH.ORG</span>
-          <span>•</span>
+          <span>â€¢</span>
           <span className="hidden sm:inline">DIGITAL HEADQUARTERS OF A GLOBAL INSTITUTION</span>
         </div>
 
         <div className="flex items-center gap-4 flex-wrap">
-          <Link href="/constitution" className="text-amber-300 font-bold hover:underline">📜 Constitution</Link>
-          <Link href="/careers" className="text-amber-300 font-bold hover:underline">💼 Global Careers</Link>
-          <Link href="/admin/login" className="hover:text-amber-400">🔐 Institution OS</Link>
+          <Link href="/constitution" className="text-amber-300 font-bold hover:underline">ðŸ“œ Constitution</Link>
+          <Link href="/careers" className="text-amber-300 font-bold hover:underline">ðŸ’¼ Global Careers</Link>
+          <Link href="/admin/login" className="hover:text-amber-400">ðŸ” Institution OS</Link>
         </div>
       </div>
 
@@ -261,7 +261,7 @@ export default function DigitalHeadquartersPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="🔍 Search across 19 Divisions, 17 Journals, 8 Ranges, and 19 Caves..."
+            placeholder="ðŸ” Search across 19 Divisions, 17 Journals, 8 Ranges, and 19 Caves..."
             className="w-full bg-white/5 border border-white/20 rounded-2xl px-5 py-3 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none text-xs"
           />
         </div>
@@ -276,7 +276,7 @@ export default function DigitalHeadquartersPage() {
               activeSection === 'Overview' ? 'bg-amber-400 text-black border-amber-400' : 'bg-white/5 border-white/10 hover:text-white'
             }`}
           >
-            🏛️ All Divisions
+            ðŸ›ï¸ All Divisions
           </button>
 
           {headquartersStructure.map((sec) => (
@@ -304,7 +304,7 @@ export default function DigitalHeadquartersPage() {
                 href={`/${section.id}`}
                 className="text-amber-400 font-bold text-[10px] uppercase hover:underline"
               >
-                Access Division Portal →
+                Access Division Portal â†’
               </Link>
             </div>
 
@@ -329,7 +329,7 @@ export default function DigitalHeadquartersPage() {
           <div className="col-span-2 space-y-3">
             <h3 className="text-lg font-extrabold text-white uppercase">People & Youth <span className="text-amber-400">.</span></h3>
             <p className="text-gray-400 leading-relaxed font-serif">
-              Digital Headquarters of a Sovereign Global Institution. Question | Reflect | Act — Leading Youth Towards Praxis.
+              Digital Headquarters of a Sovereign Global Institution. Question | Reflect | Act â€” Leading Youth Towards Praxis.
             </p>
             <p className="text-amber-400 font-bold text-[10px] tracking-widest uppercase pt-2">
               WHERE IDEAS BECOME INSTITUTIONS.
