@@ -19,7 +19,7 @@ export function ApplyButton({ opportunityId, opportunityType, department, title,
         onClick={() => setIsOpen(true)}
         className="px-5 py-2.5 bg-amber-400 text-black font-extrabold text-xs uppercase rounded-xl hover:bg-amber-300 transition-all shadow-md tracking-wider"
       >
-        Apply for Opportunity →
+        Apply for Opportunity â†’
       </button>
 
       {isOpen && (
@@ -66,7 +66,7 @@ export function OpportunityApplySection({ opportunityId, opportunityType, depart
           onClick={() => alert(`Saved ${title} to your Candidate Dashboard bookmarks.`)}
           className="px-4 py-2.5 bg-white/5 border border-white/10 hover:border-amber-400 text-white font-bold text-xs uppercase rounded-xl transition-all"
         >
-          Save for Later 🔖
+          Save for Later ðŸ”–
         </button>
         <button
           onClick={() => {
@@ -75,7 +75,7 @@ export function OpportunityApplySection({ opportunityId, opportunityType, depart
           }}
           className="px-4 py-2.5 bg-white/5 border border-white/10 hover:border-amber-400 text-white font-bold text-xs uppercase rounded-xl transition-all"
         >
-          Share 🔗
+          Share ðŸ”—
         </button>
       </div>
     </div>
@@ -147,6 +147,21 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
       };
 
       localStorage.setItem('py_candidate_session', JSON.stringify(payload));
+      // Trigger Institutional Email Communication Engine
+      const isFellowship = opportunityType.toLowerCase().includes('fellowship') || opportunityType.toLowerCase().includes('internship');
+      fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scenario: isFellowship ? 'fellowship' : 'career',
+          email,
+          firstName: fullName.split(' ')[0],
+          applicationId: appId,
+          roleName: title,
+          department,
+          programmeName: title
+        })
+      }).catch(err => console.error('Email API trigger background error:', err));
       setSubmittedData(payload);
     }
   };
@@ -162,7 +177,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             <h2 className="text-lg font-extrabold text-white mt-0.5">{title}</h2>
             <p className="text-gray-400 text-[10px]">{department} &middot; {opportunityType} &middot; {location}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-lg font-bold">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-lg font-bold">âœ•</button>
         </div>
 
         {/* STAGE PROGRESS BAR */}
@@ -192,7 +207,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
         {submittedData ? (
           <div className="py-8 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-300 flex items-center justify-center text-2xl mx-auto">
-              ✓
+              âœ“
             </div>
             <h3 className="text-2xl font-bold text-white uppercase font-serif">Application Submitted</h3>
             <p className="text-gray-300 text-xs max-w-md mx-auto leading-relaxed">
@@ -219,7 +234,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
                 href="/candidate-dashboard"
                 className="px-6 py-3 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs"
               >
-                Access Candidate Dashboard →
+                Access Candidate Dashboard â†’
               </a>
               <button
                 onClick={onClose}
@@ -234,7 +249,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE I: IDENTITY & ELIGIBILITY */}
             {stage === 1 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage I — Candidate Identity & Eligibility</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage I â€” Candidate Identity & Eligibility</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-400 text-[9px] uppercase mb-1">Full Legal Name *</label>
@@ -267,7 +282,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE II: EDUCATION & EXPERIENCE */}
             {stage === 2 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage II — Education, Skills & Professional Background</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage II â€” Education, Skills & Professional Background</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-400 text-[9px] uppercase mb-1">Highest Qualification *</label>
@@ -297,7 +312,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE III: OPPORTUNITY ALIGNMENT */}
             {stage === 3 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage III — Role Preferences & Institutional Alignment</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage III â€” Role Preferences & Institutional Alignment</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-400 text-[9px] uppercase mb-1">Employment Type Preference</label>
@@ -319,7 +334,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE IV: ASSESSMENT */}
             {stage === 4 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage IV — Purpose, Values & Motivation</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage IV â€” Purpose, Values & Motivation</h4>
                 <div>
                   <label className="block text-gray-400 text-[9px] uppercase mb-1">Why People & Youth? What societal challenge do you wish to address? *</label>
                   <textarea rows={3} required value={whyPyEssay} onChange={(e) => setWhyPyEssay(e.target.value)} placeholder="Write a concise response..." className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none text-xs" />
@@ -334,7 +349,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE V: VERIFICATION */}
             {stage === 5 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage V — Professional Verification & References</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage V â€” Professional Verification & References</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-400 text-[9px] uppercase mb-1">Reference 1 (Academic / Employer) *</label>
@@ -355,7 +370,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             {/* STAGE VI: SUBMISSION */}
             {stage === 6 && (
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage VI — Review, Digital Signature & Submission</h4>
+                <h4 className="text-xs font-bold text-amber-400 uppercase">Stage VI â€” Review, Digital Signature & Submission</h4>
                 <div className="bg-[#070b19] p-4 rounded-xl border border-white/10 space-y-2 text-[10px]">
                   <div className="flex justify-between"><span className="text-gray-400">Applicant:</span><span className="text-white font-bold">{fullName} ({email})</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Applying For:</span><span className="text-amber-300 font-bold">{title}</span></div>
@@ -378,12 +393,12 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             <div className="flex justify-between items-center pt-4 border-t border-white/10">
               {stage > 1 ? (
                 <button type="button" onClick={() => setStage(stage - 1)} className="px-4 py-2 bg-white/10 text-white rounded-xl font-bold uppercase hover:bg-white/20">
-                  ← Previous Stage
+                  â† Previous Stage
                 </button>
               ) : <div />}
 
               <button type="submit" className="px-6 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs">
-                {stage === 6 ? '🚀 Submit Application' : 'Proceed to Next Stage →'}
+                {stage === 6 ? 'ðŸš€ Submit Application' : 'Proceed to Next Stage â†’'}
               </button>
             </div>
           </form>
