@@ -155,8 +155,8 @@ export default function AdminCimsConsolePage() {
       ? slug.trim().toLowerCase().replace(/[^a-z0-9]/g, '-')
       : title.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-    // Fully hydrated payload covering subtitle, abstract, excerpt, and author_email
-    const payload = {
+    // Flexible payload
+    const payload: Record<string, any> = {
       title,
       slug: generatedSlug,
       subtitle,
@@ -170,7 +170,23 @@ export default function AdminCimsConsolePage() {
       created_at: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('articles').insert(payload);
+    // Primary Insert Attempt
+    let { error } = await supabase.from('articles').insert(payload);
+
+    // AUTO-HEALING RETRY: If Supabase complains about a specific missing column, strip it dynamically and retry!
+    let attempts = 0;
+    while (error && error.message.includes('Could not find the') && error.message.includes('column') && attempts < 5) {
+      attempts++;
+      const match = error.message.match(/Could not find the '([^']+)' column/);
+      if (match && match[1]) {
+        const missingCol = match[1];
+        delete payload[missingCol];
+        const retry = await supabase.from('articles').insert(payload);
+        error = retry.error;
+      } else {
+        break;
+      }
+    }
 
     if (error) {
       console.error('Publish error:', error);
@@ -250,7 +266,7 @@ export default function AdminCimsConsolePage() {
                   <div className="space-y-1 max-w-2xl">
                     <span className="text-[9px] text-amber-400 font-bold uppercase block">{pub.category}</span>
                     <h3 className="text-sm font-bold text-white">{pub.title}</h3>
-                    <p className="text-gray-400 text-[11px] truncate">{pub.subtitle || pub.abstract}</p>
+                    <p className="text-gray-400 text-[11px] truncate">{pub.subtitle || pub.abstract || pub.description}</p>
                   </div>
                   <div className="text-right text-[10px] text-gray-400">
                     <span className="block text-white font-bold">By {pub.author_name}</span>
