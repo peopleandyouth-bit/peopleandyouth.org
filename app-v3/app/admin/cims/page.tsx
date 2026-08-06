@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function AdminCimsConsolePage() {
-  const [activeTab, setActiveTab] = useState<'content' | 'applications' | 'passports' | 'submissions'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'applications' | 'passports'>('content');
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
-  // PUBLICATION FORM STATES
+  // FORM STATES
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -18,7 +18,7 @@ export default function AdminCimsConsolePage() {
   const [authorName, setAuthorName] = useState('Swaraj Shandilya');
   const [publishing, setPublishing] = useState(false);
 
-  // DATA STATES FOR USER SUBMISSIONS
+  // DATA STATES
   const [publications, setPublications] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [passports, setPassports] = useState<any[]>([]);
@@ -96,14 +96,12 @@ export default function AdminCimsConsolePage() {
   }, []);
 
   const fetchAdminData = async () => {
-    // 1. Fetch Publications
     const { data: pubData } = await supabase
       .from('public_publications_feed')
       .select('*')
       .order('created_at', { ascending: false });
     if (pubData) setPublications(pubData);
 
-    // 2. Fetch Applications (Supabase + LocalStorage Fallback)
     const { data: appData } = await supabase
       .from('opportunity_applications')
       .select('*')
@@ -112,28 +110,10 @@ export default function AdminCimsConsolePage() {
     if (appData && appData.length > 0) {
       setApplications(appData);
     } else {
-      // Local session check
       const localSession = localStorage.getItem('py_candidate_session');
-      if (localSession) {
-        setApplications([JSON.parse(localSession)]);
-      } else {
-        setApplications([
-          {
-            candidateId: 'PY-CAND-2026-884192',
-            applicationId: 'PY-APP-2026-1042',
-            fullName: 'Swaraj Shandilya',
-            email: 'contact@peopleandyouth.org',
-            opportunityTitle: 'Senior Policy Research Fellow',
-            department: 'Policy Lab',
-            opportunityType: 'Fellowship',
-            submittedAt: new Date().toISOString(),
-            status: 'Automated Screening'
-          }
-        ]);
-      }
+      if (localSession) setApplications([JSON.parse(localSession)]);
     }
 
-    // 3. Civic Passports Mock / Live
     setPassports([
       {
         passportId: 'PY-PASSPORT-2026-8841',
@@ -144,6 +124,27 @@ export default function AdminCimsConsolePage() {
         status: 'Active Verified'
       }
     ]);
+  };
+
+  // REAL HTML FILE EXTRACTOR
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setContentHtml(text);
+        if (!title) {
+          const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          setTitle(cleanTitle);
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      alert(`Selected ${file.name}. Ensure it is an HTML or plain text file.`);
+    }
   };
 
   const handlePublish = async (e: React.FormEvent) => {
@@ -164,23 +165,22 @@ export default function AdminCimsConsolePage() {
       created_at: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('public_publications_feed').insert(payload);
+    const { error } = await supabase.from('articles').insert(payload);
 
     if (error) {
       console.error('Publish error:', error);
-      alert(`Publishing note: Staged locally. (${error.message})`);
+      alert(`Publishing Note: ${error.message}`);
     } else {
       alert('Publication successfully published to live platform!');
+      setIsPublishModalOpen(false);
+      fetchAdminData();
     }
 
     setPublishing(false);
-    setIsPublishModalOpen(false);
-    fetchAdminData();
   };
 
   return (
     <main className="min-h-screen bg-[#030611] text-white font-mono text-xs selection:bg-amber-400 selection:text-black">
-      {/* TOP ADMIN UTILITY BAR */}
       <div className="border-b border-white/10 bg-[#070b19] px-6 py-2.5 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
         <Link href="/" className="text-amber-400 font-bold hover:underline flex items-center gap-1">
           ← Main Digital Headquarters
@@ -193,8 +193,6 @@ export default function AdminCimsConsolePage() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 sm:p-10 space-y-8">
-        
-        {/* MASTHEAD & TAB SELECTOR */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-6">
           <div>
             <span className="text-amber-400 font-bold text-[9px] uppercase tracking-widest block">ADMINISTRATION</span>
@@ -209,7 +207,6 @@ export default function AdminCimsConsolePage() {
           </button>
         </div>
 
-        {/* TABS HEADER */}
         <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
           <button
             onClick={() => setActiveTab('content')}
@@ -239,7 +236,6 @@ export default function AdminCimsConsolePage() {
           </button>
         </div>
 
-        {/* TAB 1: CIMS PUBLICATIONS LIST */}
         {activeTab === 'content' && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-amber-400 uppercase">Live Published Content Records</h2>
@@ -261,7 +257,6 @@ export default function AdminCimsConsolePage() {
           </div>
         )}
 
-        {/* TAB 2: CANDIDATE APPLICATIONS (6-STAGE GATEWAY) */}
         {activeTab === 'applications' && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-amber-400 uppercase">Global Opportunity Applications (140+ Roles)</h2>
@@ -299,7 +294,6 @@ export default function AdminCimsConsolePage() {
           </div>
         )}
 
-        {/* TAB 3: CIVIC PASSPORTS */}
         {activeTab === 'passports' && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-amber-400 uppercase">Verified Civic Passport Members</h2>
@@ -324,7 +318,6 @@ export default function AdminCimsConsolePage() {
           </div>
         )}
 
-        {/* PUBLISH NEW PUBLICATION RECORD MODAL WITH 44 BUILT-IN DOMAIN OPTIONS */}
         {isPublishModalOpen && (
           <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
@@ -336,7 +329,7 @@ export default function AdminCimsConsolePage() {
               <form onSubmit={handlePublish} className="space-y-4">
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-[10px]">
                   <span className="text-amber-400 font-bold block mb-1">📁 IMPORT EXTERNAL DOCUMENT (.HTML OR .PDF)</span>
-                  <input type="file" className="text-gray-300 text-xs" />
+                  <input type="file" accept=".html,.htm,.txt" onChange={handleFileUpload} className="text-gray-300 text-xs cursor-pointer" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -376,7 +369,6 @@ export default function AdminCimsConsolePage() {
                   />
                 </div>
 
-                {/* BUILT-IN DOMAIN CATEGORY SELECTOR (REPLACES PLAIN INPUT BOX) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-amber-400 text-[9px] font-bold uppercase mb-1">
@@ -416,7 +408,7 @@ export default function AdminCimsConsolePage() {
                 <div>
                   <label className="block text-gray-400 text-[9px] uppercase mb-1">HTML CONTENT BODY / MARKUP</label>
                   <textarea
-                    rows={5}
+                    rows={6}
                     value={contentHtml}
                     onChange={(e) => setContentHtml(e.target.value)}
                     className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none text-xs font-mono"
@@ -434,7 +426,6 @@ export default function AdminCimsConsolePage() {
             </div>
           </div>
         )}
-
       </div>
     </main>
   );
