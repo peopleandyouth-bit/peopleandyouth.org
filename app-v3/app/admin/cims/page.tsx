@@ -155,14 +155,18 @@ export default function AdminCimsConsolePage() {
       ? slug.trim().toLowerCase().replace(/[^a-z0-9]/g, '-')
       : title.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
 
+    // Fully hydrated payload covering subtitle, abstract, excerpt, and author_email
     const payload = {
       title,
       slug: generatedSlug,
       subtitle,
+      abstract: subtitle,
+      excerpt: subtitle,
+      description: subtitle,
       category,
       content: contentHtml,
       author_name: authorName,
-      author_email: 'contact@peopleandyouth.org', // <-- FIX: Added missing field
+      author_email: 'contact@peopleandyouth.org',
       created_at: new Date().toISOString()
     };
 
@@ -246,7 +250,7 @@ export default function AdminCimsConsolePage() {
                   <div className="space-y-1 max-w-2xl">
                     <span className="text-[9px] text-amber-400 font-bold uppercase block">{pub.category}</span>
                     <h3 className="text-sm font-bold text-white">{pub.title}</h3>
-                    <p className="text-gray-400 text-[11px] truncate">{pub.subtitle}</p>
+                    <p className="text-gray-400 text-[11px] truncate">{pub.subtitle || pub.abstract}</p>
                   </div>
                   <div className="text-right text-[10px] text-gray-400">
                     <span className="block text-white font-bold">By {pub.author_name}</span>
