@@ -492,7 +492,7 @@ export default function CommandCentreConsole() {
 
                     <div className="flex justify-between items-center text-[10px] font-mono text-gray-400 pt-2 border-t border-white/5">
                       <span>Protocol Email: <a href={`mailto:${item.author_email}`} className="text-amber-300 hover:underline">{item.author_email}</a></span>
-                      <a href={`mailto:${item.author_email}?subject=Regarding your reflection on People %26 Youth`} className="text-amber-400 font-bold hover:underline">
+                      <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.author_email)}&su=${encodeURIComponent("Regarding your reflection on People & Youth")}`} target="_blank" rel="noopener noreferrer" className="text-amber-400 font-bold hover:underline">
                         Reply Directly via Email &rarr;
                       </a>
                     </div>

@@ -41,20 +41,16 @@ export async function POST(request: Request) {
     const fullName = (author_name || '').trim();
     const firstName = fullName ? fullName.split(' ')[0] : 'Reader';
 
-    // 3. Configure Nodemailer Transporter
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const smtpPort = Number(process.env.SMTP_PORT) || 465;
+    // 3. Configure Nodemailer with service: 'gmail' for Vercel Cloud Nodes
     const smtpUser = process.env.SMTP_USER || 'contact@peopleandyouth.org';
     const smtpPass = process.env.SMTP_PASS;
 
     if (smtpPass) {
       const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
+        service: 'gmail',
         auth: {
           user: smtpUser,
-          pass: smtpPass,
+          pass: smtpPass.replace(/\s+/g, ''), // Strip any spaces from Google App Password
         },
       });
 
@@ -94,37 +90,37 @@ export async function POST(request: Request) {
 
             <div class="item-box">
               <div class="item-title">🏛️ Dissent Dias</div>
-              <p style="margin:0;">A forum for thoughtful essays, editorials, interviews, and public discourse where diverse perspectives meet evidence-based dialogue. Dedicated to fostering critical thinking, constitutional values, and meaningful conversations on issues shaping society.</p>
+              <p style="margin:0;">A forum for thoughtful essays, editorials, interviews, and public discourse where diverse perspectives meet evidence-based dialogue.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">📚 The Renaissance Series</div>
-              <p style="margin:0;">A flagship collection of interdisciplinary journals and publications spanning public policy, education, trade, economics, governance, technology, sustainability, health, agriculture, business, and emerging sectors. The series seeks to bridge academic inquiry with practical solutions for contemporary challenges.</p>
+              <p style="margin:0;">A flagship collection of interdisciplinary journals and publications spanning public policy, education, trade, economics, governance, technology, sustainability, health, agriculture, business, and emerging sectors.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">🗻 Knowledge Realms, Knowledge Caves & Mountain Ranges</div>
-              <p style="margin:0;">A structured digital knowledge repository housing curated research, policy papers, case studies, datasets, analytical reports, learning resources, and domain-specific insights. Designed to support students, researchers, professionals, institutions, and policymakers in their pursuit of evidence-based knowledge and lifelong learning.</p>
+              <p style="margin:0;">A structured digital knowledge repository housing curated research, policy papers, case studies, datasets, analytical reports, learning resources, and domain-specific insights.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">🏢 People & Youth Advisory</div>
-              <p style="margin:0;">Strategic advisory and institution-building services supporting organizations, enterprises, public institutions, startups, and social initiatives through governance design, market insights, policy research, organizational development, and innovation-driven consulting.</p>
+              <p style="margin:0;">Strategic advisory and institution-building services supporting organizations, enterprises, public institutions, startups, and social initiatives through governance design, market insights, policy research, and consulting.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">🎓 People & Youth Academy</div>
-              <p style="margin:0;">A learning and leadership platform offering fellowships, internships, executive education, skill development programmes, workshops, simulations, and experiential learning opportunities for aspiring leaders and professionals.</p>
+              <p style="margin:0;">A learning and leadership platform offering fellowships, internships, executive education, skill development programmes, workshops, simulations, and experiential learning opportunities.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">🤝 Careers, Fellowships & Leadership Opportunities</div>
-              <p style="margin:0;">Explore internships, full-time roles, fellowships, volunteer programmes, campus chapters, district coordinatorships, youth ambassador initiatives, and leadership positions. Join a growing global network committed to creating meaningful impact through service, innovation, and institution building.</p>
+              <p style="margin:0;">Explore internships, full-time roles, fellowships, volunteer programmes, campus chapters, district coordinatorships, youth ambassador initiatives, and leadership positions.</p>
             </div>
 
             <div class="item-box">
               <div class="item-title">🌐 Become Part of the Journey</div>
-              <p style="margin:0;">People & Youth is not merely a platform to join—it is an institution to build. Every contribution, whether through ideas, research, leadership, collaboration, or service, strengthens a shared vision of empowering generations through knowledge, dialogue, and responsible leadership.</p>
+              <p style="margin:0;">People & Youth is not merely a platform to join—it is an institution to build. Every contribution, whether through ideas, research, leadership, collaboration, or service, strengthens a shared vision.</p>
             </div>
 
             <p>Together, we build institutions that empower generations.</p>
@@ -144,19 +140,18 @@ export async function POST(request: Request) {
       `;
 
       try {
-        // AWAIT sending so Vercel Serverless doesn't terminate early
         await transporter.sendMail({
           from: `"People & Youth" <${smtpUser}>`,
           to: author_email,
           subject: 'Acknowledgement: Reflection Received | People & Youth',
           html: htmlEmail,
         });
-        console.log(`✅ Acknowledgement email dispatched successfully to ${author_email}`);
+        console.log(`✅ Mail dispatched successfully to ${author_email}`);
       } catch (mailErr: any) {
-        console.error('❌ SMTP Dispatch Error:', mailErr.message);
+        console.error('❌ Gmail Transporter Error:', mailErr.message);
       }
     } else {
-      console.warn('⚠️ SMTP_PASS is missing in environment variables. Email dispatch skipped.');
+      console.warn('⚠️ SMTP_PASS variable not found in environment.');
     }
 
     return NextResponse.json({
@@ -165,7 +160,6 @@ export async function POST(request: Request) {
       reflection: data,
     });
   } catch (err: any) {
-    console.error('API Error:', err);
     return NextResponse.json(
       { error: err.message || 'Internal server error.' },
       { status: 500 }
