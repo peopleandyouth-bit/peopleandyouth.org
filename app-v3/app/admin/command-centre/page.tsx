@@ -3,17 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SchemaRegistry } from '@/lib/schema-registry';
+import { supabase } from '@/lib/supabaseClient';
 import { InstitutionalEntity, EntityType, AuditLogRecord } from '@/types/institution-os';
 
 export default function CommandCentreConsole() {
   const [activeTab, setActiveTab] = useState<
-    'cms' | 'leadership' | 'offices' | 'organization' | 'careers' | 'editorial' | 'media' | 'audit' | 'analytics'
-  >('leadership');
+    'editorial' | 'reflections' | 'leadership' | 'offices' | 'cms' | 'organization' | 'careers' | 'media' | 'audit' | 'analytics'
+  >('reflections');
 
   const [entities, setEntities] = useState<InstitutionalEntity[]>([]);
+  const [articlesList, setArticlesList] = useState<any[]>([]);
+  const [reflectionsList, setReflectionsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLeadershipModalOpen, setIsLeadershipModalOpen] = useState(false);
+  const [isEditorialModalOpen, setIsEditorialModalOpen] = useState(false);
 
   // General Entity Form States
   const [entityType, setEntityType] = useState<EntityType>('page');
@@ -38,6 +42,15 @@ export default function CommandCentreConsole() {
   const [leadEmail, setLeadEmail] = useState('contact@peopleandyouth.org');
   const [leadAppointment, setLeadAppointment] = useState('January 2026');
 
+  // Specialized Editorial Form States
+  const [editorialTitle, setEditorialTitle] = useState('');
+  const [editorialSlug, setEditorialSlug] = useState('');
+  const [editorialSubtitle, setEditorialSubtitle] = useState('');
+  const [editorialCategory, setEditorialCategory] = useState('EDITORIAL');
+  const [editorialContent, setEditorialContent] = useState('');
+  const [editorialBanner, setEditorialBanner] = useState('');
+  const [editorialAuthor, setEditorialAuthor] = useState('Swaraj Shandilya');
+
   // Audit Logs State
   const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
 
@@ -53,12 +66,27 @@ export default function CommandCentreConsole() {
           id: 'log-1',
           user_email: 'contact@peopleandyouth.org',
           action: 'PUBLISH',
-          module: 'CMS',
-          entity_id: 'ent-8821',
+          module: 'REFLECTIONS',
+          entity_id: 'ref-101',
           ip_address: '127.0.0.1',
           created_at: new Date().toISOString(),
         },
       ]);
+    } else if (activeTab === 'reflections') {
+      const { data } = await supabase
+        .from('reflections')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setReflectionsList(data || []);
+    } else if (activeTab === 'editorial') {
+      const { data: dbArticles } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const schemaJournals = await SchemaRegistry.listEntities('journal');
+      setArticlesList(dbArticles || []);
+      setEntities(schemaJournals);
     } else {
       const typeFilter: EntityType | undefined =
         activeTab === 'cms'
@@ -79,6 +107,79 @@ export default function CommandCentreConsole() {
     setLoading(false);
   };
 
+  const updateReflectionStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase
+      .from('reflections')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      alert(`Error updating reflection: ${error.message}`);
+    } else {
+      loadData();
+    }
+  };
+
+  // Direct Editorial Publishing Handler
+  const handlePublishEditorial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    const generatedSlug =
+      editorialSlug.trim() ||
+      editorialTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const articlePayload = {
+      title: editorialTitle,
+      slug: generatedSlug,
+      subtitle: editorialSubtitle,
+      abstract: editorialSubtitle,
+      category: editorialCategory,
+      content: editorialContent,
+      author: editorialAuthor,
+      created_at: new Date().toISOString(),
+    };
+
+    const { error: articleError } = await supabase.from('articles').upsert(articlePayload, { onConflict: 'slug' });
+
+    await SchemaRegistry.upsertEntity({
+      entity_type: 'journal',
+      title: editorialTitle,
+      slug: generatedSlug,
+      status: 'published',
+      summary: editorialSubtitle,
+      content_markup: editorialContent,
+      featured_image: editorialBanner,
+      metadata: {
+        category: editorialCategory,
+        author: editorialAuthor,
+        published_date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      },
+      author_name: editorialAuthor,
+    });
+
+    if (articleError) {
+      alert(`Publish Note: ${articleError.message}. Entity synced to Schema Registry.`);
+    } else {
+      alert('🚀 Editorial Dispatch published directly to live visitors!');
+    }
+
+    setIsEditorialModalOpen(false);
+    resetEditorialForm();
+    loadData();
+    setSaving(false);
+  };
+
+  const resetEditorialForm = () => {
+    setEditorialTitle('');
+    setEditorialSlug('');
+    setEditorialSubtitle('');
+    setEditorialCategory('EDITORIAL');
+    setEditorialContent('');
+    setEditorialBanner('');
+    setEditorialAuthor('Swaraj Shandilya');
+  };
+
   // Seed Founder Profile Helper
   const seedFounderProfile = async () => {
     setSaving(true);
@@ -88,7 +189,7 @@ export default function CommandCentreConsole() {
       slug: 'swaraj-shandilya',
       status: 'published' as const,
       summary: 'Founder & Chief Executive Officer at People & Youth. IIFT MBA Scholar, GCP Professional Data Engineer.',
-      content_markup: '<p>Swaraj Shandilya leads People & Youth as Founder & Chief Executive Officer, guiding institutional strategy, public policy research, and enterprise advisory.</p>',
+      content_markup: '<p>Swaraj Shandilya leads People & Youth as Founder & Chief Executive Officer...</p>',
       metadata: {
         official_portrait: '/images/swaraj-shandilya-portrait.jpg',
         position: 'Founder & Chief Executive Officer',
@@ -107,13 +208,12 @@ export default function CommandCentreConsole() {
     if (error) {
       alert(`Error seeding profile: ${error.message}`);
     } else {
-      alert('⚡ Swaraj Shandilya (Founder & CEO) profile successfully seeded into Schema Registry!');
+      alert('⚡ Swaraj Shandilya (Founder & CEO) profile successfully seeded!');
       loadData();
     }
     setSaving(false);
   };
 
-  // Save Specialized Leadership Profile
   const handleSaveLeadership = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -145,7 +245,7 @@ export default function CommandCentreConsole() {
     if (error) {
       alert(`Leadership Editor Note: ${error.message}`);
     } else {
-      alert('Leadership Profile saved successfully to Schema Registry!');
+      alert('Leadership Profile saved successfully!');
       setIsLeadershipModalOpen(false);
       resetLeadershipForm();
       loadData();
@@ -253,31 +353,50 @@ export default function CommandCentreConsole() {
                 ⚡ Seed Founder Profile
               </button>
             )}
-            <button
-              onClick={() => {
-                if (activeTab === 'leadership') {
-                  resetLeadershipForm();
-                  setIsLeadershipModalOpen(true);
-                } else {
-                  setIsCreateModalOpen(true);
-                }
-              }}
-              className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
-            >
-              + Deploy {activeTab === 'leadership' ? 'Leadership Profile' : 'Institutional Entity'}
-            </button>
+
+            {activeTab === 'editorial' ? (
+              <button
+                onClick={() => setIsEditorialModalOpen(true)}
+                className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
+              >
+                + Write & Publish Editorial Dispatch
+              </button>
+            ) : activeTab === 'reflections' ? (
+              <Link
+                href="/reflections"
+                target="_blank"
+                className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
+              >
+                View Live Reflections Page ↗
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  if (activeTab === 'leadership') {
+                    resetLeadershipForm();
+                    setIsLeadershipModalOpen(true);
+                  } else {
+                    setIsCreateModalOpen(true);
+                  }
+                }}
+                className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
+              >
+                + Deploy {activeTab === 'leadership' ? 'Leadership Profile' : 'Institutional Entity'}
+              </button>
+            )}
           </div>
         </div>
 
         {/* OPERATIONAL MODULE TABS */}
         <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
           {[
+            { id: 'reflections', label: '📬 Reader\'s Desk' },
+            { id: 'editorial', label: '✍️ Editorial Board' },
             { id: 'leadership', label: '👥 Leadership Directory' },
             { id: 'offices', label: '🏛️ Executive Offices' },
             { id: 'cms', label: '📄 Page CMS' },
             { id: 'organization', label: '🏢 Org Editor' },
             { id: 'careers', label: '💼 Position Engine' },
-            { id: 'editorial', label: '✍️ Editorial Board' },
             { id: 'media', label: '📁 Media Library' },
             { id: 'audit', label: '🛡️ Audit Logs' },
             { id: 'analytics', label: '📊 Telemetry' },
@@ -296,7 +415,159 @@ export default function CommandCentreConsole() {
           ))}
         </div>
 
-        {/* TAB 1: DEDICATED LEADERSHIP DIRECTORY MODULE */}
+        {/* TAB 1: READER'S DESK (REFLECTIONS INBOX) */}
+        {activeTab === 'reflections' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-amber-400 uppercase">
+                  Reader's Desk Inbox ({reflectionsList.length})
+                </h2>
+                <p className="text-gray-400 text-[11px]">
+                  Reflections, questions, ideas, and critical dispatches submitted by visitors via /reflections.
+                </p>
+              </div>
+              <button
+                onClick={loadData}
+                className="text-amber-300 hover:underline font-bold text-[11px]"
+              >
+                🔄 Refresh Inbox
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="p-8 text-center text-gray-400">Loading Reflections Inbox...</div>
+            ) : reflectionsList.length === 0 ? (
+              <div className="p-12 bg-white/5 border border-white/10 rounded-2xl text-center space-y-2">
+                <p className="text-gray-300 font-bold">No reflections submitted yet.</p>
+                <p className="text-gray-500 text-[11px]">
+                  Submissions via <span className="text-amber-300 font-mono">peopleandyouth.org/reflections</span> will appear here instantly.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reflectionsList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-[#070b19] border border-amber-500/20 p-6 rounded-2xl space-y-4 hover:border-amber-400/50 transition-all"
+                  >
+                    <div className="flex flex-wrap justify-between items-start gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold text-[10px] uppercase">
+                          {item.category || '🖋 Reflection'}
+                        </span>
+                        <span className="text-gray-500">&bull;</span>
+                        <span className="text-white font-bold">{item.author_name || 'Anonymous Reader'}</span>
+                        {item.organization && (
+                          <span className="text-gray-400 text-[10px]">({item.organization})</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={item.status || 'pending'}
+                          onChange={(e) => updateReflectionStatus(item.id, e.target.value)}
+                          className="bg-[#030611] border border-white/20 rounded-lg px-2.5 py-1 text-emerald-400 font-bold text-[10px] focus:outline-none"
+                        >
+                          <option value="pending">● Pending</option>
+                          <option value="reviewed">✓ Reviewed</option>
+                          <option value="featured">⭐ Featured</option>
+                          <option value="archived">📁 Archived</option>
+                        </select>
+                        <span className="text-gray-500 text-[10px]">
+                          {new Date(item.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {item.prompt_question && (
+                      <div className="bg-amber-400/10 border border-amber-400/20 p-3 rounded-xl font-serif italic text-amber-200 text-xs">
+                        Inquiry Prompt: &ldquo;{item.prompt_question}&rdquo;
+                      </div>
+                    )}
+
+                    <p className="text-gray-200 font-serif text-sm leading-relaxed bg-black/20 p-4 rounded-xl border border-white/5">
+                      {item.message}
+                    </p>
+
+                    <div className="flex justify-between items-center text-[10px] font-mono text-gray-400 pt-2 border-t border-white/5">
+                      <span>Protocol Email: <a href={`mailto:${item.author_email}`} className="text-amber-300 hover:underline">{item.author_email}</a></span>
+                      <a href={`mailto:${item.author_email}?subject=Regarding your reflection on People %26 Youth`} className="text-amber-400 font-bold hover:underline">
+                        Reply Directly via Email &rarr;
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: DEDICATED EDITORIAL BOARD MODULE */}
+        {activeTab === 'editorial' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-amber-400 uppercase">
+                  Live Editorial Dispatches & Publications ({articlesList.length + entities.length})
+                </h2>
+                <p className="text-gray-400 text-[11px]">
+                  Publish dispatches, Renaissance Series whitepapers, and policy critiques directly to live visitors.
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <Link href="/activity" target="_blank" className="text-amber-300 hover:underline font-bold text-[11px]">
+                  Activity Portal ↗
+                </Link>
+                <Link href="/essays" target="_blank" className="text-emerald-400 hover:underline font-bold text-[11px]">
+                  Essays Feed ↗
+                </Link>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="p-8 text-center text-gray-400">Loading Editorial Dispatches...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {articlesList.map((art) => (
+                  <div
+                    key={art.id || art.slug}
+                    className="bg-[#070b19] border border-amber-500/20 hover:border-amber-400/50 p-6 rounded-2xl space-y-4 flex flex-col justify-between transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-[9px]">
+                        <span className="px-2.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold uppercase">
+                          {art.category || 'EDITORIAL'}
+                        </span>
+                        <span className="text-emerald-400 font-bold uppercase">● LIVE DISPATCH</span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-white">{art.title}</h3>
+                      <p className="text-gray-300 text-[11px] font-serif line-clamp-2">
+                        {art.subtitle || art.abstract || 'No summary provided.'}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10 flex justify-between items-center text-[10px]">
+                      <span className="text-gray-400">
+                        Date: {new Date(art.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                      <Link
+                        href={`/articles/${art.slug}`}
+                        target="_blank"
+                        className="text-amber-400 font-bold hover:underline"
+                      >
+                        View Live Article ↗
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: LEADERSHIP DIRECTORY MODULE */}
         {activeTab === 'leadership' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
@@ -308,11 +579,7 @@ export default function CommandCentreConsole() {
                   Manage executive profiles, portraits, vision statements, and department assignments.
                 </p>
               </div>
-              <Link
-                href="/leadership"
-                target="_blank"
-                className="text-amber-300 hover:underline font-bold text-[11px]"
-              >
+              <Link href="/leadership" target="_blank" className="text-amber-300 hover:underline font-bold text-[11px]">
                 View Live Directory Portal ↗
               </Link>
             </div>
@@ -375,11 +642,7 @@ export default function CommandCentreConsole() {
                         >
                           ✏️ Edit Profile
                         </button>
-                        <Link
-                          href="/offices/office-of-the-founder"
-                          target="_blank"
-                          className="text-gray-300 hover:text-white underline font-bold"
-                        >
+                        <Link href="/offices/office-of-the-founder" target="_blank" className="text-gray-300 hover:text-white underline font-bold">
                           View Suite ↗
                         </Link>
                       </div>
@@ -391,8 +654,8 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* TAB 2-7: GENERIC ENTITY LISTING VIEW */}
-        {activeTab !== 'leadership' && activeTab !== 'audit' && activeTab !== 'analytics' && activeTab !== 'media' && (
+        {/* TAB 4-8: GENERIC ENTITY LISTING VIEW */}
+        {activeTab !== 'reflections' && activeTab !== 'editorial' && activeTab !== 'leadership' && activeTab !== 'audit' && activeTab !== 'analytics' && activeTab !== 'media' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-sm font-bold text-amber-400 uppercase">
@@ -428,10 +691,7 @@ export default function CommandCentreConsole() {
                         {new Date(item.created_at).toLocaleDateString()}
                       </span>
                       {item.entity_type === 'office' && (
-                        <Link
-                          href={`/offices/${item.slug}`}
-                          className="text-amber-300 font-bold hover:underline block"
-                        >
+                        <Link href={`/offices/${item.slug}`} className="text-amber-300 font-bold hover:underline block">
                           View Virtual Chamber →
                         </Link>
                       )}
@@ -443,7 +703,7 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* TAB 8: AUDIT LOGS VIEW */}
+        {/* TAB 9: AUDIT LOGS VIEW */}
         {activeTab === 'audit' && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-amber-400 uppercase">System Audit & Governance Logs</h2>
@@ -462,7 +722,7 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* TAB 9: TELEMETRY DASHBOARD */}
+        {/* TAB 10: TELEMETRY DASHBOARD */}
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 font-mono">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-2">
@@ -480,7 +740,121 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* MODAL 1: SPECIALIZED LEADERSHIP PROFILE EDITOR */}
+        {/* MODAL 1: EDITORIAL DISPATCH PUBLISHER */}
+        {isEditorialModalOpen && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
+              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                <h2 className="text-sm font-bold text-amber-400 uppercase">
+                  WRITE & PUBLISH EDITORIAL DISPATCH DIRECTLY TO VISITORS
+                </h2>
+                <button onClick={() => setIsEditorialModalOpen(false)} className="text-gray-400 hover:text-white text-lg font-bold">
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handlePublishEditorial} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">DISPATCH CATEGORY *</label>
+                    <select
+                      value={editorialCategory}
+                      onChange={(e) => setEditorialCategory(e.target.value)}
+                      className="w-full bg-[#070b19] border border-amber-400/60 rounded-xl p-2.5 text-amber-300 font-bold focus:outline-none text-xs"
+                    >
+                      <option value="EDITORIAL">EDITORIAL DISPATCH</option>
+                      <option value="DISSENT DIAS">DISSENT DIAS</option>
+                      <option value="RENAISSANCE SERIES">RENAISSANCE SERIES</option>
+                      <option value="POLICY ROUNDTABLE">POLICY ROUNDTABLE</option>
+                      <option value="RESEARCH COLLOQUIUM">RESEARCH COLLOQUIUM</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">AUTHOR NAME</label>
+                    <input
+                      type="text"
+                      value={editorialAuthor}
+                      onChange={(e) => setEditorialAuthor(e.target.value)}
+                      placeholder="Swaraj Shandilya"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">ARTICLE TITLE *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editorialTitle}
+                      onChange={(e) => setEditorialTitle(e.target.value)}
+                      placeholder="e.g. Until the lion learns how to write..."
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">URL SLUG (AUTO-GENERATED IF BLANK)</label>
+                    <input
+                      type="text"
+                      value={editorialSlug}
+                      onChange={(e) => setEditorialSlug(e.target.value)}
+                      placeholder="until-the-lion-learns-how-to-write"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-[9px] uppercase mb-1">SUBTITLE / ABSTRACT *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editorialSubtitle}
+                    onChange={(e) => setEditorialSubtitle(e.target.value)}
+                    placeholder="Brief 1-2 sentence overview displayed on activity cards..."
+                    className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-[9px] uppercase mb-1">FEATURED BANNER IMAGE URL</label>
+                  <input
+                    type="text"
+                    value={editorialBanner}
+                    onChange={(e) => setEditorialBanner(e.target.value)}
+                    placeholder="https://... or /images/banner.jpg"
+                    className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-[9px] uppercase mb-1">FULL ARTICLE BODY (HTML OR MARKUP) *</label>
+                  <textarea
+                    rows={8}
+                    required
+                    value={editorialContent}
+                    onChange={(e) => setEditorialContent(e.target.value)}
+                    placeholder="<p>Write your essay or policy dispatch here...</p>"
+                    className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none text-xs font-mono"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-full py-3.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider"
+                >
+                  {saving ? 'Publishing Dispatch...' : '🚀 Publish Dispatch Live to Public Visitors'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 2: SPECIALIZED LEADERSHIP PROFILE EDITOR */}
         {isLeadershipModalOpen && (
           <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
@@ -626,7 +1000,7 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* MODAL 2: GENERAL ENTITY MODAL */}
+        {/* MODAL 3: GENERAL ENTITY MODAL */}
         {isCreateModalOpen && (
           <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
