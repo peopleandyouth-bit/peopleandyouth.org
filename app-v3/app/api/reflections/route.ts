@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       try {
         const resend = new Resend(apiKey);
         await resend.emails.send({
-          from: 'People & Youth <onboarding@resend.dev>',
+          from: 'People & Youth <contact@peopleandyouth.org>',
           to: [author_email],
           subject: 'Acknowledgement: Reflection Received | People & Youth',
           html: htmlEmail,
