@@ -8,13 +8,14 @@ import { InstitutionalEntity, EntityType, AuditLogRecord } from '@/types/institu
 export default function CommandCentreConsole() {
   const [activeTab, setActiveTab] = useState<
     'cms' | 'leadership' | 'offices' | 'organization' | 'careers' | 'editorial' | 'media' | 'audit' | 'analytics'
-  >('cms');
+  >('leadership');
 
   const [entities, setEntities] = useState<InstitutionalEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isLeadershipModalOpen, setIsLeadershipModalOpen] = useState(false);
 
-  // Form States
+  // General Entity Form States
   const [entityType, setEntityType] = useState<EntityType>('page');
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -22,6 +23,20 @@ export default function CommandCentreConsole() {
   const [contentMarkup, setContentMarkup] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('published');
   const [saving, setSaving] = useState(false);
+
+  // Specialized Leadership Form States
+  const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
+  const [leadName, setLeadName] = useState('');
+  const [leadSlug, setLeadSlug] = useState('');
+  const [leadPosition, setLeadPosition] = useState('Founder & Chief Executive Officer');
+  const [leadOffice, setLeadOffice] = useState('Office of the Founder & Chief Executive Officer');
+  const [leadDepartment, setLeadDepartment] = useState('Executive Leadership & Board');
+  const [leadPortrait, setLeadPortrait] = useState('/images/swaraj-shandilya-portrait.jpg');
+  const [leadVision, setLeadVision] = useState('Building a generation that questions with integrity, reflects with humility, and acts with purpose.');
+  const [leadBio, setLeadBio] = useState('Swaraj Shandilya is an institution builder, marketing strategist, GCP Professional Data Engineer, and IIFT MBA Scholar.');
+  const [leadLinkedin, setLeadLinkedin] = useState('https://www.linkedin.com/in/swarajshandilya896');
+  const [leadEmail, setLeadEmail] = useState('contact@peopleandyouth.org');
+  const [leadAppointment, setLeadAppointment] = useState('January 2026');
 
   // Audit Logs State
   const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
@@ -62,6 +77,113 @@ export default function CommandCentreConsole() {
       setEntities(data);
     }
     setLoading(false);
+  };
+
+  // Seed Founder Profile Helper
+  const seedFounderProfile = async () => {
+    setSaving(true);
+    const founderPayload = {
+      entity_type: 'leadership' as EntityType,
+      title: 'Swaraj Shandilya',
+      slug: 'swaraj-shandilya',
+      status: 'published' as const,
+      summary: 'Founder & Chief Executive Officer at People & Youth. IIFT MBA Scholar, GCP Professional Data Engineer.',
+      content_markup: '<p>Swaraj Shandilya leads People & Youth as Founder & Chief Executive Officer, guiding institutional strategy, public policy research, and enterprise advisory.</p>',
+      metadata: {
+        official_portrait: '/images/swaraj-shandilya-portrait.jpg',
+        position: 'Founder & Chief Executive Officer',
+        office: 'Office of the Founder & Chief Executive Officer',
+        department: 'Executive Leadership & Board',
+        biography: 'Swaraj Shandilya is an institution builder combining marketing strategy, management consulting, and cloud data engineering.',
+        vision_statement: 'Building a generation that questions with integrity, reflects with humility, and acts with purpose.',
+        linkedin: 'https://www.linkedin.com/in/swarajshandilya896',
+        email: 'contact@peopleandyouth.org',
+        appointment_date: 'January 2026',
+      },
+      author_name: 'Swaraj Shandilya',
+    };
+
+    const { error } = await SchemaRegistry.upsertEntity(founderPayload);
+    if (error) {
+      alert(`Error seeding profile: ${error.message}`);
+    } else {
+      alert('⚡ Swaraj Shandilya (Founder & CEO) profile successfully seeded into Schema Registry!');
+      loadData();
+    }
+    setSaving(false);
+  };
+
+  // Save Specialized Leadership Profile
+  const handleSaveLeadership = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    const payload = {
+      id: editingLeadId || undefined,
+      entity_type: 'leadership' as EntityType,
+      title: leadName,
+      slug: leadSlug || leadName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      status: status,
+      summary: leadBio,
+      content_markup: `<p>${leadBio}</p>`,
+      metadata: {
+        official_portrait: leadPortrait,
+        position: leadPosition,
+        office: leadOffice,
+        department: leadDepartment,
+        biography: leadBio,
+        vision_statement: leadVision,
+        linkedin: leadLinkedin,
+        email: leadEmail,
+        appointment_date: leadAppointment,
+      },
+      author_name: 'Swaraj Shandilya',
+    };
+
+    const { error } = await SchemaRegistry.upsertEntity(payload);
+
+    if (error) {
+      alert(`Leadership Editor Note: ${error.message}`);
+    } else {
+      alert('Leadership Profile saved successfully to Schema Registry!');
+      setIsLeadershipModalOpen(false);
+      resetLeadershipForm();
+      loadData();
+    }
+    setSaving(false);
+  };
+
+  const openEditLeadership = (item: InstitutionalEntity) => {
+    const meta = item.metadata || {};
+    setEditingLeadId(item.id);
+    setLeadName(item.title);
+    setLeadSlug(item.slug);
+    setLeadPosition(meta.position || '');
+    setLeadOffice(meta.office || '');
+    setLeadDepartment(meta.department || '');
+    setLeadPortrait(meta.official_portrait || '');
+    setLeadVision(meta.vision_statement || '');
+    setLeadBio(meta.biography || item.summary || '');
+    setLeadLinkedin(meta.linkedin || '');
+    setLeadEmail(meta.email || '');
+    setLeadAppointment(meta.appointment_date || '');
+    setStatus(item.status as any);
+    setIsLeadershipModalOpen(true);
+  };
+
+  const resetLeadershipForm = () => {
+    setEditingLeadId(null);
+    setLeadName('');
+    setLeadSlug('');
+    setLeadPosition('Leadership Officer');
+    setLeadOffice('Executive Office');
+    setLeadDepartment('Governance');
+    setLeadPortrait('/images/swaraj-shandilya-portrait.jpg');
+    setLeadVision('');
+    setLeadBio('');
+    setLeadLinkedin('');
+    setLeadEmail('contact@peopleandyouth.org');
+    setLeadAppointment('2026');
   };
 
   const handleSaveEntity = async (e: React.FormEvent) => {
@@ -121,20 +243,38 @@ export default function CommandCentreConsole() {
             </h1>
           </div>
 
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
-          >
-            + Deploy Institutional Entity
-          </button>
+          <div className="flex flex-wrap gap-3">
+            {activeTab === 'leadership' && (
+              <button
+                onClick={seedFounderProfile}
+                disabled={saving}
+                className="px-4 py-2.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-extrabold uppercase rounded-xl hover:bg-emerald-500/30 transition-all text-xs"
+              >
+                ⚡ Seed Founder Profile
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (activeTab === 'leadership') {
+                  resetLeadershipForm();
+                  setIsLeadershipModalOpen(true);
+                } else {
+                  setIsCreateModalOpen(true);
+                }
+              }}
+              className="px-5 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider shadow-lg"
+            >
+              + Deploy {activeTab === 'leadership' ? 'Leadership Profile' : 'Institutional Entity'}
+            </button>
+          </div>
         </div>
 
         {/* OPERATIONAL MODULE TABS */}
         <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
           {[
-            { id: 'cms', label: '📄 Page CMS' },
             { id: 'leadership', label: '👥 Leadership Directory' },
             { id: 'offices', label: '🏛️ Executive Offices' },
+            { id: 'cms', label: '📄 Page CMS' },
             { id: 'organization', label: '🏢 Org Editor' },
             { id: 'careers', label: '💼 Position Engine' },
             { id: 'editorial', label: '✍️ Editorial Board' },
@@ -156,8 +296,103 @@ export default function CommandCentreConsole() {
           ))}
         </div>
 
-        {/* ENTITY LISTING VIEW */}
-        {activeTab !== 'audit' && activeTab !== 'analytics' && activeTab !== 'media' && (
+        {/* TAB 1: DEDICATED LEADERSHIP DIRECTORY MODULE */}
+        {activeTab === 'leadership' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-amber-400 uppercase">
+                  Executive Incumbents & Leadership Directory ({entities.length})
+                </h2>
+                <p className="text-gray-400 text-[11px]">
+                  Manage executive profiles, portraits, vision statements, and department assignments.
+                </p>
+              </div>
+              <Link
+                href="/leadership"
+                target="_blank"
+                className="text-amber-300 hover:underline font-bold text-[11px]"
+              >
+                View Live Directory Portal ↗
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="p-8 text-center text-gray-400">Loading Leadership Profiles...</div>
+            ) : entities.length === 0 ? (
+              <div className="p-12 bg-white/5 border border-white/10 rounded-2xl text-center space-y-4">
+                <p className="text-gray-400 font-mono">No leadership profiles found in database.</p>
+                <button
+                  onClick={seedFounderProfile}
+                  className="px-6 py-3 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs"
+                >
+                  ⚡ Click to Seed Swaraj Shandilya (Founder & CEO) Profile
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {entities.map((person) => {
+                  const meta = person.metadata || {};
+                  return (
+                    <div
+                      key={person.id}
+                      className="bg-[#070b19] border border-amber-500/20 hover:border-amber-400/50 p-6 rounded-2xl space-y-4 flex flex-col justify-between transition-all"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center font-bold text-amber-300 text-lg">
+                              {person.title.charAt(0)}
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-white">{person.title}</h3>
+                              <span className="text-amber-400 text-[11px] font-bold block">
+                                {meta.position || 'Executive Incumbent'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold uppercase">
+                            ● {person.status}
+                          </span>
+                        </div>
+
+                        <p className="text-gray-300 text-[11px] italic line-clamp-2">
+                          &ldquo;{meta.vision_statement || person.summary}&rdquo;
+                        </p>
+
+                        <div className="text-[10px] text-gray-400 space-y-0.5 pt-2 border-t border-white/5">
+                          <div><strong>Office:</strong> {meta.office || 'Executive Office'}</div>
+                          <div><strong>Department:</strong> {meta.department || 'Governance'}</div>
+                          <div><strong>Email:</strong> {meta.email || 'contact@peopleandyouth.org'}</div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-white/10 flex justify-between items-center text-[11px]">
+                        <button
+                          onClick={() => openEditLeadership(person)}
+                          className="px-3 py-1.5 bg-amber-400/10 text-amber-300 border border-amber-400/30 rounded-lg hover:bg-amber-400/20 font-bold uppercase"
+                        >
+                          ✏️ Edit Profile
+                        </button>
+                        <Link
+                          href="/offices/office-of-the-founder"
+                          target="_blank"
+                          className="text-gray-300 hover:text-white underline font-bold"
+                        >
+                          View Suite ↗
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2-7: GENERIC ENTITY LISTING VIEW */}
+        {activeTab !== 'leadership' && activeTab !== 'audit' && activeTab !== 'analytics' && activeTab !== 'media' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-sm font-bold text-amber-400 uppercase">
@@ -208,7 +443,7 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* AUDIT LOGS VIEW */}
+        {/* TAB 8: AUDIT LOGS VIEW */}
         {activeTab === 'audit' && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-amber-400 uppercase">System Audit & Governance Logs</h2>
@@ -227,7 +462,7 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* TELEMETRY DASHBOARD */}
+        {/* TAB 9: TELEMETRY DASHBOARD */}
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 font-mono">
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl space-y-2">
@@ -245,7 +480,153 @@ export default function CommandCentreConsole() {
           </div>
         )}
 
-        {/* CREATE / EDIT ENTITY MODAL */}
+        {/* MODAL 1: SPECIALIZED LEADERSHIP PROFILE EDITOR */}
+        {isLeadershipModalOpen && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
+              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                <h2 className="text-sm font-bold text-amber-400 uppercase">
+                  {editingLeadId ? 'EDIT LEADERSHIP PROFILE' : 'DEPLOY NEW LEADERSHIP PROFILE'}
+                </h2>
+                <button onClick={() => setIsLeadershipModalOpen(false)} className="text-gray-400 hover:text-white text-lg font-bold">
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveLeadership} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">INCUMBENT FULL NAME *</label>
+                    <input
+                      type="text"
+                      required
+                      value={leadName}
+                      onChange={(e) => setLeadName(e.target.value)}
+                      placeholder="e.g. Swaraj Shandilya"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">URL SLUG</label>
+                    <input
+                      type="text"
+                      value={leadSlug}
+                      onChange={(e) => setLeadSlug(e.target.value)}
+                      placeholder="swaraj-shandilya"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">POSITION / DESIGNATION *</label>
+                    <input
+                      type="text"
+                      required
+                      value={leadPosition}
+                      onChange={(e) => setLeadPosition(e.target.value)}
+                      placeholder="Founder & Chief Executive Officer"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">EXECUTIVE OFFICE</label>
+                    <input
+                      type="text"
+                      value={leadOffice}
+                      onChange={(e) => setLeadOffice(e.target.value)}
+                      placeholder="Office of the Founder & Chief Executive Officer"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">DEPARTMENT / DIVISION</label>
+                    <input
+                      type="text"
+                      value={leadDepartment}
+                      onChange={(e) => setLeadDepartment(e.target.value)}
+                      placeholder="Executive Board"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">OFFICIAL PORTRAIT URL</label>
+                    <input
+                      type="text"
+                      value={leadPortrait}
+                      onChange={(e) => setLeadPortrait(e.target.value)}
+                      placeholder="/images/swaraj-shandilya-portrait.jpg"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-[9px] uppercase mb-1">VISION STATEMENT</label>
+                  <input
+                    type="text"
+                    value={leadVision}
+                    onChange={(e) => setLeadVision(e.target.value)}
+                    placeholder="Building a generation that questions with integrity..."
+                    className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-amber-300 font-bold focus:border-amber-400 focus:outline-none text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-[9px] uppercase mb-1">EXECUTIVE SUMMARY & BIOGRAPHY</label>
+                  <textarea
+                    rows={4}
+                    value={leadBio}
+                    onChange={(e) => setLeadBio(e.target.value)}
+                    placeholder="Provide executive background, qualifications, and achievements..."
+                    className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs font-mono"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">LINKEDIN PROFILE URL</label>
+                    <input
+                      type="text"
+                      value={leadLinkedin}
+                      onChange={(e) => setLeadLinkedin(e.target.value)}
+                      placeholder="https://www.linkedin.com/in/swarajshandilya896"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-[9px] uppercase mb-1">OFFICIAL PROTOCOL EMAIL</label>
+                    <input
+                      type="email"
+                      value={leadEmail}
+                      onChange={(e) => setLeadEmail(e.target.value)}
+                      placeholder="contact@peopleandyouth.org"
+                      className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-full py-3.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs tracking-wider"
+                >
+                  {saving ? 'Saving Profile...' : '🚀 Deploy Profile to Leadership Registry'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 2: GENERAL ENTITY MODAL */}
         {isCreateModalOpen && (
           <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div className="bg-[#0a1024] border border-amber-400/50 p-6 sm:p-8 rounded-3xl max-w-3xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto font-mono">
@@ -269,7 +650,6 @@ export default function CommandCentreConsole() {
                     >
                       <option value="page">Page Node (CMS)</option>
                       <option value="office">Executive Office</option>
-                      <option value="leadership">Leadership Profile</option>
                       <option value="position">Career Position</option>
                       <option value="org_unit">Organization Unit</option>
                       <option value="journal">Journal / Realm</option>
@@ -298,7 +678,7 @@ export default function CommandCentreConsole() {
                       required
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Office of the Founder"
+                      placeholder="e.g. Office of Strategic Consulting"
                       className="w-full bg-[#070b19] border border-white/20 rounded-xl p-2.5 text-white focus:border-amber-400 focus:outline-none text-xs"
                     />
                   </div>
