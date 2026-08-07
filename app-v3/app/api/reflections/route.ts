@@ -41,16 +41,18 @@ export async function POST(request: Request) {
     const fullName = (author_name || '').trim();
     const firstName = fullName ? fullName.split(' ')[0] : 'Reader';
 
-    // 3. Configure Nodemailer with service: 'gmail' for Vercel Cloud Nodes
+    // 3. Configure Nodemailer with service: 'gmail'
     const smtpUser = process.env.SMTP_USER || 'contact@peopleandyouth.org';
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : null;
+
+    let emailStatus = 'Not attempted (SMTP_PASS missing)';
 
     if (smtpPass) {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: smtpUser,
-          pass: smtpPass.replace(/\s+/g, ''), // Strip any spaces from Google App Password
+          pass: smtpPass,
         },
       });
 
@@ -146,17 +148,17 @@ export async function POST(request: Request) {
           subject: 'Acknowledgement: Reflection Received | People & Youth',
           html: htmlEmail,
         });
-        console.log(`✅ Mail dispatched successfully to ${author_email}`);
+        emailStatus = `Dispatched successfully to ${author_email}`;
       } catch (mailErr: any) {
         console.error('❌ Gmail Transporter Error:', mailErr.message);
+        emailStatus = `SMTP Error: ${mailErr.message}`;
       }
-    } else {
-      console.warn('⚠️ SMTP_PASS variable not found in environment.');
     }
 
     return NextResponse.json({
       success: true,
       message: 'Your reflection has been transmitted to The Reader’s Desk.',
+      email_status: emailStatus,
       reflection: data,
     });
   } catch (err: any) {
