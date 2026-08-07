@@ -1,47 +1,62 @@
-﻿import { UserRole } from './types/os';
+import { AppRole } from '@/types/institution-os';
 
-export const ROLE_HIERARCHY_LEVELS: Record<UserRole, number> = {
-  visitor: 0,
-  member: 1,
-  volunteer: 2,
-  contributor: 2,
-  youth_ambassador: 3,
-  researcher: 3,
-  author: 3,
-  reviewer: 4,
-  editor: 5,
-  campaign_manager: 5,
-  district_coordinator: 6,
-  state_coordinator: 7,
-  national_coordinator: 8,
-  faculty: 6,
-  advisor: 7,
-  partner: 4,
-  donor: 4,
-  employee: 7,
-  director: 9,
-  administrator: 10,
-  founder: 10,
+export const ROLE_HIERARCHY: Record<string, number> = {
+  founder: 100,
+  chairperson: 95,
+  ceo: 90,
+  super_administrator: 85,
+  administrator: 80,
+  executive_director: 75,
+  department_head: 70,
+  managing_editor: 65,
+  research_director: 65,
+  hr_manager: 60,
+  finance_manager: 60,
+  recruitment_team: 50,
+  publications_team: 50,
+  events_team: 50,
+  communications_team: 50,
+  moderator: 40,
+  reviewer: 30,
+  volunteer_coordinator: 20,
 };
 
-export function hasPermission(userRoles: UserRole[], requiredRole: UserRole): boolean {
-  const maxUserLevel = Math.max(...userRoles.map(r => ROLE_HIERARCHY_LEVELS[r] || 0));
-  const requiredLevel = ROLE_HIERARCHY_LEVELS[requiredRole] || 0;
-  return maxUserLevel >= requiredLevel;
+export function hasPermission(
+  userRole: AppRole | string,
+  requiredRole: AppRole | string
+): boolean {
+  const userRank = ROLE_HIERARCHY[userRole?.toLowerCase()] || 0;
+  const reqRank = ROLE_HIERARCHY[requiredRole?.toLowerCase()] || 0;
+  return userRank >= reqRank;
 }
 
-export function getRoleBadgeColor(role: UserRole): string {
-  switch (role) {
+export function canPublishContent(role: AppRole | string): boolean {
+  return hasPermission(role, 'managing_editor');
+}
+
+export function canManageOffices(role: AppRole | string): boolean {
+  return hasPermission(role, 'ceo');
+}
+
+export function canManageCareers(role: AppRole | string): boolean {
+  return hasPermission(role, 'hr_manager');
+}
+
+export function getRoleBadgeColor(role: AppRole | string): string {
+  const cleanRole = (role || '').toString().toLowerCase();
+  switch (cleanRole) {
     case 'founder':
+    case 'chairperson':
+    case 'ceo':
+      return 'bg-amber-400/20 text-amber-300 border-amber-400/40';
+    case 'super_administrator':
     case 'administrator':
-      return 'bg-red-500/20 border-red-500 text-red-300';
-    case 'director':
-    case 'national_coordinator':
-      return 'bg-amber-500/20 border-amber-400 text-amber-300';
-    case 'editor':
-    case 'district_coordinator':
-      return 'bg-cyan-500/20 border-cyan-400 text-cyan-300';
+    case 'executive_director':
+      return 'bg-sky-400/20 text-sky-300 border-sky-400/40';
+    case 'managing_editor':
+    case 'research_director':
+      return 'bg-emerald-400/20 text-emerald-300 border-emerald-400/40';
     default:
-      return 'bg-white/10 border-white/20 text-gray-300';
+      return 'bg-white/10 text-gray-300 border-white/20';
   }
 }
