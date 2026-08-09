@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, incrementArticleViews } from '@/lib/cms';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -24,11 +26,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedTime: article.published_at || undefined,
       authors: article.authors ? [article.authors.name] : ['People & Youth'],
       images: article.cover_image ? [{ url: article.cover_image }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: article.title,
-      description: article.excerpt || '',
     },
   };
 }
