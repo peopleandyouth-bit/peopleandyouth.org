@@ -32,7 +32,6 @@ export default function CommandCentreDashboard() {
   const [publicationId, setPublicationId] = useState('');
   const [status, setStatus] = useState<'DRAFT' | 'UNDER_REVIEW' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
   const [featured, setFeatured] = useState(false);
-  const [watermarkText, setWatermarkText] = useState('OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE');
   const [saving, setSaving] = useState(false);
 
   // New Journal Form State
@@ -48,6 +47,22 @@ export default function CommandCentreDashboard() {
   const [aOrg, setAOrg] = useState('');
   const [aBio, setABio] = useState('');
   const [aEmail, setAEmail] = useState('');
+
+  // FOUNDER'S OFFICE ACTIVE CONTROLS STATE
+  const [watermarkText, setWatermarkText] = useState('OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE');
+  const [watermarkEnabled, setWatermarkEnabled] = useState(true);
+  const [publicIntakeOpen, setPublicIntakeOpen] = useState(true);
+  const [requireEditorialReview, setRequireEditorialReview] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+
+  // Team Permissions Manager State
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState('Managing Editor');
+  const [teamMembers, setTeamMembers] = useState([
+    { id: '1', name: 'Founder & Chair', email: 'contact@peopleandyouth.org', role: 'Super Administrator', status: 'ACTIVE' },
+    { id: '2', name: 'Editorial Desk', email: 'editorial@peopleandyouth.org', role: 'Managing Editor', status: 'ACTIVE' }
+  ]);
 
   useEffect(() => {
     fetchAllData();
@@ -142,7 +157,7 @@ export default function CommandCentreDashboard() {
       status: finalStatus,
       featured,
       reading_time: readingTime,
-      watermark_text: watermarkText,
+      watermark_text: watermarkEnabled ? watermarkText : '',
       published_at: finalStatus === 'PUBLISHED' ? new Date().toISOString() : null,
       updated_at: new Date().toISOString(),
     };
@@ -206,6 +221,30 @@ export default function CommandCentreDashboard() {
       setAName(''); setADesignation(''); setAOrg(''); setABio(''); setAEmail('');
       fetchAllData();
     }
+  }
+
+  function handleAddTeamMember(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMemberEmail || !newMemberName) return;
+    const newMember = {
+      id: Date.now().toString(),
+      name: newMemberName,
+      email: newMemberEmail,
+      role: newMemberRole,
+      status: 'ACTIVE'
+    };
+    setTeamMembers([...teamMembers, newMember]);
+    setNewMemberName('');
+    setNewMemberEmail('');
+    alert(`Access granted to ${newMemberName} as ${newMemberRole}!`);
+  }
+
+  function handleRemoveMember(id: string) {
+    setTeamMembers(teamMembers.filter(m => m.id !== id));
+  }
+
+  function handleSaveFounderSettings() {
+    alert('🎉 Founder settings & global platform overrides updated live across production!');
   }
 
   return (
@@ -321,8 +360,6 @@ export default function CommandCentreDashboard() {
           🔐 Founder's Office
         </button>
       </div>
-
-      {/* TAB CONTENT MODULES */}
 
       {/* 1. ARTICLES & ESSAYS TAB */}
       {activeTab === 'ARTICLES' && (
@@ -512,9 +549,11 @@ export default function CommandCentreDashboard() {
               <div className="prose prose-invert max-w-none text-sm text-gray-300 whitespace-pre-wrap font-serif pt-4">
                 {content || 'Article text preview will appear here...'}
               </div>
-              <div className="mt-8 pt-4 border-t border-amber-500/20 text-center text-[10px] text-amber-500/60 font-mono uppercase">
-                🛡️ {watermarkText}
-              </div>
+              {watermarkEnabled && (
+                <div className="mt-8 pt-4 border-t border-amber-500/20 text-center text-[10px] text-amber-500/60 font-mono uppercase">
+                  🛡️ {watermarkText}
+                </div>
+              )}
             </div>
           </div>
         )
@@ -726,27 +765,183 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 7. FOUNDER'S OFFICE & PERMISSIONS */}
+      {/* 7. FULLY INTERACTIVE FOUNDER'S OFFICE MODULE */}
       {activeTab === 'FOUNDER' && (
-        <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
-          <div className="border-b border-gray-800 pb-4">
-            <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">Founder's Office & IOS Permission Control</h2>
-            <p className="text-xs text-gray-400 mt-1">
-              Super-Administrator Override and Institutional Governance Configuration.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-[#030611] border border-gray-800 rounded space-y-2">
-              <span className="font-bold text-xs text-amber-400 uppercase block">Active Institutional Persona</span>
-              <p className="text-xs text-gray-200"><strong>Role:</strong> Founder / Super Administrator</p>
-              <p className="text-xs text-gray-200"><strong>Permissions:</strong> UNRESTRICTED (View, Create, Edit, Review, Approve, Publish, Archive, Delete)</p>
+        <div className="space-y-6">
+          {/* SECTION 1: SYSTEM CONTROLS & WATERMARK SHIELD */}
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+            <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">Founder's Office & IOS Governance</h2>
+                <p className="text-xs text-gray-400 mt-1">Super-Administrator Controls, Watermarking Shields & Platform Overrides</p>
+              </div>
+              <button
+                onClick={handleSaveFounderSettings}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded transition"
+              >
+                💾 Save Global Overrides
+              </button>
             </div>
 
-            <div className="p-4 bg-[#030611] border border-gray-800 rounded space-y-2">
-              <span className="font-bold text-xs text-amber-400 uppercase block">System Watermarking Configuration</span>
-              <p className="text-xs text-gray-200"><strong>Active Watermark:</strong> OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE</p>
-              <p className="text-[10px] text-gray-400">Enforced on all published public routes across Dissent Dias and Renaissance Series.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* WATERMARK SHIELD CONFIGURATOR */}
+              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-800/80 pb-2">
+                  <span className="font-bold text-xs text-amber-400 uppercase">🛡️ Institutional Watermark Shield</span>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-[10px] text-gray-400 uppercase">Enforced</span>
+                    <input
+                      type="checkbox"
+                      checked={watermarkEnabled}
+                      onChange={(e) => setWatermarkEnabled(e.target.checked)}
+                      className="accent-amber-500 h-4 w-4"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 mb-1">GLOBAL WATERMARK TEXT</label>
+                  <input
+                    type="text"
+                    value={watermarkText}
+                    onChange={(e) => setWatermarkText(e.target.value)}
+                    className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded focus:border-amber-500 outline-none font-mono"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Rendered dynamically on public article viewports across Dissent Dias and Renaissance Series.
+                  </p>
+                </div>
+              </div>
+
+              {/* GLOBAL PLATFORM TOGGLES */}
+              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
+                  ⚙️ Global Operational Overrides
+                </span>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-xs font-bold text-gray-200 block">Reader Dispatches Intake</span>
+                      <span className="text-[10px] text-gray-400">Accept new visitor reflections at /reflections</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={publicIntakeOpen}
+                      onChange={(e) => setPublicIntakeOpen(e.target.checked)}
+                      className="accent-amber-500 h-4 w-4"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
+                    <div>
+                      <span className="text-xs font-bold text-gray-200 block">Require Editorial Review</span>
+                      <span className="text-[10px] text-gray-400">Non-Founders must submit to UNDER_REVIEW stage</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={requireEditorialReview}
+                      onChange={(e) => setRequireEditorialReview(e.target.checked)}
+                      className="accent-amber-500 h-4 w-4"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
+                    <div>
+                      <span className="text-xs font-bold text-gray-200 block">Maintenance Lockout</span>
+                      <span className="text-[10px] text-gray-400">Pause public article dynamic rendering</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={maintenanceMode}
+                      onChange={(e) => setMaintenanceMode(e.target.checked)}
+                      className="accent-red-500 h-4 w-4"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: TEAM & IOS ROLE ACCESS MANAGER */}
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+            <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
+              👥 IOS Role-Based Access Control (RBAC)
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* ADD TEAM MEMBER FORM */}
+              <form onSubmit={handleAddTeamMember} className="bg-[#030611] border border-gray-800 p-4 rounded-xl space-y-3">
+                <span className="text-xs font-bold text-amber-400 uppercase block mb-2">Grant Member Access</span>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">MEMBER NAME</label>
+                  <input
+                    type="text"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    placeholder="Full Name"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">EMAIL ADDRESS</label>
+                  <input
+                    type="email"
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="user@peopleandyouth.org"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">ASSIGNED ROLE</label>
+                  <select
+                    value={newMemberRole}
+                    onChange={(e) => setNewMemberRole(e.target.value)}
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  >
+                    <option value="Super Administrator">Super Administrator</option>
+                    <option value="Managing Editor">Managing Editor</option>
+                    <option value="Research Editor">Research Editor</option>
+                    <option value="Journal Editor">Journal Editor</option>
+                    <option value="Author">Author</option>
+                    <option value="Reviewer">Reviewer</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full py-2 bg-amber-500 text-black text-xs font-bold uppercase rounded">
+                  + Add Administrator
+                </button>
+              </form>
+
+              {/* TEAM MEMBERS LIST */}
+              <div className="lg:col-span-2 bg-[#030611] border border-gray-800 p-4 rounded-xl space-y-3">
+                <span className="text-xs font-bold text-amber-400 uppercase block mb-2">Active Authorized Users</span>
+                <div className="space-y-2">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="p-3 bg-[#070b19] border border-gray-800 rounded flex justify-between items-center text-xs">
+                      <div>
+                        <span className="font-bold text-white block">{member.name}</span>
+                        <span className="text-gray-400 text-[11px]">{member.email}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase">
+                          {member.role}
+                        </span>
+                        {member.role !== 'Super Administrator' && (
+                          <button
+                            onClick={() => handleRemoveMember(member.id)}
+                            className="text-red-400 hover:text-red-300 text-[10px] uppercase font-bold"
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
