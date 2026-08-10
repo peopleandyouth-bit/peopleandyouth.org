@@ -46,7 +46,7 @@ export default function CommandCentreDashboard() {
     'ARTICLES' | 'JOURNALS' | 'AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | 'REVISIONS' | 'FOUNDER'
   >('ARTICLES');
 
-  // Data State
+  // Database State
   const [articles, setArticles] = useState<any[]>([]);
   const [journals, setJournals] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
@@ -71,14 +71,14 @@ export default function CommandCentreDashboard() {
   const [featured, setFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // New Journal Form State
+  // Journal State
   const [jName, setJName] = useState('');
   const [jType, setJType] = useState('RENAISSANCE_SERIES');
   const [jDesc, setJDesc] = useState('');
   const [jIssn, setJIssn] = useState('');
   const [jEditor, setJEditor] = useState('');
 
-  // Author & Consultant CRUD Form State
+  // Author / Consultant Form State
   const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null);
   const [aName, setAName] = useState('');
   const [aDesignation, setADesignation] = useState('');
@@ -89,15 +89,17 @@ export default function CommandCentreDashboard() {
   const [aCredentials, setACredentials] = useState('');
   const [aAffiliation, setAAffiliation] = useState('');
   const [aPhoto, setAPhoto] = useState('');
+  const [aExpertise, setAExpertise] = useState('');
+  const [aLinkedin, setALinkedin] = useState('');
+  const [aWebsite, setAWebsite] = useState('');
 
-  // Founder's Office Global Controls
+  // Founder's Office Controls
   const [watermarkText, setWatermarkText] = useState('OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE');
   const [watermarkEnabled, setWatermarkEnabled] = useState(true);
   const [publicIntakeOpen, setPublicIntakeOpen] = useState(true);
   const [requireEditorialReview, setRequireEditorialReview] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
-  // Administrator Registration State
+  // Founder Administrator Registration Form (Full 10 Fields)
   const [admName, setAdmName] = useState('');
   const [admEmail, setAdmEmail] = useState('');
   const [admPhoto, setAdmPhoto] = useState('');
@@ -153,7 +155,6 @@ export default function CommandCentreDashboard() {
     return text.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
   }
 
-  // TRIGGER ONBOARDING EMAIL
   async function triggerOnboardingEmail(name: string, email: string, designation: string, department?: string) {
     if (!email) return;
     try {
@@ -163,7 +164,7 @@ export default function CommandCentreDashboard() {
         body: JSON.stringify({ name, email, designation, department })
       });
     } catch (err) {
-      console.error('Email dispatch error:', err);
+      console.error('Email trigger error:', err);
     }
   }
 
@@ -248,7 +249,7 @@ export default function CommandCentreDashboard() {
     }
   }
 
-  // SAVE OR UPDATE AUTHOR (WITH EMAIL TRIGGER & LEADERSHIP FLAG)
+  // SAVE OR UPDATE AUTHOR PROFILE
   async function handleSaveAuthor(e: React.FormEvent) {
     e.preventDefault();
     if (!aName) return;
@@ -257,7 +258,7 @@ export default function CommandCentreDashboard() {
       name: aName,
       slug: generateSlug(aName),
       email: aEmail || null,
-      designation: aDesignation,
+      designation: aDesignation || 'Team Member',
       organization: aOrg || 'People & Youth',
       department: aDept,
       bio: aBio || null,
@@ -265,7 +266,10 @@ export default function CommandCentreDashboard() {
       institutional_affiliation: aAffiliation || null,
       photo_url: aPhoto || null,
       is_leadership: true,
-      display_order: 10
+      display_order: 10,
+      expertise: aExpertise ? aExpertise.split(',').map(s => s.trim()) : [],
+      linkedin_url: aLinkedin || null,
+      website_url: aWebsite || null
     };
 
     let error;
@@ -283,7 +287,7 @@ export default function CommandCentreDashboard() {
     if (error) {
       alert('Failed to save profile: ' + error.message);
     } else {
-      alert(`Profile for "${aName}" saved successfully! Welcome email sent to ${aEmail || 'N/A'}.`);
+      alert(`Profile for "${aName}" saved live! Welcome email dispatched.`);
       resetAuthorForm();
       fetchAllData();
     }
@@ -300,6 +304,9 @@ export default function CommandCentreDashboard() {
     setACredentials(author.academic_credentials || '');
     setAAffiliation(author.institutional_affiliation || '');
     setAPhoto(author.photo_url || '');
+    setAExpertise(author.expertise ? author.expertise.join(', ') : '');
+    setALinkedin(author.linkedin_url || '');
+    setAWebsite(author.website_url || '');
   }
 
   async function handleDeleteAuthor(id: string, name: string) {
@@ -309,7 +316,7 @@ export default function CommandCentreDashboard() {
     if (error) {
       alert('Failed to delete author: ' + error.message);
     } else {
-      alert(`Profile for "${name}" removed from database and public website.`);
+      alert(`Profile for "${name}" removed permanently.`);
       fetchAllData();
     }
   }
@@ -318,10 +325,11 @@ export default function CommandCentreDashboard() {
     setEditingAuthorId(null);
     setAName(''); setADesignation(''); setAOrg(''); setABio('');
     setAEmail(''); setADept('Executive Board'); setACredentials('');
-    setAAffiliation(''); setAPhoto('');
+    setAAffiliation(''); setAPhoto(''); setAExpertise('');
+    setALinkedin(''); setAWebsite('');
   }
 
-  // REGISTER ADMINISTRATOR / PERSONNEL WITH EMAIL TRIGGER
+  // FOUNDER'S OFFICE - REGISTER ADMINISTRATOR WITH FULL 10 METADATA FIELDS
   async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
     if (!admName || !admEmail) return;
@@ -336,15 +344,15 @@ export default function CommandCentreDashboard() {
       designation: admDesignation || admRole,
       organization: admOrg,
       bio: admBio,
-      expertise: admExpertise.split(',').map(s => s.trim()),
+      expertise: admExpertise ? admExpertise.split(',').map(s => s.trim()) : [],
       linkedin_url: admLinkedin,
       website_url: admWebsite,
       permissions: activePerms,
       status: 'ACTIVE'
     };
 
-    // Auto sync to Authors database
-    await supabase.from('authors').insert({
+    // Synchronize to Supabase Authors table with is_leadership = true
+    const { error } = await supabase.from('authors').insert({
       name: admName,
       slug: generateSlug(admName),
       email: admEmail,
@@ -355,16 +363,20 @@ export default function CommandCentreDashboard() {
       department: 'Executive Board',
       is_leadership: true,
       display_order: 10,
-      expertise: admExpertise.split(',').map(s => s.trim()),
+      expertise: admExpertise ? admExpertise.split(',').map(s => s.trim()) : [],
       linkedin_url: admLinkedin || null,
       website_url: admWebsite || null
     });
 
-    // Send Onboarding Email
+    if (error) {
+      console.warn('Author sync warning:', error.message);
+    }
+
+    // Trigger Welcome Email
     await triggerOnboardingEmail(admName, admEmail, admDesignation || admRole, 'Executive Board');
 
     setTeamMembers([...teamMembers, newAdmin]);
-    alert(`Administrator ${admName} registered! Welcome email sent to ${admEmail}.`);
+    alert(`Administrator "${admName}" registered as ${admRole}! Welcome email dispatched.`);
 
     // Reset Form
     setAdmName(''); setAdmEmail(''); setAdmPhoto(''); setAdmDesignation('');
@@ -388,7 +400,7 @@ export default function CommandCentreDashboard() {
             </h1>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            People & Youth • Operating System for Publishing, Journals & Civic Dispatches
+            People & Youth • Operating System for Publishing, Leadership & Civic Dispatches
           </p>
         </div>
 
@@ -428,7 +440,7 @@ export default function CommandCentreDashboard() {
         </div>
       </div>
 
-      {/* MAIN NAVIGATION TABS */}
+      {/* NAVIGATION TABS */}
       <div className="flex border-b border-gray-800 overflow-x-auto gap-1 mb-6">
         <button
           onClick={() => { setActiveTab('ARTICLES'); setEditorMode('LIST'); }}
@@ -771,6 +783,7 @@ export default function CommandCentreDashboard() {
       {/* 7. FULLY ELABORATIVE FOUNDER'S OFFICE TAB */}
       {activeTab === 'FOUNDER' && (
         <div className="space-y-6">
+          {/* WATERMARK SHIELD & GLOBAL TOGGLES */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
               <div>
@@ -804,6 +817,7 @@ export default function CommandCentreDashboard() {
             </div>
           </div>
 
+          {/* RICH ADMINISTRATOR REGISTRATION FORM (FULL 10 METADATA FIELDS) */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
               👥 Grant Member Access & Configure Administrator Profiles (147 Global Roles)
@@ -825,12 +839,99 @@ export default function CommandCentreDashboard() {
                     {GLOBAL_CAREER_ROLES.map((r, idx) => <option key={idx} value={r}>{r}</option>)}
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">PHOTOGRAPH URL</label>
+                  <input type="text" value={admPhoto} onChange={(e) => setAdmPhoto(e.target.value)} placeholder="https://peopleandyouth.org/team/photo.jpg" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">DESIGNATION</label>
+                  <input type="text" value={admDesignation} onChange={(e) => setAdmDesignation(e.target.value)} placeholder="e.g. Senior Research Fellow" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">ORGANIZATION</label>
+                  <input type="text" value={admOrg} onChange={(e) => setAdmOrg(e.target.value)} placeholder="e.g. People & Youth" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">EXPERTISE (TAGS)</label>
+                  <input type="text" value={admExpertise} onChange={(e) => setAdmExpertise(e.target.value)} placeholder="Public Policy, AI, Governance" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">LINKEDIN URL</label>
+                  <input type="text" value={admLinkedin} onChange={(e) => setAdmLinkedin(e.target.value)} placeholder="https://linkedin.com/in/username" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">WEBSITE URL</label>
+                  <input type="text" value={admWebsite} onChange={(e) => setAdmWebsite(e.target.value)} placeholder="https://domain.com" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">BIOGRAPHY</label>
+                  <textarea rows={2} value={admBio} onChange={(e) => setAdmBio(e.target.value)} placeholder="Full academic or professional biography..." className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
               </div>
 
-              <button type="submit" className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded transition">
+              {/* GRANULAR PERMISSIONS MATRIX */}
+              <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
+                <span className="text-xs font-bold text-amber-400 uppercase block">
+                  🔒 Granular Administrator Permissions Matrix
+                </span>
+
+                <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
+                  {Object.keys(perms).map((key) => (
+                    <label key={key} className="flex items-center gap-1.5 p-2 bg-[#070b19] border border-gray-800 rounded cursor-pointer hover:border-amber-500/50">
+                      <input
+                        type="checkbox"
+                        checked={(perms as any)[key]}
+                        onChange={(e) => setPerms({ ...perms, [key]: e.target.checked })}
+                        className="accent-amber-500"
+                      />
+                      <span className="uppercase text-[10px] font-bold text-gray-200">{key}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded transition"
+              >
                 + Register Administrator & Send Welcome Email
               </button>
             </form>
+
+            {/* ACTIVE PERSONNEL REGISTRY TABLE */}
+            <div className="space-y-3 pt-4 border-t border-gray-800">
+              <span className="text-xs font-bold text-amber-400 uppercase block">Active Personnel & Permissions Registry</span>
+              <div className="space-y-2">
+                {teamMembers.map((m) => (
+                  <div key={m.id} className="p-3 bg-[#030611] border border-gray-800 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                    <div>
+                      <span className="font-bold text-white">{m.name}</span>
+                      <span className="text-amber-400 text-[11px] block">{m.role} ({m.organization})</span>
+                      <span className="text-gray-400 text-[10px] block">{m.email}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {m.permissions?.map((p: string, i: number) => (
+                        <span key={i} className="px-1.5 py-0.5 bg-gray-800 text-gray-300 text-[9px] font-mono rounded">
+                          {p}
+                        </span>
+                      ))}
+                      {m.role !== 'Founder & Chair' && (
+                        <button
+                          onClick={() => handleRemoveMember(m.id)}
+                          className="ml-2 text-red-400 hover:text-red-300 text-[10px] uppercase font-bold"
+                        >
+                          Revoke Access
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
