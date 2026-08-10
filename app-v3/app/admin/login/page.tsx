@@ -15,6 +15,15 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'ERROR' | 'SUCCESS'; text: string } | null>(null);
 
+  function formatError(err: any): string {
+    if (!err) return 'An unknown error occurred.';
+    if (typeof err === 'string') return err;
+    if (err.message && typeof err.message === 'string' && err.message.trim() !== '' && err.message !== '{}') {
+      return err.message;
+    }
+    return 'Authentication failed. Please verify your email or credentials.';
+  }
+
   // 1. Password Login Handler
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -28,13 +37,13 @@ export default function AdminLoginPage() {
     setLoading(false);
 
     if (error) {
-      setMessage({ type: 'ERROR', text: error.message });
+      setMessage({ type: 'ERROR', text: formatError(error) });
     } else if (data.session) {
       router.push('/admin/command-centre');
     }
   }
 
-  // 2. Magic Link Login Handler
+  // 2. Resend-Powered Magic Link Handler
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
@@ -42,27 +51,28 @@ export default function AdminLoginPage() {
     setLoading(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: 'https://www.peopleandyouth.org/admin/command-centre',
-        shouldCreateUser: true
-      }
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setMessage({ type: 'ERROR', text: error.message });
-    } else {
-      setMessage({ 
-        type: 'SUCCESS', 
-        text: '✨ A magic login link has been sent to your email inbox. Click it to log in immediately!' 
+    try {
+      const res = await fetch('/api/auth/send-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type: 'MAGIC_LINK' })
       });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (res.ok && data.success) {
+        setMessage({ type: 'SUCCESS', text: data.message });
+      } else {
+        setMessage({ type: 'ERROR', text: formatError(data.error) });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setMessage({ type: 'ERROR', text: 'Network connection error. Please try again.' });
     }
   }
 
-  // 3. Password Setup / Reset Handler
+  // 3. Resend-Powered Password Setup Handler
   async function handlePasswordSetup(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
@@ -70,19 +80,24 @@ export default function AdminLoginPage() {
     setLoading(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://www.peopleandyouth.org/admin/reset-password'
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setMessage({ type: 'ERROR', text: error.message });
-    } else {
-      setMessage({ 
-        type: 'SUCCESS', 
-        text: '📧 Password setup link sent! Check your email inbox to set or update your account password.' 
+    try {
+      const res = await fetch('/api/auth/send-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type: 'RESET_PASSWORD' })
       });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (res.ok && data.success) {
+        setMessage({ type: 'SUCCESS', text: data.message });
+      } else {
+        setMessage({ type: 'ERROR', text: formatError(data.error) });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      setMessage({ type: 'ERROR', text: 'Network connection error. Please try again.' });
     }
   }
 
@@ -211,7 +226,7 @@ export default function AdminLoginPage() {
                 required
               />
               <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                We will send a one-click login link directly to your email inbox—no password required.
+                We will send a one-click login link directly to your inbox via contact@peopleandyouth.org.
               </p>
             </div>
 
@@ -241,7 +256,7 @@ export default function AdminLoginPage() {
                 required
               />
               <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
-                New onboarded members or existing users can enter their email here to receive a secure password setup link.
+                Enter your registered email address to receive a password configuration link in your inbox.
               </p>
             </div>
 
