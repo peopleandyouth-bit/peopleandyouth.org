@@ -1,124 +1,267 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  
+  const [authMode, setAuthMode] = useState<'PASSWORD' | 'MAGIC_LINK' | 'RESET_PASSWORD'>('PASSWORD');
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: 'ERROR' | 'SUCCESS'; text: string } | null>(null);
 
-  useEffect(() => {
-    // Check if already authenticated
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        syncCookies(session);
-        router.push('/admin/dashboard');
+  // 1. Password Login Handler
+  async function handlePasswordLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    setLoading(false);
+
+    if (error) {
+      setMessage({ type: 'ERROR', text: error.message });
+    } else if (data.session) {
+      router.push('/admin/command-centre');
+    }
+  }
+
+  // 2. Magic Link Login Handler
+  async function handleMagicLink(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: 'https://www.peopleandyouth.org/admin/command-centre',
+        shouldCreateUser: true
       }
     });
-  }, [router]);
 
-  const syncCookies = (session: any) => {
-    if (!session) return;
-    const maxAge = 60 * 60 * 24 * 7; // 7 Days
-    document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`;
-    document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`;
-  };
+    setLoading(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+    if (error) {
+      setMessage({ type: 'ERROR', text: error.message });
+    } else {
+      setMessage({ 
+        type: 'SUCCESS', 
+        text: '✨ A magic login link has been sent to your email inbox. Click it to log in immediately!' 
       });
-
-      if (error) {
-        setErrorMsg(error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (data.session) {
-        syncCookies(data.session);
-
-        supabase.auth.onAuthStateChange((_event, session) => {
-          if (session) syncCookies(session);
-        });
-
-        router.push('/admin/dashboard');
-        router.refresh();
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Authentication failed.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }
+
+  // 3. Password Setup / Reset Handler
+  async function handlePasswordSetup(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://www.peopleandyouth.org/admin/reset-password'
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setMessage({ type: 'ERROR', text: error.message });
+    } else {
+      setMessage({ 
+        type: 'SUCCESS', 
+        text: '📧 Password setup link sent! Check your email inbox to set or update your account password.' 
+      });
+    }
+  }
 
   return (
-    <main className="min-h-screen bg-[#070b19] text-white font-mono text-xs flex items-center justify-center p-6">
-      <div className="bg-white/5 border border-white/10 p-8 rounded-2xl max-w-md w-full space-y-6 shadow-2xl">
+    <div className="min-h-screen bg-[#030611] text-gray-100 font-sans flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-[#070b19] border border-amber-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+        
+        {/* HEADER BANNER */}
         <div className="text-center space-y-1">
-          <span className="text-amber-400 font-bold uppercase tracking-widest text-[10px]">
+          <span className="text-[10px] font-black uppercase text-amber-400 tracking-widest block">
             SOVEREIGN CONTROL CONSOLE
           </span>
-          <h1 className="text-2xl font-extrabold text-white">Admin Authentication</h1>
-          <p className="text-gray-400 text-[11px]">Sign in to access the Institution Operating System (IOS)</p>
+          <h1 className="text-2xl font-black text-white tracking-wide uppercase">
+            Admin Authentication
+          </h1>
+          <p className="text-xs text-gray-400">
+            Sign in to access the Institution Operating System (IOS)
+          </p>
         </div>
 
-        {errorMsg && (
-          <div className="p-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl text-center font-bold">
-            {errorMsg}
+        {/* AUTH MODE TOGGLE TABS */}
+        <div className="grid grid-cols-3 gap-1 bg-[#030611] p-1 rounded-xl border border-gray-800 text-[10px] font-bold uppercase">
+          <button
+            type="button"
+            onClick={() => { setAuthMode('PASSWORD'); setMessage(null); }}
+            className={`py-2 rounded-lg transition ${
+              authMode === 'PASSWORD' ? 'bg-amber-500 text-black font-black' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Password
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMode('MAGIC_LINK'); setMessage(null); }}
+            className={`py-2 rounded-lg transition ${
+              authMode === 'MAGIC_LINK' ? 'bg-amber-500 text-black font-black' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            ✨ Magic Link
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMode('RESET_PASSWORD'); setMessage(null); }}
+            className={`py-2 rounded-lg transition ${
+              authMode === 'RESET_PASSWORD' ? 'bg-amber-500 text-black font-black' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            🔑 Set Password
+          </button>
+        </div>
+
+        {/* NOTIFICATION MESSAGES */}
+        {message && (
+          <div className={`p-3.5 rounded-xl text-xs font-medium border ${
+            message.type === 'ERROR' 
+              ? 'bg-red-950/40 border-red-500/50 text-red-300' 
+              : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
+          }`}>
+            {message.text}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-gray-400 uppercase text-[10px] mb-1">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@peopleandyouth.org"
-              className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
-            />
-          </div>
+        {/* MODE 1: PASSWORD LOGIN */}
+        {authMode === 'PASSWORD' && (
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                EMAIL ADDRESS
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="user@peopleandyouth.org"
+                className="w-full bg-[#030611] border border-gray-800 p-3 text-xs text-white rounded-xl outline-none focus:border-amber-500 transition"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-400 uppercase text-[10px] mb-1">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full bg-[#070b19] border border-white/20 rounded-xl p-3 text-white focus:border-amber-400 focus:outline-none"
-            />
-          </div>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase">
+                  PASSWORD
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('RESET_PASSWORD'); setMessage(null); }}
+                  className="text-[10px] text-amber-400 hover:underline font-bold uppercase"
+                >
+                  Forgot / Set Password?
+                </button>
+              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#030611] border border-gray-800 p-3 text-xs text-white rounded-xl outline-none focus:border-amber-500 transition"
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold uppercase tracking-wider hover:from-amber-300 transition-all shadow-xl"
-          >
-            {loading ? 'Authenticating...' : '🔐 Sign In to Console'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-amber-500/10 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? 'Authenticating...' : '🔑 Sign In to Console'}
+            </button>
+          </form>
+        )}
 
-        <div className="text-center pt-2 border-t border-white/10">
-          <a href="/dissent-dias" className="text-gray-500 hover:text-amber-400 transition-colors text-[10px]">
+        {/* MODE 2: MAGIC LINK LOGIN */}
+        {authMode === 'MAGIC_LINK' && (
+          <form onSubmit={handleMagicLink} className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                EMAIL ADDRESS
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="user@peopleandyouth.org"
+                className="w-full bg-[#030611] border border-gray-800 p-3 text-xs text-white rounded-xl outline-none focus:border-amber-500 transition"
+                required
+              />
+              <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                We will send a one-click login link directly to your email inbox—no password required.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-amber-500/10 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? 'Sending Magic Link...' : '✨ Send One-Click Magic Link'}
+            </button>
+          </form>
+        )}
+
+        {/* MODE 3: SET / RESET PASSWORD */}
+        {authMode === 'RESET_PASSWORD' && (
+          <form onSubmit={handlePasswordSetup} className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                REGISTERED EMAIL ADDRESS
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="user@peopleandyouth.org"
+                className="w-full bg-[#030611] border border-gray-800 p-3 text-xs text-white rounded-xl outline-none focus:border-amber-500 transition"
+                required
+              />
+              <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                New onboarded members or existing users can enter their email here to receive a secure password setup link.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-amber-500/10 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? 'Sending Setup Link...' : '📧 Send Password Setup Email'}
+            </button>
+          </form>
+        )}
+
+        <div className="border-t border-gray-800 pt-4 text-center">
+          <a href="/" className="text-[11px] text-gray-500 hover:text-gray-300">
             ← Return to Public Portal
           </a>
         </div>
+
       </div>
-    </main>
+    </div>
   );
 }
