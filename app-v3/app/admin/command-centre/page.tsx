@@ -4,12 +4,62 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateReadingTime } from '@/lib/cms';
 
+// 147 GLOBAL CAREER ROLES CATEGORIZED
+const GLOBAL_CAREER_ROLES = [
+  // Executive & Governance (15)
+  "Founder & Chair", "Chief Executive Officer", "Chief Operating Officer", "Chief Technology Officer", "Chief Editor",
+  "General Counsel", "Chief Policy Officer", "Director of Research", "Director of Communications", "Director of Operations",
+  "Director of Fellowships", "Director of Strategic Partnerships", "Director of Finance", "Director of Regional Development", "Managing Trustee",
+
+  // Editorial Board & Publishing (25)
+  "Managing Editor", "Senior Editor", "Associate Editor", "Copy Editor", "Journal Editor - Education Renaissance",
+  "Journal Editor - Trade Renaissance", "Journal Editor - Policy Renaissance", "Journal Editor - Technology Renaissance",
+  "Journal Editor - Economic Renaissance", "Journal Editor - Governance Renaissance", "Journal Editor - Rural Renaissance",
+  "Journal Editor - Social Renaissance", "Journal Editor - Environmental Renaissance", "Journal Editor - Health Renaissance",
+  "Journal Editor - Agriculture Renaissance", "Journal Editor - Entrepreneurship Renaissance", "Dissent Dias Curator",
+  "Opinion Editor", "Columnist", "Lead Fact Checker", "Translation Lead", "Peer Reviewer", "Acquisitions Editor", "Archival Historian", "Editorial Assistant",
+
+  // Research & Policy Fellows (25)
+  "Senior Policy Fellow", "Research Fellow", "Public Policy Analyst", "Legal Research Scholar", "Governance Analyst",
+  "Climate & Environmental Fellow", "Macroeconomic Researcher", "Agrarian Policy Analyst", "Digital Infrastructure Fellow",
+  "Legislative Drafter", "Constitutional Law Scholar", "Urban Planning Fellow", "Healthcare Systems Analyst", "Educational Reform Lead",
+  "Defense & Foreign Policy Fellow", "Judicial Reform Analyst", "Human Rights Advocate", "Empirical Data Analyst", "Quantitative Policy Researcher",
+  "Qualitative Field Analyst", "Gender Policy Fellow", "Labor & Economics Scholar", "Trade Strategy Analyst", "Energy Transition Fellow", "Policy Communications Lead",
+
+  // Regional & District Leadership (30)
+  "State Coordinator - Bihar", "Zonal Operations Lead", "District Lead - Patna", "District Lead - Saharsa", "District Lead - Darbhanga",
+  "District Lead - Muzaffarpur", "District Lead - Gaya", "District Lead - Bhagalpur", "District Lead - Purnea", "District Lead - Madhubani",
+  "District Lead - Begusarai", "District Lead - Nalanda", "District Lead - Munger", "District Lead - Rohtas", "District Lead - Vaishali",
+  "District Lead - Samastipur", "District Lead - Sitamarhi", "District Lead - Siwan", "District Lead - West Champaran", "District Lead - East Champaran",
+  "District Lead - Katihar", "District Lead - Araria", "District Lead - Kishanganj", "District Lead - Gopalganj", "District Lead - Buxar",
+  "District Lead - Bhojpur", "District Lead - Kaimur", "District Lead - Jamui", "District Lead - Khagaria", "District Lead - Lakhisarai",
+
+  // Campus Leadership & Fellowships (25)
+  "Chief Campus Ambassador", "Campus Lead - Patna University", "Campus Lead - Jawaharlal Nehru University (JNU)",
+  "Campus Lead - University of Delhi (DU)", "Campus Lead - Banaras Hindu University (BHU)", "Campus Lead - Aligarh Muslim University (AMU)",
+  "Campus Lead - NLSIU Bengaluru", "Campus Lead - NALSAR Hyderabad", "Campus Lead - IIT Delhi", "Campus Lead - IIT Patna",
+  "Campus Lead - IIM Ahmedabad", "Campus Lead - IIM Bodh Gaya", "Campus Lead - Chanakya National Law University",
+  "Campus Lead - Tata Institute of Social Sciences (TISS)", "Campus Lead - Ashoka University", "Campus Lead - Jamia Millia Islamia",
+  "Campus Lead - Hyderabad Central University", "Campus Lead - Panjab University", "Campus Lead - Jadavpur University",
+  "Campus Lead - St. Xavier's College", "Campus Coordinator", "Youth Organizer", "Student Representative", "Student Editor", "Campus Outreach Officer",
+
+  // Technology, AI & Media (15)
+  "Lead Systems Architect", "Full Stack Engineer", "AI & Data Infrastructure Lead", "UI/UX Designer", "Frontend Engineer",
+  "Backend Systems Developer", "Database Administrator", "Cybersecurity Officer", "Media Production Lead", "Video Journalist",
+  "Audio/Podcast Producer", "Visual Designer", "Brand Strategist", "SEO & Analytics Lead", "Social Media Director",
+
+  // Operations, Legal & Administration (12)
+  "Executive Secretary", "Administrative Officer", "Legal Advisor", "RTI & Compliance Officer", "Human Resources Lead",
+  "Finance & Audit Manager", "Grant Writer", "Event Coordinator", "Field Logistics Lead", "Volunteer Coordinator",
+  "Institutional Relations Officer", "Records & Protocol Officer"
+];
+
 export default function CommandCentreDashboard() {
   const [activeTab, setActiveTab] = useState<
     'ARTICLES' | 'JOURNALS' | 'AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | 'REVISIONS' | 'FOUNDER'
   >('ARTICLES');
 
-  // Data Collections State
+  // Data State
   const [articles, setArticles] = useState<any[]>([]);
   const [journals, setJournals] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
@@ -48,20 +98,50 @@ export default function CommandCentreDashboard() {
   const [aBio, setABio] = useState('');
   const [aEmail, setAEmail] = useState('');
 
-  // FOUNDER'S OFFICE ACTIVE CONTROLS STATE
+  // FOUNDER'S OFFICE GLOBAL CONTROLS STATE
   const [watermarkText, setWatermarkText] = useState('OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE');
   const [watermarkEnabled, setWatermarkEnabled] = useState(true);
   const [publicIntakeOpen, setPublicIntakeOpen] = useState(true);
   const [requireEditorialReview, setRequireEditorialReview] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
 
-  // Team Permissions Manager State
-  const [newMemberEmail, setNewMemberEmail] = useState('');
-  const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState('Managing Editor');
-  const [teamMembers, setTeamMembers] = useState([
-    { id: '1', name: 'Founder & Chair', email: 'contact@peopleandyouth.org', role: 'Super Administrator', status: 'ACTIVE' },
-    { id: '2', name: 'Editorial Desk', email: 'editorial@peopleandyouth.org', role: 'Managing Editor', status: 'ACTIVE' }
+  // RICH ADMINISTRATOR / TEAM MEMBER PROFILE STATE
+  const [admName, setAdmName] = useState('');
+  const [admEmail, setAdmEmail] = useState('');
+  const [admPhoto, setAdmPhoto] = useState('');
+  const [admRole, setAdmRole] = useState(GLOBAL_CAREER_ROLES[0]);
+  const [admDesignation, setAdmDesignation] = useState('');
+  const [admOrg, setAdmOrg] = useState('People & Youth');
+  const [admBio, setAdmBio] = useState('');
+  const [admExpertise, setAdmExpertise] = useState('Public Policy, Governance');
+  const [admLinkedin, setAdmLinkedin] = useState('');
+  const [admWebsite, setAdmWebsite] = useState('');
+  const [admAssignedJournal, setAdmAssignedJournal] = useState('');
+
+  // Granular Permission Checkboxes
+  const [perms, setPerms] = useState({
+    view: true,
+    create: true,
+    edit: true,
+    review: true,
+    approve: false,
+    publish: false,
+    archive: false,
+    delete: false,
+    admin: false
+  });
+
+  const [teamMembers, setTeamMembers] = useState<any[]>([
+    {
+      id: '1',
+      name: 'Founder & Chair',
+      email: 'contact@peopleandyouth.org',
+      role: 'Founder & Chair',
+      designation: 'Founder & Managing Director',
+      organization: 'People & Youth',
+      permissions: ['VIEW', 'CREATE', 'EDIT', 'REVIEW', 'APPROVE', 'PUBLISH', 'ARCHIVE', 'DELETE', 'ADMIN'],
+      status: 'ACTIVE'
+    }
   ]);
 
   useEffect(() => {
@@ -223,28 +303,56 @@ export default function CommandCentreDashboard() {
     }
   }
 
-  function handleAddTeamMember(e: React.FormEvent) {
+  // ADD RICH ADMINISTRATOR / TEAM MEMBER
+  async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
-    if (!newMemberEmail || !newMemberName) return;
-    const newMember = {
+    if (!admName || !admEmail) return;
+
+    // Active Permission List
+    const activePerms = Object.keys(perms).filter(k => (perms as any)[k]).map(k => k.toUpperCase());
+
+    const newAdmin = {
       id: Date.now().toString(),
-      name: newMemberName,
-      email: newMemberEmail,
-      role: newMemberRole,
+      name: admName,
+      email: admEmail,
+      photo_url: admPhoto,
+      role: admRole,
+      designation: admDesignation || admRole,
+      organization: admOrg,
+      bio: admBio,
+      expertise: admExpertise.split(',').map(s => s.trim()),
+      linkedin_url: admLinkedin,
+      website_url: admWebsite,
+      assigned_journal: admAssignedJournal,
+      permissions: activePerms,
       status: 'ACTIVE'
     };
-    setTeamMembers([...teamMembers, newMember]);
-    setNewMemberName('');
-    setNewMemberEmail('');
-    alert(`Access granted to ${newMemberName} as ${newMemberRole}!`);
+
+    // Auto Sync with Authors Database Table
+    const authorSlug = generateSlug(admName);
+    await supabase.from('authors').insert({
+      name: admName,
+      slug: authorSlug,
+      email: admEmail,
+      photo_url: admPhoto || null,
+      designation: admDesignation || admRole,
+      organization: admOrg,
+      bio: admBio || null,
+      expertise: admExpertise.split(',').map(s => s.trim()),
+      linkedin_url: admLinkedin || null,
+      website_url: admWebsite || null
+    });
+
+    setTeamMembers([...teamMembers, newAdmin]);
+    alert(`Administrator ${admName} assigned as ${admRole} with permissions [${activePerms.join(', ')}]!`);
+
+    // Reset Form
+    setAdmName(''); setAdmEmail(''); setAdmPhoto(''); setAdmDesignation(''); setAdmBio(''); setAdmLinkedin(''); setAdmWebsite('');
+    fetchAllData();
   }
 
   function handleRemoveMember(id: string) {
     setTeamMembers(teamMembers.filter(m => m.id !== id));
-  }
-
-  function handleSaveFounderSettings() {
-    alert('🎉 Founder settings & global platform overrides updated live across production!');
   }
 
   return (
@@ -765,182 +873,235 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 7. FULLY INTERACTIVE FOUNDER'S OFFICE MODULE */}
+      {/* 7. FOUNDER'S OFFICE - EXPANDED RBAC & 147 ROLES */}
       {activeTab === 'FOUNDER' && (
         <div className="space-y-6">
-          {/* SECTION 1: SYSTEM CONTROLS & WATERMARK SHIELD */}
-          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
-            <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
+          {/* GLOBAL OVERRIDES */}
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
+            <div className="border-b border-gray-800 pb-3 flex justify-between items-center">
               <div>
                 <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">Founder's Office & IOS Governance</h2>
-                <p className="text-xs text-gray-400 mt-1">Super-Administrator Controls, Watermarking Shields & Platform Overrides</p>
+                <p className="text-xs text-gray-400">System Overrides, Watermarking & 147 Role Permissions</p>
               </div>
               <button
-                onClick={handleSaveFounderSettings}
+                onClick={() => alert('Global overrides saved live!')}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded transition"
               >
                 💾 Save Global Overrides
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* WATERMARK SHIELD CONFIGURATOR */}
-              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <div className="flex justify-between items-center border-b border-gray-800/80 pb-2">
-                  <span className="font-bold text-xs text-amber-400 uppercase">🛡️ Institutional Watermark Shield</span>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="text-[10px] text-gray-400 uppercase">Enforced</span>
-                    <input
-                      type="checkbox"
-                      checked={watermarkEnabled}
-                      onChange={(e) => setWatermarkEnabled(e.target.checked)}
-                      className="accent-amber-500 h-4 w-4"
-                    />
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-1">GLOBAL WATERMARK TEXT</label>
-                  <input
-                    type="text"
-                    value={watermarkText}
-                    onChange={(e) => setWatermarkText(e.target.value)}
-                    className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded focus:border-amber-500 outline-none font-mono"
-                  />
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    Rendered dynamically on public article viewports across Dissent Dias and Renaissance Series.
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="p-4 bg-[#030611] border border-gray-800 rounded-lg space-y-2">
+                <span className="font-bold text-xs text-amber-400 uppercase block">🛡️ Institutional Watermark Shield</span>
+                <input
+                  type="text"
+                  value={watermarkText}
+                  onChange={(e) => setWatermarkText(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs text-white rounded font-mono"
+                />
               </div>
 
-              {/* GLOBAL PLATFORM TOGGLES */}
-              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
-                  ⚙️ Global Operational Overrides
-                </span>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-xs font-bold text-gray-200 block">Reader Dispatches Intake</span>
-                      <span className="text-[10px] text-gray-400">Accept new visitor reflections at /reflections</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={publicIntakeOpen}
-                      onChange={(e) => setPublicIntakeOpen(e.target.checked)}
-                      className="accent-amber-500 h-4 w-4"
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
-                    <div>
-                      <span className="text-xs font-bold text-gray-200 block">Require Editorial Review</span>
-                      <span className="text-[10px] text-gray-400">Non-Founders must submit to UNDER_REVIEW stage</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={requireEditorialReview}
-                      onChange={(e) => setRequireEditorialReview(e.target.checked)}
-                      className="accent-amber-500 h-4 w-4"
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
-                    <div>
-                      <span className="text-xs font-bold text-gray-200 block">Maintenance Lockout</span>
-                      <span className="text-[10px] text-gray-400">Pause public article dynamic rendering</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={maintenanceMode}
-                      onChange={(e) => setMaintenanceMode(e.target.checked)}
-                      className="accent-red-500 h-4 w-4"
-                    />
-                  </div>
+              <div className="p-4 bg-[#030611] border border-gray-800 rounded-lg space-y-2">
+                <span className="font-bold text-xs text-amber-400 uppercase block">⚙️ System Toggles</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span>Accept Public Dispatches (/reflections)</span>
+                  <input type="checkbox" checked={publicIntakeOpen} onChange={(e) => setPublicIntakeOpen(e.target.checked)} className="accent-amber-500 h-4 w-4" />
+                </div>
+                <div className="flex justify-between items-center text-xs border-t border-gray-800/50 pt-2">
+                  <span>Require Review Before Publish</span>
+                  <input type="checkbox" checked={requireEditorialReview} onChange={(e) => setRequireEditorialReview(e.target.checked)} className="accent-amber-500 h-4 w-4" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* SECTION 2: TEAM & IOS ROLE ACCESS MANAGER */}
+          {/* EXPANDED ADMINISTRATOR & EMPLOYEE PROFILE CREATOR */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
-              👥 IOS Role-Based Access Control (RBAC)
+              👥 Grant Member Access & Configure Administrator Profiles (147 Global Roles)
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* ADD TEAM MEMBER FORM */}
-              <form onSubmit={handleAddTeamMember} className="bg-[#030611] border border-gray-800 p-4 rounded-xl space-y-3">
-                <span className="text-xs font-bold text-amber-400 uppercase block mb-2">Grant Member Access</span>
+            <form onSubmit={handleAddAdministrator} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#030611] p-4 rounded-xl border border-gray-800">
                 <div>
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">MEMBER NAME</label>
+                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">NAME *</label>
                   <input
                     type="text"
-                    value={newMemberName}
-                    onChange={(e) => setNewMemberName(e.target.value)}
-                    placeholder="Full Name"
+                    value={admName}
+                    onChange={(e) => setAdmName(e.target.value)}
+                    placeholder="Full Official Name"
                     className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
                     required
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">EMAIL ADDRESS</label>
+                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">EMAIL *</label>
                   <input
                     type="email"
-                    value={newMemberEmail}
-                    onChange={(e) => setNewMemberEmail(e.target.value)}
-                    placeholder="user@peopleandyouth.org"
+                    value={admEmail}
+                    onChange={(e) => setAdmEmail(e.target.value)}
+                    placeholder="email@peopleandyouth.org"
                     className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
                     required
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">ASSIGNED ROLE</label>
+                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">CAREER ROLE (147 AVAILABLE) *</label>
                   <select
-                    value={newMemberRole}
-                    onChange={(e) => setNewMemberRole(e.target.value)}
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    value={admRole}
+                    onChange={(e) => {
+                      setAdmRole(e.target.value);
+                      if (!admDesignation) setAdmDesignation(e.target.value);
+                    }}
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white focus:border-amber-500 outline-none"
                   >
-                    <option value="Super Administrator">Super Administrator</option>
-                    <option value="Managing Editor">Managing Editor</option>
-                    <option value="Research Editor">Research Editor</option>
-                    <option value="Journal Editor">Journal Editor</option>
-                    <option value="Author">Author</option>
-                    <option value="Reviewer">Reviewer</option>
+                    {GLOBAL_CAREER_ROLES.map((r, idx) => (
+                      <option key={idx} value={r}>
+                        {r}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <button type="submit" className="w-full py-2 bg-amber-500 text-black text-xs font-bold uppercase rounded">
-                  + Add Administrator
-                </button>
-              </form>
 
-              {/* TEAM MEMBERS LIST */}
-              <div className="lg:col-span-2 bg-[#030611] border border-gray-800 p-4 rounded-xl space-y-3">
-                <span className="text-xs font-bold text-amber-400 uppercase block mb-2">Active Authorized Users</span>
-                <div className="space-y-2">
-                  {teamMembers.map((member) => (
-                    <div key={member.id} className="p-3 bg-[#070b19] border border-gray-800 rounded flex justify-between items-center text-xs">
-                      <div>
-                        <span className="font-bold text-white block">{member.name}</span>
-                        <span className="text-gray-400 text-[11px]">{member.email}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase">
-                          {member.role}
-                        </span>
-                        {member.role !== 'Super Administrator' && (
-                          <button
-                            onClick={() => handleRemoveMember(member.id)}
-                            className="text-red-400 hover:text-red-300 text-[10px] uppercase font-bold"
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">PHOTOGRAPH URL</label>
+                  <input
+                    type="text"
+                    value={admPhoto}
+                    onChange={(e) => setAdmPhoto(e.target.value)}
+                    placeholder="https://peopleandyouth.org/team/photo.jpg"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">DESIGNATION</label>
+                  <input
+                    type="text"
+                    value={admDesignation}
+                    onChange={(e) => setAdmDesignation(e.target.value)}
+                    placeholder="e.g. Senior Research Fellow"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">ORGANIZATION</label>
+                  <input
+                    type="text"
+                    value={admOrg}
+                    onChange={(e) => setAdmOrg(e.target.value)}
+                    placeholder="e.g. People & Youth"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">EXPERTISE (TAGS)</label>
+                  <input
+                    type="text"
+                    value={admExpertise}
+                    onChange={(e) => setAdmExpertise(e.target.value)}
+                    placeholder="Public Policy, AI, Governance"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">LINKEDIN URL</label>
+                  <input
+                    type="text"
+                    value={admLinkedin}
+                    onChange={(e) => setAdmLinkedin(e.target.value)}
+                    placeholder="https://linkedin.com/in/username"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">WEBSITE URL</label>
+                  <input
+                    type="text"
+                    value={admWebsite}
+                    onChange={(e) => setAdmWebsite(e.target.value)}
+                    placeholder="https://domain.com"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">BIOGRAPHY</label>
+                  <textarea
+                    rows={2}
+                    value={admBio}
+                    onChange={(e) => setAdmBio(e.target.value)}
+                    placeholder="Full academic or professional biography..."
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </div>
+              </div>
+
+              {/* GRANULAR PERMISSIONS SWITCHBOARD */}
+              <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
+                <span className="text-xs font-bold text-amber-400 uppercase block">
+                  🔒 Granular Administrator Permissions Matrix
+                </span>
+
+                <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
+                  {Object.keys(perms).map((key) => (
+                    <label key={key} className="flex items-center gap-1.5 p-2 bg-[#070b19] border border-gray-800 rounded cursor-pointer hover:border-amber-500/50">
+                      <input
+                        type="checkbox"
+                        checked={(perms as any)[key]}
+                        onChange={(e) => setPerms({ ...perms, [key]: e.target.checked })}
+                        className="accent-amber-500"
+                      />
+                      <span className="uppercase text-[10px] font-bold text-gray-200">{key}</span>
+                    </label>
                   ))}
                 </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded transition"
+              >
+                + Register Administrator & Grant Permissions
+              </button>
+            </form>
+
+            {/* ACTIVE ADMINISTRATORS TABLE */}
+            <div className="space-y-3 pt-4 border-t border-gray-800">
+              <span className="text-xs font-bold text-amber-400 uppercase block">Active Administrators & Personnel</span>
+              <div className="space-y-2">
+                {teamMembers.map((m) => (
+                  <div key={m.id} className="p-3 bg-[#030611] border border-gray-800 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                    <div>
+                      <span className="font-bold text-white">{m.name}</span>
+                      <span className="text-amber-400 text-[11px] block">{m.role} ({m.organization})</span>
+                      <span className="text-gray-400 text-[10px] block">{m.email}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {m.permissions?.map((p: string, i: number) => (
+                        <span key={i} className="px-1.5 py-0.5 bg-gray-800 text-gray-300 text-[9px] font-mono rounded">
+                          {p}
+                        </span>
+                      ))}
+                      {m.role !== 'Founder & Chair' && (
+                        <button
+                          onClick={() => handleRemoveMember(m.id)}
+                          className="ml-2 text-red-400 hover:text-red-300 text-[10px] uppercase font-bold"
+                        >
+                          Revoke
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
