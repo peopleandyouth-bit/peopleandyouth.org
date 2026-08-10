@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { email, type } = await req.json(); // type: 'MAGIC_LINK' | 'RESET_PASSWORD'
+    const { email: rawEmail, type } = await req.json();
+    const email = rawEmail ? rawEmail.trim().toLowerCase() : '';
 
     if (!email) {
       return NextResponse.json({ error: 'Email address is required.' }, { status: 400 });
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
 
     if (!serviceRoleKey) {
       return NextResponse.json({ 
-        error: 'SUPABASE_SERVICE_ROLE_KEY missing on server. Please check Vercel environment settings.' 
+        error: 'SUPABASE_SERVICE_ROLE_KEY is missing on Vercel. Please check environment variables.' 
       }, { status: 500 });
     }
 
@@ -25,29 +26,59 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // Determine target URL and link type
+    // 1. PRE-AUTHORIZATION GUARD: VERIFY EMAIL EXISTS IN public.authors
+    const { data: authorData, error: authorError } = await supabaseAdmin
+      .from('authors')
+      .select('id, name, email, designation')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (authorError || !authorData) {
+      return NextResponse.json({ 
+        error: 'Access Denied: This email address is not registered in the People & Youth Directory. Please contact the Founder\'s Office for onboarding.' 
+      }, { status: 403 });
+    }
+
+    // 2. CHECK IF USER EXISTS IN auth.users; IF NOT, PROVISION THEM NOW
     const isMagicLink = type === 'MAGIC_LINK';
     const linkType = isMagicLink ? 'magiclink' : 'recovery';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
-    // 1. GENERATE AUTHENTICATION LINK VIA SUPABASE ADMIN
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+    let { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: linkType,
       email,
       options: { redirectTo }
     });
 
+    if (linkError) {
+      // Auto-provision user in auth.users since they are verified in public.authors
+      const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: true
+      });
+
+      if (!createErr) {
+        const retry = await supabaseAdmin.auth.admin.generateLink({
+          type: linkType,
+          email,
+          options: { redirectTo }
+        });
+        linkData = retry.data;
+        linkError = retry.error;
+      }
+    }
+
     if (linkError || !linkData?.properties?.action_link) {
       return NextResponse.json({ 
-        error: linkError?.message || 'Failed to generate authentication link. Ensure user is registered.' 
+        error: linkError?.message || 'Failed to generate authentication link. Please contact system support.' 
       }, { status: 400 });
     }
 
     const actionLink = linkData.properties.action_link;
 
-    // 2. DISPATCH BRANDED EMAIL VIA RESEND
+    // 3. DISPATCH BRANDED EMAIL VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey) {
       const resend = new Resend(apiKey);
@@ -72,6 +103,7 @@ export async function POST(req: Request) {
               </h2>
 
               <p style="font-size: 13px; color: #d1d5db; line-height: 1.6; margin-bottom: 24px;">
+                Dear ${authorData.name || 'Team Member'},<br/><br/>
                 ${isMagicLink 
                   ? 'Click the button below to log directly into your restricted Command Centre workspace.' 
                   : 'Click the button below to configure your personal access password for the People & Youth Console.'}
