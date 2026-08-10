@@ -86,6 +86,7 @@ export default function CommandCentreDashboard() {
   const [aBio, setABio] = useState('');
   const [aEmail, setAEmail] = useState('');
   const [aDept, setADept] = useState('Executive Board');
+  const [aOffice, setAOffice] = useState('Global Secretariat & Executive Offices');
   const [aCredentials, setACredentials] = useState('');
   const [aAffiliation, setAAffiliation] = useState('');
   const [aPhoto, setAPhoto] = useState('');
@@ -99,13 +100,14 @@ export default function CommandCentreDashboard() {
   const [publicIntakeOpen, setPublicIntakeOpen] = useState(true);
   const [requireEditorialReview, setRequireEditorialReview] = useState(true);
 
-  // Founder Administrator Registration Form (Full 10 Fields)
+  // Founder Administrator Registration Form
   const [admName, setAdmName] = useState('');
   const [admEmail, setAdmEmail] = useState('');
   const [admPhoto, setAdmPhoto] = useState('');
   const [admRole, setAdmRole] = useState(GLOBAL_CAREER_ROLES[0]);
   const [admDesignation, setAdmDesignation] = useState('');
   const [admOrg, setAdmOrg] = useState('People & Youth');
+  const [admOffice, setAdmOffice] = useState('Global Secretariat & Executive Offices');
   const [admBio, setAdmBio] = useState('');
   const [admExpertise, setAdmExpertise] = useState('Public Policy, Governance');
   const [admLinkedin, setAdmLinkedin] = useState('');
@@ -155,13 +157,20 @@ export default function CommandCentreDashboard() {
     return text.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
   }
 
-  async function triggerOnboardingEmail(name: string, email: string, designation: string, department?: string) {
+  async function triggerOnboardingEmail(name: string, email: string, designation: string, department?: string, office?: string, slug?: string) {
     if (!email) return;
     try {
       await fetch('/api/onboard-member', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, designation, department })
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          designation, 
+          department, 
+          office: office || 'Global Secretariat & Executive Offices',
+          profile_url: `https://www.peopleandyouth.org/leadership`
+        })
       });
     } catch (err) {
       console.error('Email trigger error:', err);
@@ -254,13 +263,15 @@ export default function CommandCentreDashboard() {
     e.preventDefault();
     if (!aName) return;
 
+    const computedSlug = generateSlug(aName);
     const payload = {
       name: aName,
-      slug: generateSlug(aName),
+      slug: computedSlug,
       email: aEmail || null,
       designation: aDesignation || 'Team Member',
       organization: aOrg || 'People & Youth',
       department: aDept,
+      office: aOffice,
       bio: aBio || null,
       academic_credentials: aCredentials || null,
       institutional_affiliation: aAffiliation || null,
@@ -280,14 +291,14 @@ export default function CommandCentreDashboard() {
       const res = await supabase.from('authors').insert(payload);
       error = res.error;
       if (!error && aEmail) {
-        await triggerOnboardingEmail(aName, aEmail, aDesignation, aDept);
+        await triggerOnboardingEmail(aName, aEmail, aDesignation, aDept, aOffice, computedSlug);
       }
     }
 
     if (error) {
       alert('Failed to save profile: ' + error.message);
     } else {
-      alert(`Profile for "${aName}" saved live! Welcome email dispatched.`);
+      alert(`Profile for "${aName}" saved live! Substantive appointment letter dispatched to ${aEmail || 'N/A'}.`);
       resetAuthorForm();
       fetchAllData();
     }
@@ -301,6 +312,7 @@ export default function CommandCentreDashboard() {
     setABio(author.bio || '');
     setAEmail(author.email || '');
     setADept(author.department || 'Executive Board');
+    setAOffice(author.office || 'Global Secretariat & Executive Offices');
     setACredentials(author.academic_credentials || '');
     setAAffiliation(author.institutional_affiliation || '');
     setAPhoto(author.photo_url || '');
@@ -324,16 +336,17 @@ export default function CommandCentreDashboard() {
   function resetAuthorForm() {
     setEditingAuthorId(null);
     setAName(''); setADesignation(''); setAOrg(''); setABio('');
-    setAEmail(''); setADept('Executive Board'); setACredentials('');
-    setAAffiliation(''); setAPhoto(''); setAExpertise('');
+    setAEmail(''); setADept('Executive Board'); setAOffice('Global Secretariat & Executive Offices');
+    setACredentials(''); setAAffiliation(''); setAPhoto(''); setAExpertise('');
     setALinkedin(''); setAWebsite('');
   }
 
-  // FOUNDER'S OFFICE - REGISTER ADMINISTRATOR WITH FULL 10 METADATA FIELDS
+  // FOUNDER'S OFFICE - REGISTER ADMINISTRATOR WITH FULL METADATA
   async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
     if (!admName || !admEmail) return;
 
+    const computedSlug = generateSlug(admName);
     const activePerms = Object.keys(perms).filter(k => (perms as any)[k]).map(k => k.toUpperCase());
     const newAdmin = {
       id: Date.now().toString(),
@@ -343,6 +356,7 @@ export default function CommandCentreDashboard() {
       role: admRole,
       designation: admDesignation || admRole,
       organization: admOrg,
+      office: admOffice,
       bio: admBio,
       expertise: admExpertise ? admExpertise.split(',').map(s => s.trim()) : [],
       linkedin_url: admLinkedin,
@@ -354,11 +368,12 @@ export default function CommandCentreDashboard() {
     // Synchronize to Supabase Authors table with is_leadership = true
     const { error } = await supabase.from('authors').insert({
       name: admName,
-      slug: generateSlug(admName),
+      slug: computedSlug,
       email: admEmail,
       photo_url: admPhoto || null,
       designation: admDesignation || admRole,
       organization: admOrg,
+      office: admOffice,
       bio: admBio || null,
       department: 'Executive Board',
       is_leadership: true,
@@ -368,15 +383,11 @@ export default function CommandCentreDashboard() {
       website_url: admWebsite || null
     });
 
-    if (error) {
-      console.warn('Author sync warning:', error.message);
-    }
-
     // Trigger Welcome Email
-    await triggerOnboardingEmail(admName, admEmail, admDesignation || admRole, 'Executive Board');
+    await triggerOnboardingEmail(admName, admEmail, admDesignation || admRole, 'Executive Board', admOffice, computedSlug);
 
     setTeamMembers([...teamMembers, newAdmin]);
-    alert(`Administrator "${admName}" registered as ${admRole}! Welcome email dispatched.`);
+    alert(`Administrator "${admName}" registered as ${admRole}! Substantive appointment letter dispatched.`);
 
     // Reset Form
     setAdmName(''); setAdmEmail(''); setAdmPhoto(''); setAdmDesignation('');
@@ -660,6 +671,10 @@ export default function CommandCentreDashboard() {
                 </select>
               </div>
               <div>
+                <label className="block text-[10px] text-gray-400 uppercase mb-1">OFFICE / DIVISION</label>
+                <input type="text" value={aOffice} onChange={(e) => setAOffice(e.target.value)} placeholder="e.g. Global Secretariat & Executive Offices" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
+              </div>
+              <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1">DESIGNATION</label>
                 <input type="text" value={aDesignation} onChange={(e) => setADesignation(e.target.value)} placeholder="e.g. Guest Consultant — Public Health" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
@@ -676,7 +691,7 @@ export default function CommandCentreDashboard() {
                 <textarea rows={3} value={aBio} onChange={(e) => setABio(e.target.value)} className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
               <button type="submit" className="w-full py-2.5 bg-amber-500 text-black text-xs font-bold uppercase rounded">
-                {editingAuthorId ? '💾 Save Changes' : '+ Create Profile & Send Welcome Email'}
+                {editingAuthorId ? '💾 Save Changes' : '+ Create Profile & Dispatch Appointment Letter'}
               </button>
             </form>
           </div>
@@ -695,6 +710,7 @@ export default function CommandCentreDashboard() {
                       </span>
                     </div>
                     <span className="text-xs font-semibold text-amber-400 block">{a.designation}</span>
+                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">🏛️ {a.office}</span>}
                     {a.academic_credentials && (
                       <span className="text-[10px] text-purple-300 block font-mono">🎓 {a.academic_credentials}</span>
                     )}
@@ -817,7 +833,7 @@ export default function CommandCentreDashboard() {
             </div>
           </div>
 
-          {/* RICH ADMINISTRATOR REGISTRATION FORM (FULL 10 METADATA FIELDS) */}
+          {/* RICH ADMINISTRATOR REGISTRATION FORM (FULL 10 METADATA FIELDS INCL OFFICE) */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
               👥 Grant Member Access & Configure Administrator Profiles (147 Global Roles)
@@ -849,10 +865,14 @@ export default function CommandCentreDashboard() {
                   <input type="text" value={admDesignation} onChange={(e) => setAdmDesignation(e.target.value)} placeholder="e.g. Senior Research Fellow" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
                 </div>
                 <div>
+                  <label className="block text-[10px] text-gray-400 uppercase mb-1">OFFICE / DIVISION</label>
+                  <input type="text" value={admOffice} onChange={(e) => setAdmOffice(e.target.value)} placeholder="e.g. Global Secretariat & Executive Offices" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
+                </div>
+
+                <div>
                   <label className="block text-[10px] text-gray-400 uppercase mb-1">ORGANIZATION</label>
                   <input type="text" value={admOrg} onChange={(e) => setAdmOrg(e.target.value)} placeholder="e.g. People & Youth" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
                 </div>
-
                 <div>
                   <label className="block text-[10px] text-gray-400 uppercase mb-1">EXPERTISE (TAGS)</label>
                   <input type="text" value={admExpertise} onChange={(e) => setAdmExpertise(e.target.value)} placeholder="Public Policy, AI, Governance" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
@@ -860,10 +880,6 @@ export default function CommandCentreDashboard() {
                 <div>
                   <label className="block text-[10px] text-gray-400 uppercase mb-1">LINKEDIN URL</label>
                   <input type="text" value={admLinkedin} onChange={(e) => setAdmLinkedin(e.target.value)} placeholder="https://linkedin.com/in/username" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">WEBSITE URL</label>
-                  <input type="text" value={admWebsite} onChange={(e) => setAdmWebsite(e.target.value)} placeholder="https://domain.com" className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white" />
                 </div>
 
                 <div className="md:col-span-3">
@@ -897,7 +913,7 @@ export default function CommandCentreDashboard() {
                 type="submit"
                 className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded transition"
               >
-                + Register Administrator & Send Welcome Email
+                + Register Administrator & Dispatch Institutional Letter
               </button>
             </form>
 
