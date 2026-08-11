@@ -321,14 +321,25 @@ export default function CommandCentreDashboard() {
     setAWebsite(author.website_url || '');
   }
 
-  async function handleDeleteAuthor(id: string, name: string) {
+  async function handleDeleteAuthor(id: string, name: string, email?: string) {
     if (!confirm(`Are you sure you want to permanently delete the profile for "${name}"?`)) return;
 
     const { error } = await supabase.from('authors').delete().eq('id', id);
     if (error) {
       alert('Failed to delete author: ' + error.message);
     } else {
-      alert(`Profile for "${name}" removed permanently.`);
+      if (email) {
+        try {
+          await fetch('/api/offboard-member', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email })
+          });
+        } catch (e) {
+          console.error('Failed to dispatch offboarding email:', e);
+        }
+      }
+      alert(`Profile for "${name}" removed permanently and offboarding email dispatched.`);
       fetchAllData();
     }
   }
@@ -408,7 +419,7 @@ export default function CommandCentreDashboard() {
             </h1>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            People & Youth • Operating System for Publishing, Leadership & Civic Dispatches
+            People & Youth â€¢ Operating System for Publishing, Leadership & Civic Dispatches
           </p>
         </div>
 
@@ -456,7 +467,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'ARTICLES' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ✍️ ARTICLES & ESSAYS
+          âœï¸ ARTICLES & ESSAYS
         </button>
         <button
           onClick={() => setActiveTab('JOURNALS')}
@@ -464,7 +475,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'JOURNALS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          📚 JOURNALS ({journals.length})
+          ðŸ“š JOURNALS ({journals.length})
         </button>
         <button
           onClick={() => setActiveTab('AUTHORS')}
@@ -472,7 +483,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'AUTHORS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          👤 AUTHORS & CONSULTANTS ({authors.length})
+          ðŸ‘¤ AUTHORS & CONSULTANTS ({authors.length})
         </button>
         <button
           onClick={() => setActiveTab('COLUMNS')}
@@ -480,7 +491,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'COLUMNS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          🏛️ EDITORIAL COLUMNS
+          ðŸ›ï¸ EDITORIAL COLUMNS
         </button>
         <button
           onClick={() => setActiveTab('REFLECTIONS')}
@@ -488,7 +499,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'REFLECTIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          💡 READER'S DESK ({reflections.length})
+          ðŸ’¡ READER'S DESK ({reflections.length})
         </button>
         <button
           onClick={() => setActiveTab('REVISIONS')}
@@ -496,7 +507,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'REVISIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          📜 REVISIONS LOG
+          ðŸ“œ REVISIONS LOG
         </button>
         <button
           onClick={() => setActiveTab('FOUNDER')}
@@ -504,7 +515,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'FOUNDER' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          🔐 FOUNDER'S OFFICE
+          ðŸ” FOUNDER'S OFFICE
         </button>
       </div>
 
@@ -567,7 +578,7 @@ export default function CommandCentreDashboard() {
             <div className="bg-[#070b19] border border-amber-500/20 rounded-xl p-6 space-y-4">
               <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                 <h2 className="text-md font-bold text-amber-400 uppercase">{articleId ? 'Edit Publication' : 'Draft New Publication'}</h2>
-                <button onClick={() => setEditorMode('LIST')} className="text-xs text-gray-400 hover:text-white">← Back to Registry</button>
+                <button onClick={() => setEditorMode('LIST')} className="text-xs text-gray-400 hover:text-white">â† Back to Registry</button>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">TITLE</label>
@@ -673,7 +684,7 @@ export default function CommandCentreDashboard() {
               </div>
               <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1">DESIGNATION</label>
-                <input type="text" value={aDesignation} onChange={(e) => setADesignation(e.target.value)} placeholder="e.g. Guest Consultant — Public Health" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
+                <input type="text" value={aDesignation} onChange={(e) => setADesignation(e.target.value)} placeholder="e.g. Guest Consultant â€” Public Health" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
               <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1">ACADEMIC CREDENTIALS</label>
@@ -688,7 +699,7 @@ export default function CommandCentreDashboard() {
                 <textarea rows={3} value={aBio} onChange={(e) => setABio(e.target.value)} className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
               <button type="submit" className="w-full py-2.5 bg-amber-500 text-black text-xs font-bold uppercase rounded">
-                {editingAuthorId ? '💾 Save Changes' : '+ Create Profile & Dispatch Appointment Letter'}
+                {editingAuthorId ? 'ðŸ’¾ Save Changes' : '+ Create Profile & Dispatch Appointment Letter'}
               </button>
             </form>
           </div>
@@ -705,11 +716,11 @@ export default function CommandCentreDashboard() {
                       <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {a.consent_status === 'ACCEPTED' ? (
                           <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
-                            ✅ CONSENTED
+                            âœ… CONSENTED
                           </span>
                         ) : (
                           <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
-                            ⏳ CONSENT PENDING
+                            â³ CONSENT PENDING
                           </span>
                         )}
                         <span className="text-[9px] bg-gray-800 text-gray-300 border border-gray-700 px-1.5 py-0.5 rounded font-mono uppercase">
@@ -718,9 +729,9 @@ export default function CommandCentreDashboard() {
                       </div>
                     </div>
                     <span className="text-xs font-semibold text-amber-400 block">{a.designation}</span>
-                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">🏛️ {a.office}</span>}
+                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">ðŸ›ï¸ {a.office}</span>}
                     {a.academic_credentials && (
-                      <span className="text-[10px] text-purple-300 block font-mono">🎓 {a.academic_credentials}</span>
+                      <span className="text-[10px] text-purple-300 block font-mono">ðŸŽ“ {a.academic_credentials}</span>
                     )}
                     <p className="text-[11px] text-gray-400 line-clamp-2 pt-1">{a.bio || 'No biography.'}</p>
                   </div>
@@ -730,13 +741,13 @@ export default function CommandCentreDashboard() {
                       onClick={() => handleEditAuthor(a)}
                       className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase hover:bg-amber-500/30"
                     >
-                      ✏️ EDIT
+                      âœï¸ EDIT
                     </button>
                     <button
-                      onClick={() => handleDeleteAuthor(a.id, a.name)}
+                      onClick={() => handleDeleteAuthor(a.id, a.name, a.email)}
                       className="px-2.5 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30"
                     >
-                      🗑️ DELETE
+                      ðŸ—‘ï¸ DELETE
                     </button>
                   </div>
                 </div>
@@ -775,10 +786,10 @@ export default function CommandCentreDashboard() {
                 <div>
                   <span className="text-xs font-bold text-amber-400 block">{ref.prompt_question || 'General Dispatch'}</span>
                   <p className="text-xs text-gray-200">"{ref.message}"</p>
-                  <span className="text-[10px] text-gray-400">— {ref.author_name || 'Anonymous'}</span>
+                  <span className="text-[10px] text-gray-400">â€” {ref.author_name || 'Anonymous'}</span>
                 </div>
                 <button onClick={() => handlePromoteReflection(ref)} className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold uppercase rounded whitespace-nowrap">
-                  ⚡ Promote to Draft
+                  âš¡ Promote to Draft
                 </button>
               </div>
             ))}
@@ -815,18 +826,18 @@ export default function CommandCentreDashboard() {
                 <p className="text-xs text-gray-400 mt-1">Super-Administrator Controls, Watermarking Shields & Platform Overrides</p>
               </div>
               <button onClick={() => alert('Global overrides saved live!')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded transition">
-                💾 SAVE GLOBAL OVERRIDES
+                ðŸ’¾ SAVE GLOBAL OVERRIDES
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">🛡️ INSTITUTIONAL WATERMARK SHIELD</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">ðŸ›¡ï¸ INSTITUTIONAL WATERMARK SHIELD</span>
                 <input type="text" value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded font-mono outline-none" />
               </div>
 
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">⚙️ GLOBAL OPERATIONAL OVERRIDES</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">âš™ï¸ GLOBAL OPERATIONAL OVERRIDES</span>
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-center">
                     <span>Reader Dispatches Intake (/reflections)</span>
@@ -844,7 +855,7 @@ export default function CommandCentreDashboard() {
           {/* RICH ADMINISTRATOR REGISTRATION FORM */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
-              👥 GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
+              ðŸ‘¥ GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
             </h2>
 
             <form onSubmit={handleAddAdministrator} className="space-y-6">
@@ -899,7 +910,7 @@ export default function CommandCentreDashboard() {
               {/* GRANULAR PERMISSIONS MATRIX */}
               <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
                 <span className="text-xs font-bold text-amber-400 uppercase block">
-                  🔒 Granular Administrator Permissions Matrix
+                  ðŸ”’ Granular Administrator Permissions Matrix
                 </span>
 
                 <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
