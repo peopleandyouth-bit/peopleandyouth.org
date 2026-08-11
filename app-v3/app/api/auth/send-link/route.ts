@@ -4,18 +4,6 @@ import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
-function extractErrorMessage(err: any): string {
-  if (!err) return 'Unknown authentication error.';
-  if (typeof err === 'string' && err.trim() !== '' && err !== '{}') return err;
-  if (err.message && typeof err.message === 'string' && err.message.trim() !== '' && err.message !== '{}') return err.message;
-  if (err.error_description) return err.error_description;
-  try {
-    const jsonStr = JSON.stringify(err, Object.getOwnPropertyNames(err));
-    if (jsonStr && jsonStr !== '{}' && jsonStr !== '[]') return jsonStr;
-  } catch (e) {}
-  return 'Authentication request failed. Please check SUPABASE_SERVICE_ROLE_KEY in Vercel.';
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -32,7 +20,7 @@ export async function POST(req: Request) {
 
     if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json({ 
-        error: 'Vercel Environment Missing: SUPABASE_SERVICE_ROLE_KEY is not set in Vercel environment variables.' 
+        error: 'Vercel Environment Error: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL is missing.' 
       }, { status: 500 });
     }
 
@@ -40,7 +28,7 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // 1. ALLOWLIST DIRECTORY CHECK (public.authors)
+    // 1. DIRECTORY ALLOWLIST CHECK
     const { data: authorData, error: authorError } = await supabaseAdmin
       .from('authors')
       .select('id, name, email')
@@ -48,47 +36,56 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (authorError) {
-      return NextResponse.json({ error: `Directory Check Failed: ${extractErrorMessage(authorError)}` }, { status: 500 });
+      return NextResponse.json({ 
+        error: `Database Connection Failed: Check if Supabase project is active or paused. (${authorError.message})` 
+      }, { status: 500 });
     }
 
     if (!authorData) {
       return NextResponse.json({ 
-        error: "Access Denied: This email address is not registered in the People & Youth Directory. Please contact the Founder's Office for onboarding." 
+        error: "Access Denied: Email not registered in Directory. Please onboard this email first in Command Centre." 
       }, { status: 403 });
     }
 
-    // 2. INITIALIZE USER IN auth.users
-    const { error: createUserError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      email_confirm: true
-    });
-
-    if (createUserError && !createUserError.message.toLowerCase().includes('already')) {
-      console.log('User creation note:', createUserError.message);
-    }
-
-    // 3. GENERATE ACTION LINK
+    // 2. GENERATE AUTH LINK WITH CATCH FOR 500 ERRORS
     const isMagicLink = type === 'MAGIC_LINK';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: { redirectTo }
-    });
+    let actionLink: string | null = null;
 
-    if (linkError || !linkData?.properties?.action_link) {
-      return NextResponse.json({ error: extractErrorMessage(linkError) }, { status: 400 });
+    try {
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: { redirectTo }
+      });
+
+      if (linkError) {
+        if (linkError.name === 'AuthRetryableFetchError' || (linkError as any).status === 500) {
+          return NextResponse.json({ 
+            error: "Supabase Auth 500 Error: Ensure your Supabase project is not paused and that SUPABASE_SERVICE_ROLE_KEY in Vercel is the 'service_role' secret key." 
+          }, { status: 500 });
+        }
+        return NextResponse.json({ error: linkError.message || 'Failed to generate link.' }, { status: 400 });
+      }
+
+      actionLink = linkData?.properties?.action_link || null;
+    } catch (fetchErr: any) {
+      return NextResponse.json({ 
+        error: "Supabase Auth Unreachable: Check Supabase project status and Vercel Service Role Key." 
+      }, { status: 500 });
     }
 
-    const actionLink = linkData.properties.action_link;
+    if (!actionLink) {
+      return NextResponse.json({ error: 'Failed to generate action link.' }, { status: 400 });
+    }
 
-    // 4. DISPATCH EMAIL VIA RESEND
+    // 3. DISPATCH VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'Vercel Environment Missing: RESEND_API_KEY is not set.' }, { status: 500 });
+      return NextResponse.json({ error: 'RESEND_API_KEY missing on Vercel.' }, { status: 500 });
     }
 
     const resend = new Resend(apiKey);
@@ -96,7 +93,7 @@ export async function POST(req: Request) {
       ? 'One-Click Admin Access Link — People & Youth Console' 
       : 'Set / Reset Your Password — People & Youth Console';
 
-    const sendRes = await resend.emails.send({
+    await resend.emails.send({
       from: 'People & Youth Security <contact@peopleandyouth.org>',
       to: [email],
       subject,
@@ -121,10 +118,6 @@ export async function POST(req: Request) {
       `
     });
 
-    if (sendRes.error) {
-      return NextResponse.json({ error: `Resend Email Error: ${extractErrorMessage(sendRes.error)}` }, { status: 500 });
-    }
-
     return NextResponse.json({ 
       success: true, 
       message: isMagicLink 
@@ -133,6 +126,6 @@ export async function POST(req: Request) {
     });
 
   } catch (err: any) {
-    return NextResponse.json({ error: extractErrorMessage(err) }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error occurred.' }, { status: 500 });
   }
 }
