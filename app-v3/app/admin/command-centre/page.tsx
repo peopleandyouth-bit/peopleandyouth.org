@@ -491,7 +491,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'COLUMNS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ›ï¸ EDITORIAL COLUMNS
+          EDITORIAL COLUMNS
         </button>
         <button
           onClick={() => setActiveTab('REFLECTIONS')}
@@ -716,11 +716,11 @@ export default function CommandCentreDashboard() {
                       <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {a.consent_status === 'ACCEPTED' ? (
                           <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
-                            âœ… CONSENTED
+                            CONSENTED
                           </span>
                         ) : (
                           <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
-                            â³ CONSENT PENDING
+                            CONSENT PENDING
                           </span>
                         )}
                         <span className="text-[9px] bg-gray-800 text-gray-300 border border-gray-700 px-1.5 py-0.5 rounded font-mono uppercase">
@@ -741,13 +741,13 @@ export default function CommandCentreDashboard() {
                       onClick={() => handleEditAuthor(a)}
                       className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase hover:bg-amber-500/30"
                     >
-                      âœï¸ EDIT
+                      EDIT
                     </button>
                     <button
                       onClick={() => handleDeleteAuthor(a.id, a.name, a.email)}
                       className="px-2.5 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30"
                     >
-                      ðŸ—‘ï¸ DELETE
+                      DELETE
                     </button>
                   </div>
                 </div>
