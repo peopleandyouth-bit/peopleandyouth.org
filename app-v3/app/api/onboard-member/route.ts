@@ -19,31 +19,67 @@ export async function POST(req: Request) {
     const resend = new Resend(apiKey);
     const recipientName = name || 'Team Member';
     const recipientRole = designation || 'Institutional Member';
+    const recipientDept = department || 'Executive Board';
+    const recipientOffice = office || 'Global Secretariat & Executive Offices';
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; background-color: #030611; color: #f3f4f6; padding: 32px 16px;">
         <div style="max-width: 650px; margin: 0 auto; background-color: #070b19; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 32px; font-size: 13px; line-height: 1.7; color: #d1d5db;">
           
+          <!-- TOP BANNER: FORMAL CONSENT ACTION REQUIRED -->
+          <div style="margin-bottom: 28px; padding: 18px; background-color: #030611; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
+            <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
+              📌 FORMAL ACTION REQUIRED
+            </span>
+            <p style="color: #ffffff; font-size: 12px; margin: 0 0 12px 0;">
+              Please review and submit your official Institutional Appointment Consent Form:
+            </p>
+            <a href="https://www.peopleandyouth.org/consent" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; padding: 10px 22px; border-radius: 6px; text-decoration: none; font-size: 11px; text-transform: uppercase;">
+              COMPLETE APPOINTMENT CONSENT →
+            </a>
+          </div>
+
+          <!-- HEADER TITLE -->
           <div style="text-align: center; border-bottom: 1px solid #1f2937; padding-bottom: 20px; margin-bottom: 24px;">
             <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
-              PEOPLE & YOUTH • INSTITUTIONAL APPOINTMENT
+              CONFIRMATION OF INSTITUTIONAL APPOINTMENT
             </span>
             <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 900; text-transform: uppercase;">
-              Welcome to People & Youth
+              People & Youth
             </h2>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 4px;">
-              Your Institutional Appointment Has Been Confirmed
+            <p style="color: #9ca3af; font-size: 12px; margin-top: 4px; font-style: italic;">
+              Building a generation that questions with integrity, reflects with humility, and acts with purpose.
             </p>
           </div>
 
+          <!-- VERBATIM LETTER BODY -->
           <p style="color: #ffffff; font-weight: bold;">Dear ${recipientName},</p>
+
+          <p>
+            We are pleased to formally welcome you to the institutional network of People & Youth. Following the completion and review of your application, we are pleased to confirm your appointment as:
+          </p>
+
+          <div style="padding: 16px; background-color: #030611; border-left: 3px solid #fbbf24; margin: 16px 0; font-size: 13px;">
+            <strong style="color: #ffffff; font-size: 15px; display: block; margin-bottom: 4px;">${recipientRole}</strong>
+            <span style="color: #d1d5db; display: block;">Department: ${recipientDept}</span>
+            <span style="color: #d1d5db; display: block;">Office / Division: ${recipientOffice}</span>
+            <span style="color: #fbbf24; display: block; margin-top: 4px;">Institutional Profile: <a href="https://www.peopleandyouth.org/leadership" style="color: #fbbf24;">https://www.peopleandyouth.org/leadership</a></span>
+          </div>
+
+          <p>
+            Your appointment represents more than the addition of another name to an organizational directory. People & Youth is being built as a growing institutional ecosystem in which individuals contribute through knowledge, leadership, research, partnerships, public engagement, and execution. Your role has therefore been established with a defined place within our institutional architecture.
+          </p>
+
+          <h3 style="color: #fbbf24; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-top: 24px;">
+            YOUR ROLE WITHIN PEOPLE & YOUTH
+          </h3>
 
           <p>
             As ${recipientRole}, your responsibilities may include contributing to the development of the institution within your designated area, collaborating with other members of the network, participating in institutional initiatives, and helping translate ideas into measurable outcomes.
           </p>
 
-          <p style="margin-bottom: 4px; font-weight: bold; color: #fbbf24;">Depending upon your mandate, your work may involve:</p>
-          <ul style="margin-top: 4px; padding-left: 20px;">
+          <p style="margin-bottom: 4px; font-weight: bold; color: #ffffff;">Depending upon your mandate, your work may involve:</p>
+          <ul style="margin-top: 4px; padding-left: 20px; color: #d1d5db;">
             <li>Institutional development and execution</li>
             <li>Research, analysis and knowledge creation</li>
             <li>Strategic partnerships and external engagement</li>
@@ -61,7 +97,7 @@ export async function POST(req: Request) {
 
           <hr style="border: 0; border-top: 1px solid #1f2937; margin: 24px 0;" />
 
-          <h3 style="color: #fbbf24; font-size: 12px; font-weight: 900; text-transform: uppercase; tracking-wide: 1px;">
+          <h3 style="color: #fbbf24; font-size: 12px; font-weight: 900; text-transform: uppercase;">
             YOUR PLACE IN THE NETWORK
           </h3>
           <p>
@@ -84,7 +120,7 @@ export async function POST(req: Request) {
           <p>
             Membership and appointment within People & Youth carry an expectation of professionalism, integrity and institutional responsibility. We expect every member to:
           </p>
-          <ol style="padding-left: 20px;">
+          <ol style="padding-left: 20px; color: #d1d5db;">
             <li><strong>Think independently:</strong> Question assumptions and contribute ideas with intellectual honesty.</li>
             <li><strong>Work with integrity:</strong> Represent People & Youth responsibly in professional and public settings.</li>
             <li><strong>Respect evidence:</strong> Distinguish research, opinion, experience and verified information.</li>
@@ -134,12 +170,13 @@ export async function POST(req: Request) {
               Leadership Directory: <a href="https://www.peopleandyouth.org/leadership" style="color: #fbbf24; text-decoration: none;">peopleandyouth.org/leadership</a>
             </p>
             
+            <!-- BOTTOM BANNER: WORKSPACE & PASSWORD SETUP -->
             <div style="margin-top: 20px; padding: 16px; background-color: #030611; border: 1px solid #1f2937; border-radius: 8px;">
               <p style="color: #d1d5db; font-size: 12px; margin-bottom: 10px;">
                 Access your workspace, set up your password, or sign in via Magic Link here:
               </p>
               <a href="https://www.peopleandyouth.org/admin/login" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 11px; text-transform: uppercase;">
-                https://www.peopleandyouth.org/admin/login →
+                HTTPS://WWW.PEOPLEANDYOUTH.ORG/ADMIN/LOGIN →
               </a>
             </div>
           </div>
