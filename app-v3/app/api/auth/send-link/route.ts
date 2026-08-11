@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // 1. PRE-AUTHORIZATION GUARD: VERIFY EMAIL EXISTS IN public.authors
+    // 1. AUTHORIZATION GUARD: MUST EXIST IN public.authors
     const { data: authorData, error: authorError } = await supabaseAdmin
       .from('authors')
       .select('id, name, email, designation')
@@ -39,46 +39,52 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    // 2. CHECK IF USER EXISTS IN auth.users; IF NOT, PROVISION THEM NOW
+    // 2. INITIALIZE USER IN auth.users IF NOT YET CREATED
+    try {
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: true
+      });
+    } catch (e) {
+      // User already exists in auth.users, proceed normally
+    }
+
     const isMagicLink = type === 'MAGIC_LINK';
-    const linkType = isMagicLink ? 'magiclink' : 'recovery';
+    const primaryLinkType = isMagicLink ? 'magiclink' : 'recovery';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
-    let { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: linkType,
+    // 3. GENERATE ACTION LINK (WITH FAIL-SAFE FALLBACK)
+    let actionLink: string | null = null;
+
+    const primaryResult = await supabaseAdmin.auth.admin.generateLink({
+      type: primaryLinkType,
       email,
       options: { redirectTo }
     });
 
-    if (linkError) {
-      // Auto-provision user in auth.users since they are verified in public.authors
-      const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
+    if (primaryResult.data?.properties?.action_link) {
+      actionLink = primaryResult.data.properties.action_link;
+    } else {
+      // Fallback: Use magiclink to log them in and redirect straight to password setup
+      const fallbackResult = await supabaseAdmin.auth.admin.generateLink({
+        type: 'magiclink',
         email,
-        email_confirm: true
+        options: { redirectTo }
       });
-
-      if (!createErr) {
-        const retry = await supabaseAdmin.auth.admin.generateLink({
-          type: linkType,
-          email,
-          options: { redirectTo }
-        });
-        linkData = retry.data;
-        linkError = retry.error;
+      if (fallbackResult.data?.properties?.action_link) {
+        actionLink = fallbackResult.data.properties.action_link;
       }
     }
 
-    if (linkError || !linkData?.properties?.action_link) {
+    if (!actionLink) {
       return NextResponse.json({ 
-        error: linkError?.message || 'Failed to generate authentication link. Please contact system support.' 
+        error: 'Unable to generate authentication link. Please verify system configuration.' 
       }, { status: 400 });
     }
 
-    const actionLink = linkData.properties.action_link;
-
-    // 3. DISPATCH BRANDED EMAIL VIA RESEND
+    // 4. DISPATCH EMAIL VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey) {
       const resend = new Resend(apiKey);
