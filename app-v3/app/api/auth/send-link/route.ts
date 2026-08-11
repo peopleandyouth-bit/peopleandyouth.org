@@ -4,6 +4,18 @@ import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
+function extractErrorMessage(err: any): string {
+  if (!err) return 'Unknown authentication error.';
+  if (typeof err === 'string' && err.trim() !== '' && err !== '{}') return err;
+  if (err.message && typeof err.message === 'string' && err.message.trim() !== '' && err.message !== '{}') return err.message;
+  if (err.error_description) return err.error_description;
+  try {
+    const jsonStr = JSON.stringify(err, Object.getOwnPropertyNames(err));
+    if (jsonStr && jsonStr !== '{}' && jsonStr !== '[]') return jsonStr;
+  } catch (e) {}
+  return 'Authentication request failed. Please check SUPABASE_SERVICE_ROLE_KEY in Vercel.';
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -20,7 +32,7 @@ export async function POST(req: Request) {
 
     if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json({ 
-        error: 'Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL in Vercel environment variables.' 
+        error: 'Vercel Environment Missing: SUPABASE_SERVICE_ROLE_KEY is not set in Vercel environment variables.' 
       }, { status: 500 });
     }
 
@@ -28,7 +40,7 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // 1. INSTITUTIONAL PRE-AUTHORIZATION GUARD
+    // 1. ALLOWLIST DIRECTORY CHECK (public.authors)
     const { data: authorData, error: authorError } = await supabaseAdmin
       .from('authors')
       .select('id, name, email')
@@ -36,7 +48,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (authorError) {
-      return NextResponse.json({ error: `Directory Lookup Error: ${authorError.message}` }, { status: 500 });
+      return NextResponse.json({ error: `Directory Check Failed: ${extractErrorMessage(authorError)}` }, { status: 500 });
     }
 
     if (!authorData) {
@@ -45,7 +57,7 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    // 2. ENSURE USER IS INITIALIZED IN auth.users FIRST
+    // 2. INITIALIZE USER IN auth.users
     const { error: createUserError } = await supabaseAdmin.auth.admin.createUser({
       email,
       email_confirm: true
@@ -68,16 +80,15 @@ export async function POST(req: Request) {
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      const errMsg = linkError ? String(linkError.message || linkError) : 'Failed to generate link in Supabase Auth.';
-      return NextResponse.json({ error: `Auth Error: ${errMsg}` }, { status: 400 });
+      return NextResponse.json({ error: extractErrorMessage(linkError) }, { status: 400 });
     }
 
     const actionLink = linkData.properties.action_link;
 
-    // 4. DISPATCH BRANDED EMAIL VIA RESEND
+    // 4. DISPATCH EMAIL VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing RESEND_API_KEY in Vercel environment variables.' }, { status: 500 });
+      return NextResponse.json({ error: 'Vercel Environment Missing: RESEND_API_KEY is not set.' }, { status: 500 });
     }
 
     const resend = new Resend(apiKey);
@@ -111,7 +122,7 @@ export async function POST(req: Request) {
     });
 
     if (sendRes.error) {
-      return NextResponse.json({ error: `Resend Email Error: ${String(sendRes.error.message)}` }, { status: 500 });
+      return NextResponse.json({ error: `Resend Email Error: ${extractErrorMessage(sendRes.error)}` }, { status: 500 });
     }
 
     return NextResponse.json({ 
@@ -122,7 +133,6 @@ export async function POST(req: Request) {
     });
 
   } catch (err: any) {
-    const errMsg = err?.message ? String(err.message) : 'An unexpected server error occurred.';
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+    return NextResponse.json({ error: extractErrorMessage(err) }, { status: 500 });
   }
 }
