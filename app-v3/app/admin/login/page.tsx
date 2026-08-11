@@ -15,16 +15,15 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'ERROR' | 'SUCCESS'; text: string } | null>(null);
 
-  function formatError(err: any): string {
-    if (!err) return 'An unknown error occurred.';
-    if (typeof err === 'string') return err;
-    if (err.message && typeof err.message === 'string' && err.message.trim() !== '' && err.message !== '{}') {
-      return err.message;
-    }
-    return 'Authentication failed. Please verify your email or credentials.';
+  function parseErrorMsg(data: any): string {
+    if (!data) return 'An error occurred.';
+    if (typeof data === 'string') return data;
+    if (typeof data.error === 'string') return data.error;
+    if (data.error && typeof data.error.message === 'string') return data.error.message;
+    return 'Authentication request failed. Please check server configuration.';
   }
 
-  // 1. Password Login Handler
+  // 1. Password Login
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) return;
@@ -33,17 +32,16 @@ export default function AdminLoginPage() {
     setMessage(null);
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
     setLoading(false);
 
     if (error) {
-      setMessage({ type: 'ERROR', text: formatError(error) });
+      setMessage({ type: 'ERROR', text: parseErrorMsg(error) });
     } else if (data.session) {
       router.push('/admin/command-centre');
     }
   }
 
-  // 2. Resend-Powered Magic Link Handler
+  // 2. Resend Magic Link
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
@@ -64,7 +62,7 @@ export default function AdminLoginPage() {
       if (res.ok && data.success) {
         setMessage({ type: 'SUCCESS', text: data.message });
       } else {
-        setMessage({ type: 'ERROR', text: formatError(data.error) });
+        setMessage({ type: 'ERROR', text: parseErrorMsg(data) });
       }
     } catch (err: any) {
       setLoading(false);
@@ -72,7 +70,7 @@ export default function AdminLoginPage() {
     }
   }
 
-  // 3. Resend-Powered Password Setup Handler
+  // 3. Resend Password Setup
   async function handlePasswordSetup(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
@@ -93,7 +91,7 @@ export default function AdminLoginPage() {
       if (res.ok && data.success) {
         setMessage({ type: 'SUCCESS', text: data.message });
       } else {
-        setMessage({ type: 'ERROR', text: formatError(data.error) });
+        setMessage({ type: 'ERROR', text: parseErrorMsg(data) });
       }
     } catch (err: any) {
       setLoading(false);

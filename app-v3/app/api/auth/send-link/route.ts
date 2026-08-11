@@ -6,8 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { email: rawEmail, type } = await req.json();
-    const email = rawEmail ? rawEmail.trim().toLowerCase() : '';
+    const body = await req.json().catch(() => ({}));
+    const rawEmail = body.email || '';
+    const type = body.type || 'MAGIC_LINK';
+    const email = rawEmail.trim().toLowerCase();
 
     if (!email) {
       return NextResponse.json({ error: 'Email address is required.' }, { status: 400 });
@@ -16,9 +18,9 @@ export async function POST(req: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-    if (!serviceRoleKey) {
+    if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json({ 
-        error: 'SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables. Please check Vercel settings.' 
+        error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL missing in environment.' 
       }, { status: 500 });
     }
 
@@ -26,127 +28,102 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // 1. AUTHORIZATION GUARD: MUST EXIST IN public.authors
+    // 1. DIRECTORY ALLOWLIST CHECK (public.authors)
     const { data: authorData, error: authorError } = await supabaseAdmin
       .from('authors')
       .select('id, name, email, designation')
       .ilike('email', email)
       .maybeSingle();
 
-    if (authorError || !authorData) {
+    if (authorError) {
+      return NextResponse.json({ error: `Database error checking directory: ${String(authorError.message)}` }, { status: 500 });
+    }
+
+    if (!authorData) {
       return NextResponse.json({ 
         error: 'Access Denied: This email address is not registered in the People & Youth Directory. Please contact the Founder\'s Office for onboarding.' 
       }, { status: 403 });
     }
 
-    // 2. ENSURE USER IS INITIALIZED IN auth.users
-    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+    // 2. PROVISION IN auth.users IF NOT EXISTS
+    const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email,
       email_confirm: true
     });
-
-    if (createError && !createError.message.toLowerCase().includes('already') && !createError.message.toLowerCase().includes('registered')) {
-      console.warn('User creation warning:', createError.message);
+    if (createErr && !createErr.message.toLowerCase().includes('already')) {
+      console.log('User creation log:', createErr.message);
     }
 
-    // 3. GENERATE ACTION LINK WITH MULTI-TIER FALLBACK
+    // 3. GENERATE AUTH LINK
     const isMagicLink = type === 'MAGIC_LINK';
-    const primaryType = isMagicLink ? 'magiclink' : 'recovery';
+    const linkType = isMagicLink ? 'magiclink' : 'recovery';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
-    let actionLink: string | null = null;
-    let lastError: string | null = null;
-
-    // Attempt 1: Primary Requested Type
-    const res1 = await supabaseAdmin.auth.admin.generateLink({
-      type: primaryType as any,
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: linkType,
       email,
       options: { redirectTo }
     });
 
-    if (res1.data?.properties?.action_link) {
-      actionLink = res1.data.properties.action_link;
-    } else {
-      lastError = res1.error?.message || 'Primary link generation failed';
-
-      // Attempt 2: Magiclink Fallback
-      const res2 = await supabaseAdmin.auth.admin.generateLink({
-        type: 'magiclink',
-        email,
-        options: { redirectTo }
-      });
-
-      if (res2.data?.properties?.action_link) {
-        actionLink = res2.data.properties.action_link;
-      } else {
-        lastError = res2.error?.message || lastError;
-
-        // Attempt 3: Invite Fallback
-        const res3 = await supabaseAdmin.auth.admin.generateLink({
-          type: 'invite',
-          email,
-          options: { redirectTo }
-        });
-
-        if (res3.data?.properties?.action_link) {
-          actionLink = res3.data.properties.action_link;
-        } else {
-          lastError = res3.error?.message || lastError;
-        }
-      }
+    if (linkError || !linkData?.properties?.action_link) {
+      // EXPLICIT STRING CONVERSION: Ensures Error objects never serialize to {}
+      const errMsg = linkError?.message ? String(linkError.message) : 'Failed to generate link in Supabase Auth.';
+      return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
-    if (!actionLink) {
-      return NextResponse.json({ 
-        error: `Supabase Auth Error: ${lastError || 'Unable to generate authentication link.'}` 
-      }, { status: 400 });
-    }
+    const actionLink = linkData.properties.action_link;
 
-    // 4. DISPATCH EMAIL VIA RESEND
+    // 4. SEND EMAIL VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
-    if (apiKey) {
-      const resend = new Resend(apiKey);
-      const subject = isMagicLink 
-        ? 'One-Click Admin Access Link — People & Youth Console' 
-        : 'Set / Reset Your Password — People & Youth Console';
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Server configuration error: RESEND_API_KEY is missing.' }, { status: 500 });
+    }
 
-      const buttonLabel = isMagicLink ? '✨ Access Admin Console Now' : '🔑 Set / Update Your Password';
+    const resend = new Resend(apiKey);
+    const subject = isMagicLink 
+      ? 'One-Click Admin Access Link — People & Youth Console' 
+      : 'Set / Reset Your Password — People & Youth Console';
 
-      await resend.emails.send({
-        from: 'People & Youth Security <contact@peopleandyouth.org>',
-        to: [email],
-        subject,
-        html: `
-          <div style="font-family: Arial, sans-serif; background-color: #030611; color: #f3f4f6; padding: 32px 16px;">
-            <div style="max-width: 550px; margin: 0 auto; background-color: #070b19; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 28px; text-align: center;">
-              <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
-                SECURITY & AUTHENTICATION PORTAL
-              </span>
-              <h2 style="color: #ffffff; margin: 0 0 16px 0; font-size: 20px;">
-                ${isMagicLink ? 'One-Click Console Login' : 'Console Password Configuration'}
-              </h2>
+    const buttonLabel = isMagicLink ? '✨ Access Admin Console Now' : '🔑 Set / Update Your Password';
 
-              <p style="font-size: 13px; color: #d1d5db; line-height: 1.6; margin-bottom: 24px;">
-                Dear ${authorData.name || 'Team Member'},<br/><br/>
-                ${isMagicLink 
-                  ? 'Click the button below to log directly into your restricted Command Centre workspace.' 
-                  : 'Click the button below to configure your personal access password for the People & Youth Console.'}
-              </p>
+    const emailRes = await resend.emails.send({
+      from: 'People & Youth Security <contact@peopleandyouth.org>',
+      to: [email],
+      subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #030611; color: #f3f4f6; padding: 32px 16px;">
+          <div style="max-width: 550px; margin: 0 auto; background-color: #070b19; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 28px; text-align: center;">
+            <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
+              SECURITY & AUTHENTICATION PORTAL
+            </span>
+            <h2 style="color: #ffffff; margin: 0 0 16px 0; font-size: 20px;">
+              ${isMagicLink ? 'One-Click Console Login' : 'Console Password Configuration'}
+            </h2>
 
-              <a href="${actionLink}" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px 28px; border-radius: 8px; text-decoration: none; margin-bottom: 24px;">
-                ${buttonLabel} →
-              </a>
+            <p style="font-size: 13px; color: #d1d5db; line-height: 1.6; margin-bottom: 24px;">
+              Dear ${authorData.name || 'Team Member'},<br/><br/>
+              ${isMagicLink 
+                ? 'Click the button below to log directly into your restricted Command Centre workspace.' 
+                : 'Click the button below to configure your personal access password for the People & Youth Console.'}
+            </p>
 
-              <p style="font-size: 11px; color: #6b7280; line-height: 1.5; margin: 0;">
-                If you did not request this link, you can safely ignore this email.<br/>
-                OFFICE OF THE FOUNDER & CHIEF EXECUTIVE OFFICER • People & Youth
-              </p>
-            </div>
+            <a href="${actionLink}" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px 28px; border-radius: 8px; text-decoration: none; margin-bottom: 24px;">
+              ${buttonLabel} →
+            </a>
+
+            <p style="font-size: 11px; color: #6b7280; line-height: 1.5; margin: 0;">
+              If you did not request this link, you can safely ignore this email.<br/>
+              OFFICE OF THE FOUNDER & CHIEF EXECUTIVE OFFICER • People & Youth
+            </p>
           </div>
-        `
-      });
+        </div>
+      `
+    });
+
+    if (emailRes.error) {
+      return NextResponse.json({ error: `Resend Email Error: ${String(emailRes.error.message)}` }, { status: 500 });
     }
 
     return NextResponse.json({ 
@@ -156,10 +133,8 @@ export async function POST(req: Request) {
         : '📧 Password setup email sent! Check your inbox to configure your password.' 
     });
 
-  } catch (error: any) {
-    console.error('Auth Link API Error:', error);
-    return NextResponse.json({ 
-      error: error?.message || 'An unexpected server error occurred.' 
-    }, { status: 500 });
+  } catch (err: any) {
+    const errMsg = err?.message ? String(err.message) : 'An unexpected server error occurred.';
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }
