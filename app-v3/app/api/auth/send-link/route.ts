@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // 1. DIRECTORY ALLOWLIST CHECK (public.authors)
+    // 1. INSTITUTIONAL PRE-AUTHORIZATION GUARD (public.authors)
     const { data: authorData, error: authorError } = await supabaseAdmin
       .from('authors')
       .select('id, name, email, designation')
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (authorError) {
-      return NextResponse.json({ error: `Database error checking directory: ${String(authorError.message)}` }, { status: 500 });
+      return NextResponse.json({ error: `Database error checking directory: ${authorError.message}` }, { status: 500 });
     }
 
     if (!authorData) {
@@ -45,37 +45,27 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    // 2. PROVISION IN auth.users IF NOT EXISTS
-    const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      email_confirm: true
-    });
-    if (createErr && !createErr.message.toLowerCase().includes('already')) {
-      console.log('User creation log:', createErr.message);
-    }
-
-    // 3. GENERATE AUTH LINK
+    // 2. GENERATE AUTHENTICATION LINK USING 'magiclink' TYPE
+    // Using 'magiclink' auto-provisions the user and avoids "User not found" errors
     const isMagicLink = type === 'MAGIC_LINK';
-    const linkType = isMagicLink ? 'magiclink' : 'recovery';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: linkType,
+      type: 'magiclink',
       email,
       options: { redirectTo }
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      // EXPLICIT STRING CONVERSION: Ensures Error objects never serialize to {}
-      const errMsg = linkError?.message ? String(linkError.message) : 'Failed to generate link in Supabase Auth.';
+      const errMsg = linkError?.message || 'Failed to generate link in Supabase Auth.';
       return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
     const actionLink = linkData.properties.action_link;
 
-    // 4. SEND EMAIL VIA RESEND
+    // 3. DISPATCH BRANDED EMAIL VIA RESEND
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'Server configuration error: RESEND_API_KEY is missing.' }, { status: 500 });
@@ -123,7 +113,7 @@ export async function POST(req: Request) {
     });
 
     if (emailRes.error) {
-      return NextResponse.json({ error: `Resend Email Error: ${String(emailRes.error.message)}` }, { status: 500 });
+      return NextResponse.json({ error: `Resend Email Error: ${emailRes.error.message}` }, { status: 500 });
     }
 
     return NextResponse.json({ 
@@ -134,7 +124,6 @@ export async function POST(req: Request) {
     });
 
   } catch (err: any) {
-    const errMsg = err?.message ? String(err.message) : 'An unexpected server error occurred.';
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'An unexpected server error occurred.' }, { status: 500 });
   }
 }
