@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     if (!serviceRoleKey) {
       return NextResponse.json({ 
-        error: 'SUPABASE_SERVICE_ROLE_KEY is missing on Vercel. Please check environment variables.' 
+        error: 'SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables. Please check Vercel settings.' 
       }, { status: 500 });
     }
 
@@ -39,48 +39,68 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    // 2. INITIALIZE USER IN auth.users IF NOT YET CREATED
-    try {
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        email_confirm: true
-      });
-    } catch (e) {
-      // User already exists in auth.users, proceed normally
+    // 2. ENSURE USER IS INITIALIZED IN auth.users
+    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      email_confirm: true
+    });
+
+    if (createError && !createError.message.toLowerCase().includes('already') && !createError.message.toLowerCase().includes('registered')) {
+      console.warn('User creation warning:', createError.message);
     }
 
+    // 3. GENERATE ACTION LINK WITH MULTI-TIER FALLBACK
     const isMagicLink = type === 'MAGIC_LINK';
-    const primaryLinkType = isMagicLink ? 'magiclink' : 'recovery';
+    const primaryType = isMagicLink ? 'magiclink' : 'recovery';
     const redirectTo = isMagicLink 
       ? 'https://www.peopleandyouth.org/admin/command-centre'
       : 'https://www.peopleandyouth.org/admin/reset-password';
 
-    // 3. GENERATE ACTION LINK (WITH FAIL-SAFE FALLBACK)
     let actionLink: string | null = null;
+    let lastError: string | null = null;
 
-    const primaryResult = await supabaseAdmin.auth.admin.generateLink({
-      type: primaryLinkType,
+    // Attempt 1: Primary Requested Type
+    const res1 = await supabaseAdmin.auth.admin.generateLink({
+      type: primaryType as any,
       email,
       options: { redirectTo }
     });
 
-    if (primaryResult.data?.properties?.action_link) {
-      actionLink = primaryResult.data.properties.action_link;
+    if (res1.data?.properties?.action_link) {
+      actionLink = res1.data.properties.action_link;
     } else {
-      // Fallback: Use magiclink to log them in and redirect straight to password setup
-      const fallbackResult = await supabaseAdmin.auth.admin.generateLink({
+      lastError = res1.error?.message || 'Primary link generation failed';
+
+      // Attempt 2: Magiclink Fallback
+      const res2 = await supabaseAdmin.auth.admin.generateLink({
         type: 'magiclink',
         email,
         options: { redirectTo }
       });
-      if (fallbackResult.data?.properties?.action_link) {
-        actionLink = fallbackResult.data.properties.action_link;
+
+      if (res2.data?.properties?.action_link) {
+        actionLink = res2.data.properties.action_link;
+      } else {
+        lastError = res2.error?.message || lastError;
+
+        // Attempt 3: Invite Fallback
+        const res3 = await supabaseAdmin.auth.admin.generateLink({
+          type: 'invite',
+          email,
+          options: { redirectTo }
+        });
+
+        if (res3.data?.properties?.action_link) {
+          actionLink = res3.data.properties.action_link;
+        } else {
+          lastError = res3.error?.message || lastError;
+        }
       }
     }
 
     if (!actionLink) {
       return NextResponse.json({ 
-        error: 'Unable to generate authentication link. Please verify system configuration.' 
+        error: `Supabase Auth Error: ${lastError || 'Unable to generate authentication link.'}` 
       }, { status: 400 });
     }
 
