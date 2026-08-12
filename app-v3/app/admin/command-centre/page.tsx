@@ -43,7 +43,7 @@ const GLOBAL_CAREER_ROLES = [
 
 export default function CommandCentreDashboard() {
   const [activeTab, setActiveTab] = useState<
-    'ARTICLES' | 'JOURNALS' | 'AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | 'REVISIONS' | 'FOUNDER'
+    'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER'
   >('ARTICLES');
 
   // Database State
@@ -352,7 +352,7 @@ export default function CommandCentreDashboard() {
     setALinkedin(''); setAWebsite('');
   }
 
-  // FOUNDER'S OFFICE - REGISTER ADMINISTRATOR
+  // 🏛️ FOUNDER'S OFFICE - REGISTER ADMINISTRATOR
   async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
     if (!admName || !admEmail) return;
@@ -419,7 +419,7 @@ export default function CommandCentreDashboard() {
             </h1>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            People & Youth â€¢ Operating System for Publishing, Leadership & Civic Dispatches
+            People & Youth • Operating System for Publishing, Leadership & Civic Dispatches
           </p>
         </div>
 
@@ -446,11 +446,11 @@ export default function CommandCentreDashboard() {
           <span className="text-2xl font-black">{articles.filter(a => a.status === 'UNDER_REVIEW').length}</span>
         </div>
         <div className="bg-[#070b19] border border-purple-500/20 p-3 rounded-lg">
-          <span className="text-[10px] font-bold text-purple-400 uppercase block">JOURNALS</span>
+          <span className="text-[10px] font-bold text-purple-400 uppercase block">📜 JOURNALS</span>
           <span className="text-2xl font-black">{journals.length}</span>
         </div>
         <div className="bg-[#070b19] border border-cyan-500/20 p-3 rounded-lg">
-          <span className="text-[10px] font-bold text-cyan-400 uppercase block">AUTHORS</span>
+          <span className="text-[10px] font-bold text-cyan-400 uppercase block">👥 AUTHORS</span>
           <span className="text-2xl font-black">{authors.length}</span>
         </div>
         <div className="bg-[#070b19] border border-gray-500/20 p-3 rounded-lg">
@@ -467,23 +467,23 @@ export default function CommandCentreDashboard() {
             activeTab === 'ARTICLES' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          âœï¸ ARTICLES & ESSAYS
+          âœ ARTICLES & ESSAYS
         </button>
         <button
-          onClick={() => setActiveTab('JOURNALS')}
+          onClick={() => setActiveTab('📜 JOURNALS')}
           className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
-            activeTab === 'JOURNALS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
+            activeTab === '📜 JOURNALS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ“š JOURNALS ({journals.length})
+          ðŸ“š 📜 JOURNALS ({journals.length})
         </button>
         <button
-          onClick={() => setActiveTab('AUTHORS')}
+          onClick={() => setActiveTab('👥 AUTHORS')}
           className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
-            activeTab === 'AUTHORS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
+            activeTab === '👥 AUTHORS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ‘¤ AUTHORS & CONSULTANTS ({authors.length})
+          ðŸ‘¤ 👥 AUTHORS & CONSULTANTS ({authors.length})
         </button>
         <button
           onClick={() => setActiveTab('COLUMNS')}
@@ -499,23 +499,23 @@ export default function CommandCentreDashboard() {
             activeTab === 'REFLECTIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ’¡ READER'S DESK ({reflections.length})
+          ðŸ’¡ 💡 READER'S DESK ({reflections.length})
         </button>
         <button
-          onClick={() => setActiveTab('REVISIONS')}
+          onClick={() => setActiveTab('📌 REVISIONS')}
           className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
-            activeTab === 'REVISIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
+            activeTab === '📌 REVISIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ“œ REVISIONS LOG
+          ðŸ“œ 📌 REVISIONS LOG
         </button>
         <button
-          onClick={() => setActiveTab('FOUNDER')}
+          onClick={() => setActiveTab('🏛️ FOUNDER')}
           className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
-            activeTab === 'FOUNDER' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
+            activeTab === '🏛️ FOUNDER' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ” FOUNDER'S OFFICE
+          ðŸ” 🏛️ FOUNDER'S OFFICE
         </button>
       </div>
 
@@ -626,8 +626,8 @@ export default function CommandCentreDashboard() {
         )
       )}
 
-      {/* 2. JOURNALS TAB */}
-      {activeTab === 'JOURNALS' && (
+      {/* 2. 📜 JOURNALS TAB */}
+      {activeTab === '📜 JOURNALS' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
             <h2 className="text-md font-bold text-amber-400 uppercase">Create New Journal</h2>
@@ -651,8 +651,8 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 3. AUTHORS & CONSULTANTS TAB */}
-      {activeTab === 'AUTHORS' && (
+      {/* 3. 👥 AUTHORS & CONSULTANTS TAB */}
+      {activeTab === '👥 AUTHORS' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
             <div className="flex justify-between items-center border-b border-gray-800 pb-2">
@@ -729,7 +729,7 @@ export default function CommandCentreDashboard() {
                       </div>
                     </div>
                     <span className="text-xs font-semibold text-amber-400 block">{a.designation}</span>
-                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">ðŸ›ï¸ {a.office}</span>}
+                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">ðŸ› {a.office}</span>}
                     {a.academic_credentials && (
                       <span className="text-[10px] text-purple-300 block font-mono">ðŸŽ“ {a.academic_credentials}</span>
                     )}
@@ -776,7 +776,7 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 5. READER'S DESK / REFLECTIONS TAB */}
+      {/* 5. 💡 READER'S DESK / REFLECTIONS TAB */}
       {activeTab === 'REFLECTIONS' && (
         <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
           <h2 className="text-md font-bold text-amber-400 uppercase">Reader's Desk & Dispatches</h2>
@@ -797,8 +797,8 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 6. REVISIONS LOG TAB */}
-      {activeTab === 'REVISIONS' && (
+      {/* 6. 📌 REVISIONS LOG TAB */}
+      {activeTab === '📌 REVISIONS' && (
         <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
           <h2 className="text-md font-bold text-amber-400 uppercase">Publication Revision History</h2>
           <div className="space-y-2">
@@ -815,29 +815,29 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 7. FULLY ELABORATIVE FOUNDER'S OFFICE TAB */}
-      {activeTab === 'FOUNDER' && (
+      {/* 7. FULLY ELABORATIVE 🏛️ FOUNDER'S OFFICE TAB */}
+      {activeTab === '🏛️ FOUNDER' && (
         <div className="space-y-6">
           {/* WATERMARK SHIELD & GLOBAL TOGGLES */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
               <div>
-                <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">FOUNDER'S OFFICE & IOS GOVERNANCE</h2>
+                <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">🏛️ FOUNDER'S OFFICE & IOS GOVERNANCE</h2>
                 <p className="text-xs text-gray-400 mt-1">Super-Administrator Controls, Watermarking Shields & Platform Overrides</p>
               </div>
               <button onClick={() => alert('Global overrides saved live!')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded transition">
-                ðŸ’¾ SAVE GLOBAL OVERRIDES
+                ðŸ’¾ 💾 SAVE GLOBAL OVERRIDES
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">ðŸ›¡ï¸ INSTITUTIONAL WATERMARK SHIELD</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">ðŸ›¡ 🛡️ INSTITUTIONAL WATERMARK SHIELD</span>
                 <input type="text" value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded font-mono outline-none" />
               </div>
 
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">âš™ï¸ GLOBAL OPERATIONAL OVERRIDES</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">âš™ ⚙️ GLOBAL OPERATIONAL OVERRIDES</span>
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-center">
                     <span>Reader Dispatches Intake (/reflections)</span>
