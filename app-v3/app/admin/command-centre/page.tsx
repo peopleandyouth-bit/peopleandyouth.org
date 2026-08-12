@@ -467,7 +467,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'ARTICLES' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          âœ ARTICLES & ESSAYS
+          ✍️ ARTICLES & ESSAYS
         </button>
         <button
           onClick={() => setActiveTab('📜 JOURNALS')}
@@ -475,7 +475,7 @@ export default function CommandCentreDashboard() {
             activeTab === '📜 JOURNALS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ“š 📜 JOURNALS ({journals.length})
+          📜 JOURNALS ({journals.length})
         </button>
         <button
           onClick={() => setActiveTab('👥 AUTHORS')}
@@ -483,7 +483,7 @@ export default function CommandCentreDashboard() {
             activeTab === '👥 AUTHORS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ‘¤ 👥 AUTHORS & CONSULTANTS ({authors.length})
+          👥 AUTHORS & CONSULTANTS ({authors.length})
         </button>
         <button
           onClick={() => setActiveTab('COLUMNS')}
@@ -499,7 +499,7 @@ export default function CommandCentreDashboard() {
             activeTab === 'REFLECTIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ’¡ 💡 READER'S DESK ({reflections.length})
+          💡 READER'S DESK ({reflections.length})
         </button>
         <button
           onClick={() => setActiveTab('📌 REVISIONS')}
@@ -507,7 +507,7 @@ export default function CommandCentreDashboard() {
             activeTab === '📌 REVISIONS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ“œ 📌 REVISIONS LOG
+          📌 REVISIONS LOG
         </button>
         <button
           onClick={() => setActiveTab('🏛️ FOUNDER')}
@@ -515,7 +515,7 @@ export default function CommandCentreDashboard() {
             activeTab === '🏛️ FOUNDER' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          ðŸ” 🏛️ FOUNDER'S OFFICE
+          🏛️ FOUNDER'S OFFICE
         </button>
       </div>
 
@@ -578,7 +578,7 @@ export default function CommandCentreDashboard() {
             <div className="bg-[#070b19] border border-amber-500/20 rounded-xl p-6 space-y-4">
               <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                 <h2 className="text-md font-bold text-amber-400 uppercase">{articleId ? 'Edit Publication' : 'Draft New Publication'}</h2>
-                <button onClick={() => setEditorMode('LIST')} className="text-xs text-gray-400 hover:text-white">â† Back to Registry</button>
+                <button onClick={() => setEditorMode('LIST')} className="text-xs text-gray-400 hover:text-white">← Back to Registry</button>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">TITLE</label>
@@ -699,7 +699,7 @@ export default function CommandCentreDashboard() {
                 <textarea rows={3} value={aBio} onChange={(e) => setABio(e.target.value)} className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
               <button type="submit" className="w-full py-2.5 bg-amber-500 text-black text-xs font-bold uppercase rounded">
-                {editingAuthorId ? 'ðŸ’¾ Save Changes' : '+ Create Profile & Dispatch Appointment Letter'}
+                {editingAuthorId ? '💾 Save Changes' : '+ Create Profile & Dispatch Appointment Letter'}
               </button>
             </form>
           </div>
@@ -729,9 +729,9 @@ export default function CommandCentreDashboard() {
                       </div>
                     </div>
                     <span className="text-xs font-semibold text-amber-400 block">{a.designation}</span>
-                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">ðŸ› {a.office}</span>}
+                    {a.office && <span className="text-[10px] text-gray-400 block font-mono">🏛️ {a.office}</span>}
                     {a.academic_credentials && (
-                      <span className="text-[10px] text-purple-300 block font-mono">ðŸŽ“ {a.academic_credentials}</span>
+                      <span className="text-[10px] text-purple-300 block font-mono">🎓 {a.academic_credentials}</span>
                     )}
                     <p className="text-[11px] text-gray-400 line-clamp-2 pt-1">{a.bio || 'No biography.'}</p>
                   </div>
@@ -789,7 +789,7 @@ export default function CommandCentreDashboard() {
                   <span className="text-[10px] text-gray-400">— {ref.author_name || 'Anonymous'}</span>
                 </div>
                 <button onClick={() => handlePromoteReflection(ref)} className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold uppercase rounded whitespace-nowrap">
-                  âš¡ Promote to Draft
+                  ⚡ Promote to Draft
                 </button>
               </div>
             ))}
@@ -826,18 +826,18 @@ export default function CommandCentreDashboard() {
                 <p className="text-xs text-gray-400 mt-1">Super-Administrator Controls, Watermarking Shields & Platform Overrides</p>
               </div>
               <button onClick={() => alert('Global overrides saved live!')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded transition">
-                ðŸ’¾ 💾 SAVE GLOBAL OVERRIDES
+                💾 SAVE GLOBAL OVERRIDES
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">ðŸ›¡ 🛡️ INSTITUTIONAL WATERMARK SHIELD</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">🛡️ INSTITUTIONAL WATERMARK SHIELD</span>
                 <input type="text" value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded font-mono outline-none" />
               </div>
 
               <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">âš™ ⚙️ GLOBAL OPERATIONAL OVERRIDES</span>
+                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">⚙️ GLOBAL OPERATIONAL OVERRIDES</span>
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-center">
                     <span>Reader Dispatches Intake (/reflections)</span>
@@ -855,7 +855,7 @@ export default function CommandCentreDashboard() {
           {/* RICH ADMINISTRATOR REGISTRATION FORM */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
-              ðŸ‘¥ GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
+              👥 GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
             </h2>
 
             <form onSubmit={handleAddAdministrator} className="space-y-6">
@@ -910,7 +910,7 @@ export default function CommandCentreDashboard() {
               {/* GRANULAR PERMISSIONS MATRIX */}
               <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
                 <span className="text-xs font-bold text-amber-400 uppercase block">
-                  ðŸ”’ Granular Administrator Permissions Matrix
+                  🔒 Granular Administrator Permissions Matrix
                 </span>
 
                 <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
