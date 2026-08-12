@@ -684,7 +684,7 @@ export default function CommandCentreDashboard() {
               </div>
               <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1">DESIGNATION</label>
-                <input type="text" value={aDesignation} onChange={(e) => setADesignation(e.target.value)} placeholder="e.g. Guest Consultant â€” Public Health" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
+                <input type="text" value={aDesignation} onChange={(e) => setADesignation(e.target.value)} placeholder="e.g. Guest Consultant — Public Health" className="w-full bg-[#030611] border border-gray-800 p-2 text-xs text-white rounded" />
               </div>
               <div>
                 <label className="block text-[10px] text-gray-400 uppercase mb-1">ACADEMIC CREDENTIALS</label>
@@ -786,7 +786,7 @@ export default function CommandCentreDashboard() {
                 <div>
                   <span className="text-xs font-bold text-amber-400 block">{ref.prompt_question || 'General Dispatch'}</span>
                   <p className="text-xs text-gray-200">"{ref.message}"</p>
-                  <span className="text-[10px] text-gray-400">â€” {ref.author_name || 'Anonymous'}</span>
+                  <span className="text-[10px] text-gray-400">— {ref.author_name || 'Anonymous'}</span>
                 </div>
                 <button onClick={() => handlePromoteReflection(ref)} className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold uppercase rounded whitespace-nowrap">
                   âš¡ Promote to Draft
