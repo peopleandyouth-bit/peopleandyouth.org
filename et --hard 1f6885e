@@ -1,0 +1,15 @@
+[33m1710a66[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fully restore Global Careers page with institutional roles, vacant indicators, and organization LinkedIn URL
+[33m32324fa[m Scour and purge Mojibake encoding artifacts across entire codebase
+[33m7bfeffc[m Remove garbled Mojibake characters from homepage
+[33md4610bc[m Correct homepage LinkedIn label to People & Youth and map Careers page to Leadership Network with explicit VACANT status badges
+[33m1f6885e[m Deploy offboarding emails, corrected LinkedIn company URL, language switcher, and dynamic office leadership directory
+[33mec3ca67[m Restore consent link at top and maintain admin portal link at bottom in onboarding email
+[33mbb11b9f[m Update institutional appointment email with verbatim letter text and login portal URL at the end
+[33m3b87cd1[m Make Knowledge Caves fully interactive and dynamic with dedicated cave content explorer
+[33m858996c[m Deploy Sovereign Database Auth System bypassing GoTrue Auth API completely
+[33ma7810bb[m Handle AuthRetryableFetchError 500 gracefully with diagnostic reporting
+[33m721051b[m Fix Auth Error serialization and force explicit error messages
+[33m6c00cbc[m Deploy guaranteed auth initialization and clean error primitive stringification
+[33m61996df[m Fix password setup by unifying auth links under magiclink type with redirect targeting
+[33m6d27485[m Deploy explicit error primitive serialization for Supabase Auth API
+[33me10c266[m Deploy multi-tier link generation with explicit error reporting
