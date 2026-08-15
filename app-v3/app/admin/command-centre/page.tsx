@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateReadingTime } from '@/lib/cms';
 
-// 147 GLOBAL CAREER ROLES
 const GLOBAL_CAREER_ROLES = [
   "Founder & Chair", "Chief Executive Officer", "Chief Operating Officer", "Chief Technology Officer", "Chief Editor",
   "General Counsel", "Chief Policy Officer", "Director of Research", "Director of Communications", "Director of Operations",
@@ -43,10 +42,9 @@ const GLOBAL_CAREER_ROLES = [
 
 export default function CommandCentreDashboard() {
   const [activeTab, setActiveTab] = useState<
-    'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER'
+    'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER' | '💼 INVESTORS'
   >('ARTICLES');
 
-  // Database State
   const [articles, setArticles] = useState<any[]>([]);
   const [journals, setJournals] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
@@ -55,7 +53,11 @@ export default function CommandCentreDashboard() {
   const [revisions, setRevisions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Article Editor State
+  const [investorConfig, setInvestorConfig] = useState<any>(null);
+  const [investorProfiles, setInvestorProfiles] = useState<any[]>([]);
+  const [investorDocs, setInvestorDocs] = useState<any[]>([]);
+  const [investorLogs, setInvestorLogs] = useState<any[]>([]);
+
   const [editorMode, setEditorMode] = useState<'LIST' | 'EDIT'>('LIST');
   const [articleId, setArticleId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -71,14 +73,12 @@ export default function CommandCentreDashboard() {
   const [featured, setFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Journal State
   const [jName, setJName] = useState('');
   const [jType, setJType] = useState('RENAISSANCE_SERIES');
   const [jDesc, setJDesc] = useState('');
   const [jIssn, setJIssn] = useState('');
   const [jEditor, setJEditor] = useState('');
 
-  // Author / Consultant Form State
   const [editingAuthorId, setEditingAuthorId] = useState<string | null>(null);
   const [aName, setAName] = useState('');
   const [aDesignation, setADesignation] = useState('');
@@ -94,13 +94,11 @@ export default function CommandCentreDashboard() {
   const [aLinkedin, setALinkedin] = useState('');
   const [aWebsite, setAWebsite] = useState('');
 
-  // Founder's Office Controls
   const [watermarkText, setWatermarkText] = useState('OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE');
   const [watermarkEnabled, setWatermarkEnabled] = useState(true);
   const [publicIntakeOpen, setPublicIntakeOpen] = useState(true);
   const [requireEditorialReview, setRequireEditorialReview] = useState(true);
 
-  // Founder Administrator Registration Form
   const [admName, setAdmName] = useState('');
   const [admEmail, setAdmEmail] = useState('');
   const [admPhoto, setAdmPhoto] = useState('');
@@ -135,13 +133,17 @@ export default function CommandCentreDashboard() {
 
   async function fetchAllData() {
     setLoading(true);
-    const [artRes, jourRes, authRes, colRes, refRes, revRes] = await Promise.all([
+    const [artRes, jourRes, authRes, colRes, refRes, revRes, invCfgRes, invProfRes, invDocRes, invCrmRes] = await Promise.all([
       supabase.from('articles').select('*, authors(name), publications(name)').order('updated_at', { ascending: false }),
       supabase.from('publications').select('*').order('name', { ascending: true }),
       supabase.from('authors').select('*').order('created_at', { ascending: false }),
       supabase.from('editorial_columns').select('*, authors(name)').order('title', { ascending: true }),
       supabase.from('reflections').select('*').order('created_at', { ascending: false }),
-      supabase.from('article_revisions').select('*, articles(title)').order('created_at', { ascending: false }).limit(20)
+      supabase.from('article_revisions').select('*, articles(title)').order('created_at', { ascending: false }).limit(20),
+      supabase.from('investor_cms_config').select('*').eq('is_active', true).maybeSingle(),
+      supabase.from('investor_profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('investor_documents').select('*').order('display_order', { ascending: true }),
+      supabase.from('investor_crm_logs').select('*').order('updated_at', { ascending: false })
     ]);
 
     if (artRes.data) setArticles(artRes.data);
@@ -150,6 +152,10 @@ export default function CommandCentreDashboard() {
     if (colRes.data) setColumns(colRes.data);
     if (refRes.data) setReflections(refRes.data);
     if (revRes.data) setRevisions(revRes.data);
+    if (invCfgRes.data) setInvestorConfig(invCfgRes.data);
+    if (invProfRes.data) setInvestorProfiles(invProfRes.data);
+    if (invDocRes.data) setInvestorDocs(invDocRes.data);
+    if (invCrmRes.data) setInvestorLogs(invCrmRes.data);
     setLoading(false);
   }
 
@@ -258,7 +264,6 @@ export default function CommandCentreDashboard() {
     }
   }
 
-  // SAVE OR UPDATE AUTHOR PROFILE
   async function handleSaveAuthor(e: React.FormEvent) {
     e.preventDefault();
     if (!aName) return;
@@ -352,7 +357,6 @@ export default function CommandCentreDashboard() {
     setALinkedin(''); setAWebsite('');
   }
 
-  // 🏛️ FOUNDER'S OFFICE - REGISTER ADMINISTRATOR
   async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
     if (!admName || !admEmail) return;
@@ -407,9 +411,64 @@ export default function CommandCentreDashboard() {
     setTeamMembers(teamMembers.filter(m => m.id !== id));
   }
 
+  async function handleSaveInvestorConfig(e: React.FormEvent) {
+    e.preventDefault();
+    if (!investorConfig) return;
+
+    const funds = investorConfig.use_of_funds || {};
+    const totalPct = Object.values(funds).reduce((acc: number, val: any) => acc + (Number(val) || 0), 0);
+
+    if (Math.abs(totalPct - 100) > 0.01) {
+      if (!confirm(`⚠️ Warning: The current Use of Funds allocation totals ${totalPct.toFixed(1)}%, not 100%. Save anyway?`)) {
+        return;
+      }
+    }
+
+    const { error } = await supabase
+      .from('investor_cms_config')
+      .update({
+        target_raise_inr: investorConfig.target_raise_inr,
+        min_ticket_inr: investorConfig.min_ticket_inr,
+        max_ticket_inr: investorConfig.max_ticket_inr,
+        founder_capital_inr: investorConfig.founder_capital_inr,
+        round_status: investorConfig.round_status,
+        valuation_status: investorConfig.valuation_status,
+        desired_dilution_percent: investorConfig.desired_dilution_percent,
+        closing_date: investorConfig.closing_date,
+        use_of_funds: investorConfig.use_of_funds,
+        platform_metrics: investorConfig.platform_metrics,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', investorConfig.id);
+
+    if (error) {
+      alert('Failed to update investor configuration: ' + error.message);
+    } else {
+      alert('Investor Relations CMS parameters saved live!');
+      fetchAllData();
+    }
+  }
+
+  async function handleUpdateInvestorStatus(profileId: string, status: string, accessLevel: string) {
+    const { error } = await supabase
+      .from('investor_profiles')
+      .update({
+        verification_status: status,
+        access_level: accessLevel,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', profileId);
+
+    if (error) {
+      alert('Failed to update investor status: ' + error.message);
+    } else {
+      alert(`Investor status updated to ${status} (${accessLevel})!`);
+      fetchAllData();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#030611] text-gray-100 font-sans p-6">
-      {/* HEADER BANNER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-amber-500/20 gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -431,7 +490,6 @@ export default function CommandCentreDashboard() {
         </button>
       </div>
 
-      {/* TELEMETRY STATS CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 my-6">
         <div className="bg-[#070b19] border border-amber-500/20 p-3 rounded-lg">
           <span className="text-[10px] font-bold text-amber-400 uppercase block">TOTAL ARTICLES</span>
@@ -454,12 +512,11 @@ export default function CommandCentreDashboard() {
           <span className="text-2xl font-black">{authors.length}</span>
         </div>
         <div className="bg-[#070b19] border border-gray-500/20 p-3 rounded-lg">
-          <span className="text-[10px] font-bold text-gray-400 uppercase block">REFLECTIONS</span>
-          <span className="text-2xl font-black">{reflections.length}</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase block">INVESTOR REQS</span>
+          <span className="text-2xl font-black">{investorProfiles.length}</span>
         </div>
       </div>
 
-      {/* NAVIGATION TABS */}
       <div className="flex border-b border-gray-800 overflow-x-auto gap-1 mb-6">
         <button
           onClick={() => { setActiveTab('ARTICLES'); setEditorMode('LIST'); }}
@@ -510,6 +567,14 @@ export default function CommandCentreDashboard() {
           📌 REVISIONS LOG
         </button>
         <button
+          onClick={() => setActiveTab('💼 INVESTORS')}
+          className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
+            activeTab === '💼 INVESTORS' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          💼 INVESTORS ({investorProfiles.length})
+        </button>
+        <button
           onClick={() => setActiveTab('🏛️ FOUNDER')}
           className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
             activeTab === '🏛️ FOUNDER' ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10' : 'text-gray-400 hover:text-gray-200'
@@ -519,7 +584,6 @@ export default function CommandCentreDashboard() {
         </button>
       </div>
 
-      {/* 1. ARTICLES & ESSAYS TAB */}
       {activeTab === 'ARTICLES' && (
         editorMode === 'LIST' ? (
           <div className="bg-[#070b19] border border-amber-500/20 rounded-xl p-6">
@@ -573,7 +637,6 @@ export default function CommandCentreDashboard() {
             </div>
           </div>
         ) : (
-          /* SPLIT SCREEN EDITOR */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-[#070b19] border border-amber-500/20 rounded-xl p-6 space-y-4">
               <div className="flex justify-between items-center border-b border-gray-800 pb-2">
@@ -626,7 +689,6 @@ export default function CommandCentreDashboard() {
         )
       )}
 
-      {/* 2. 📜 JOURNALS TAB */}
       {activeTab === '📜 JOURNALS' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
@@ -651,7 +713,6 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 3. 👥 AUTHORS & CONSULTANTS TAB */}
       {activeTab === '👥 AUTHORS' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
@@ -757,7 +818,6 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 4. EDITORIAL COLUMNS TAB */}
       {activeTab === 'COLUMNS' && (
         <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
           <h2 className="text-md font-bold text-amber-400 uppercase">Editorial Columns Registry</h2>
@@ -776,7 +836,6 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 5. 💡 READER'S DESK / REFLECTIONS TAB */}
       {activeTab === 'REFLECTIONS' && (
         <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
           <h2 className="text-md font-bold text-amber-400 uppercase">Reader's Desk & Dispatches</h2>
@@ -797,7 +856,6 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 6. 📌 REVISIONS LOG TAB */}
       {activeTab === '📌 REVISIONS' && (
         <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
           <h2 className="text-md font-bold text-amber-400 uppercase">Publication Revision History</h2>
@@ -815,10 +873,127 @@ export default function CommandCentreDashboard() {
         </div>
       )}
 
-      {/* 7. FULLY ELABORATIVE 🏛️ FOUNDER'S OFFICE TAB */}
+      {activeTab === '💼 INVESTORS' && (
+        <div className="space-y-6">
+          {investorConfig && (
+            <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+              <div className="border-b border-gray-800 pb-3 flex justify-between items-center">
+                <div>
+                  <h2 className="text-md font-bold text-amber-400 uppercase">INVESTOR RELATIONS PROSPECTUS PARAMETERS</h2>
+                  <p className="text-xs text-gray-400">Dynamic Capital Ask, Dilution Targets, and Use of Funds Allocation Matrix</p>
+                </div>
+                <button onClick={handleSaveInvestorConfig} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase rounded">
+                  💾 Save Investor CMS Parameters
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <label className="block text-gray-400 font-bold uppercase mb-1">Target Raise (₹ INR)</label>
+                  <input
+                    type="number"
+                    value={investorConfig.target_raise_inr || ''}
+                    onChange={(e) => setInvestorConfig({ ...investorConfig, target_raise_inr: Number(e.target.value) })}
+                    className="w-full bg-[#030611] border border-gray-800 rounded p-2 text-white font-mono outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 font-bold uppercase mb-1">Min Ticket (₹ INR)</label>
+                  <input
+                    type="number"
+                    value={investorConfig.min_ticket_inr || ''}
+                    onChange={(e) => setInvestorConfig({ ...investorConfig, min_ticket_inr: Number(e.target.value) })}
+                    className="w-full bg-[#030611] border border-gray-800 rounded p-2 text-white font-mono outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 font-bold uppercase mb-1">Max Ticket (₹ INR)</label>
+                  <input
+                    type="number"
+                    value={investorConfig.max_ticket_inr || ''}
+                    onChange={(e) => setInvestorConfig({ ...investorConfig, max_ticket_inr: Number(e.target.value) })}
+                    className="w-full bg-[#030611] border border-gray-800 rounded p-2 text-white font-mono outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 font-bold uppercase mb-1">Round Status</label>
+                  <select
+                    value={investorConfig.round_status || 'Exploring'}
+                    onChange={(e) => setInvestorConfig({ ...investorConfig, round_status: e.target.value })}
+                    className="w-full bg-[#030611] border border-gray-800 rounded p-2 text-white outline-none focus:border-amber-500"
+                  >
+                    <option value="Exploring">Exploring</option>
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Paused">Paused</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
+            <h2 className="text-md font-bold text-amber-400 uppercase">INVESTOR ACCESS REQUESTS ({investorProfiles.length})</h2>
+            {investorProfiles.length === 0 ? (
+              <p className="text-xs text-gray-400">No investor verification requests submitted yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-800 text-gray-400 uppercase">
+                      <th className="py-2 px-2">Investor / Entity</th>
+                      <th className="py-2 px-2">Type</th>
+                      <th className="py-2 px-2">Proposed Ticket</th>
+                      <th className="py-2 px-2">Status</th>
+                      <th className="py-2 px-2">Access Level</th>
+                      <th className="py-2 px-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {investorProfiles.map((ip) => (
+                      <tr key={ip.id} className="border-b border-gray-800/50 hover:bg-white/5 transition">
+                        <td className="py-2 px-2 font-bold text-white">
+                          {ip.full_name}
+                          <span className="block text-[10px] font-normal text-gray-400">{ip.email} {ip.organization ? `• ${ip.organization}` : ''}</span>
+                        </td>
+                        <td className="py-2 px-2 text-amber-400">{ip.investor_type || 'Angel'}</td>
+                        <td className="py-2 px-2 font-mono">{ip.proposed_ticket_inr ? `₹${Number(ip.proposed_ticket_inr).toLocaleString()}` : 'Not specified'}</td>
+                        <td className="py-2 px-2">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${
+                            ip.verification_status === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' :
+                            ip.verification_status === 'REJECTED' ? 'bg-red-500/20 text-red-400 border-red-500/40' :
+                            'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                          }`}>
+                            {ip.verification_status}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 font-mono text-[10px] text-cyan-400">{ip.access_level}</td>
+                        <td className="py-2 px-2 text-right space-x-1">
+                          <button
+                            onClick={() => handleUpdateInvestorStatus(ip.id, 'VERIFIED', 'APPROVED')}
+                            className="px-2 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold uppercase hover:bg-emerald-500/30"
+                          >
+                            Approve Access
+                          </button>
+                          <button
+                            onClick={() => handleUpdateInvestorStatus(ip.id, 'REJECTED', 'PUBLIC')}
+                            className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30"
+                          >
+                            Reject
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {activeTab === '🏛️ FOUNDER' && (
         <div className="space-y-6">
-          {/* WATERMARK SHIELD & GLOBAL TOGGLES */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
               <div>
@@ -852,7 +1027,6 @@ export default function CommandCentreDashboard() {
             </div>
           </div>
 
-          {/* RICH ADMINISTRATOR REGISTRATION FORM */}
           <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
             <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
               👥 GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
@@ -907,7 +1081,6 @@ export default function CommandCentreDashboard() {
                 </div>
               </div>
 
-              {/* GRANULAR PERMISSIONS MATRIX */}
               <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
                 <span className="text-xs font-bold text-amber-400 uppercase block">
                   🔒 Granular Administrator Permissions Matrix
@@ -936,7 +1109,6 @@ export default function CommandCentreDashboard() {
               </button>
             </form>
 
-            {/* ACTIVE PERSONNEL REGISTRY TABLE */}
             <div className="space-y-3 pt-4 border-t border-gray-800">
               <span className="text-xs font-bold text-amber-400 uppercase block">Active Personnel & Permissions Registry</span>
               <div className="space-y-2">
