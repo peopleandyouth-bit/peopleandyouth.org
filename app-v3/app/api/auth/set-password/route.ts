@@ -32,7 +32,14 @@ export async function POST(req: Request) {
 
     // 2. CREATE OR UPDATE USER IN auth.users WITH NEW PASSWORD
     const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const matchedUser = existingUser?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    const users = (existingUser?.users ?? []) as Array<{
+  email?: string | null;
+  [key: string]: any;
+}>;
+
+const matchedUser = users.find(
+  u => u.email?.toLowerCase() === email.toLowerCase()
+);
 
     if (matchedUser) {
       await supabaseAdmin.auth.admin.updateUserById(matchedUser.id, { password });
