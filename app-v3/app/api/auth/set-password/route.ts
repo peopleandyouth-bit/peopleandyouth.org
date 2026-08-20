@@ -1,65 +1,110 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { token, email, password } = await req.json();
+    const body = await req.json().catch(() => ({}));
 
-    if (!token || !email || !password) {
-      return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
+    const password = String(body.password || '');
+
+    if (!password) {
+      return NextResponse.json(
+        {
+          error: 'Password is required.',
+        },
+        { status: 400 }
+      );
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    if (password.length < 8) {
+      return NextResponse.json(
+        {
+          error: 'Password must be at least 8 characters long.',
+        },
+        { status: 400 }
+      );
+    }
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
+    /*
+     * Create the SSR Supabase client.
+     *
+     * The authentication session established by
+     * /api/auth/confirm is available through the
+     * Supabase SSR cookies.
+     */
+    const supabase = await createClient();
+
+    /*
+     * Verify that an authenticated user actually exists.
+     *
+     * We deliberately do NOT accept an email address or
+     * arbitrary user ID from the browser.
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error(
+        'No authenticated user during password update:',
+        userError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            'Your password-reset session is invalid or has expired. Please request a new password link.',
+        },
+        { status: 401 }
+      );
+    }
+
+    /*
+     * Update the password of the authenticated user.
+     */
+    const { error: updateError } =
+      await supabase.auth.updateUser({
+        password,
+      });
+
+    if (updateError) {
+      console.error(
+        'Supabase password update error:',
+        updateError
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            updateError.message ||
+            'Unable to update your password.',
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Password configured successfully.',
+      email: user.email || null,
     });
 
-    // 1. VERIFY TOKEN IN DATABASE
-    const { data: author, error } = await supabaseAdmin
-      .from('authors')
-      .select('id, auth_token')
-      .ilike('email', email)
-      .eq('auth_token', token)
-      .maybeSingle();
+  } catch (error: any) {
+    console.error(
+      'Set-password fatal error:',
+      error
+    );
 
-    if (error || !author) {
-      return NextResponse.json({ error: 'Invalid or expired setup token.' }, { status: 400 });
-    }
-
-    // 2. CREATE OR UPDATE USER IN auth.users WITH NEW PASSWORD
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const users = (existingUser?.users ?? []) as Array<{
-  email?: string | null;
-  [key: string]: any;
-}>;
-
-const matchedUser = users.find(
-  u => u.email?.toLowerCase() === email.toLowerCase()
-);
-
-    if (matchedUser) {
-      await supabaseAdmin.auth.admin.updateUserById(matchedUser.id, { password });
-    } else {
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true
-      });
-    }
-
-    // 3. CLEAR TOKEN IN DATABASE
-    await supabaseAdmin
-      .from('authors')
-      .update({ auth_token: null, auth_token_expires: null })
-      .eq('id', author.id);
-
-    return NextResponse.json({ success: true, message: 'Password configured successfully!' });
-
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Failed to set password.' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          error?.message ||
+          'Failed to configure password.',
+      },
+      { status: 500 }
+    );
   }
 }
