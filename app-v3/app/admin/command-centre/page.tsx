@@ -599,20 +599,22 @@ export default function CommandCentreDashboard() {
     }
 
     const { error } = await supabase
-      .from('investor_cms_config')
-      .update({
-        target_raise_inr: investorConfig.target_raise_inr,
-        min_ticket_inr: investorConfig.min_ticket_inr,
-        max_ticket_inr: investorConfig.max_ticket_inr,
-        founder_capital_inr: investorConfig.founder_capital_inr,
-        round_status: investorConfig.round_status,
-        valuation_status: investorConfig.valuation_status,
-        desired_dilution_percent: investorConfig.desired_dilution_percent,
-        closing_date: investorConfig.closing_date,
-        use_of_funds: investorConfig.use_of_funds,
-        platform_metrics: investorConfig.platform_metrics,
-        updated_at: new Date().toISOString()
-      })
+  .from('investor_cms_config')
+  .update({
+    target_raise_inr: investorConfig.target_raise_inr,
+    min_ticket_inr: investorConfig.min_ticket_inr,
+    max_ticket_inr: investorConfig.max_ticket_inr,
+    founder_capital_inr: investorConfig.founder_capital_inr,
+    existing_debt_inr: investorConfig.existing_debt_inr,
+    round_status: investorConfig.round_status,
+    valuation_status: investorConfig.valuation_status,
+    desired_dilution_percent: investorConfig.desired_dilution_percent,
+    closing_date: investorConfig.closing_date,
+    use_of_funds: investorConfig.use_of_funds,
+    platform_metrics: investorConfig.platform_metrics,
+    updated_by: 'Superadmin',
+    updated_at: new Date().toISOString()
+  })
       .eq('id', investorConfig.id);
 
     if (error) {

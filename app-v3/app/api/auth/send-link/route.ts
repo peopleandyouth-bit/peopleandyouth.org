@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
 
     const existingUser = existingUsers.users.find(
       (user) =>
-        user.email?.trim().toLowerCase() === email
+        email
     );
 
     if (existingUser) {
@@ -239,8 +239,8 @@ export async function POST(req: Request) {
     const resend = new Resend(resendApiKey);
 
     const subject = isMagicLink
-      ? 'One-Click Admin Access — People & Youth Console'
-      : 'Set / Reset Your Password — People & Youth Console';
+      ? 'One-Click Admin Access â€” People & Youth Console'
+      : 'Set / Reset Your Password â€” People & Youth Console';
 
     const heading = isMagicLink
       ? 'One-Click Console Login'
@@ -251,8 +251,8 @@ export async function POST(req: Request) {
       : 'configure your personal account password';
 
     const buttonText = isMagicLink
-      ? '✨ Access Admin Console Now'
-      : '🔑 Set / Update Your Password';
+      ? 'âœ¨ Access Admin Console Now'
+      : 'ðŸ”‘ Set / Update Your Password';
 
     const { error: resendError } = await resend.emails.send({
       from: 'People & Youth Security <contact@peopleandyouth.org>',
@@ -291,7 +291,7 @@ export async function POST(req: Request) {
                 text-decoration:none;
               "
             >
-              ${buttonText} →
+              ${buttonText} â†’
             </a>
 
             <p style="font-size:10px;color:#6b7280;line-height:1.5;margin-top:24px;">
@@ -328,8 +328,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       message: isMagicLink
-        ? '✨ One-click login link sent! Check your email inbox.'
-        : '📧 Password setup email sent! Check your inbox to configure your password.',
+        ? 'âœ¨ One-click login link sent! Check your email inbox.'
+        : 'ðŸ“§ Password setup email sent! Check your inbox to configure your password.',
     });
 
   } catch (err: any) {
