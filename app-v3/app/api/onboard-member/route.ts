@@ -1,10 +1,17 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const { requirePermission } = await import('@/lib/route-authorization');
+    const auth = await requirePermission("CREATE");
+
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { name, email, designation, department, office } = await req.json();
 
     if (!email) {
@@ -29,13 +36,13 @@ export async function POST(req: Request) {
           <!-- TOP BANNER: FORMAL CONSENT ACTION REQUIRED -->
           <div style="margin-bottom: 28px; padding: 18px; background-color: #030611; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
             <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
-              📌 FORMAL ACTION REQUIRED
+              ðŸ“Œ FORMAL ACTION REQUIRED
             </span>
             <p style="color: #ffffff; font-size: 12px; margin: 0 0 12px 0;">
               Please review and submit your official Institutional Appointment Consent Form:
             </p>
             <a href="https://www.peopleandyouth.org/consent" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; padding: 10px 22px; border-radius: 6px; text-decoration: none; font-size: 11px; text-transform: uppercase;">
-              COMPLETE APPOINTMENT CONSENT →
+              COMPLETE APPOINTMENT CONSENT â†’
             </a>
           </div>
 
@@ -176,7 +183,7 @@ export async function POST(req: Request) {
                 Access your workspace, set up your password, or sign in via Magic Link here:
               </p>
               <a href="https://www.peopleandyouth.org/admin/login" style="display: inline-block; background-color: #fbbf24; color: #030611; font-weight: 900; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 11px; text-transform: uppercase;">
-                HTTPS://WWW.PEOPLEANDYOUTH.ORG/ADMIN/LOGIN →
+                HTTPS://WWW.PEOPLEANDYOUTH.ORG/ADMIN/LOGIN â†’
               </a>
             </div>
           </div>
@@ -197,3 +204,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err?.message || 'Failed to dispatch email.' }, { status: 500 });
   }
 }
+
+
+

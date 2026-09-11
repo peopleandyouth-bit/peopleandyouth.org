@@ -1,8 +1,18 @@
 ﻿import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
   try {
+    const auth = await requireAdmin();
+
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: auth.status }
+      );
+    }
+
     const { data: profiles, error: profileErr } = await supabaseAdmin
       .from("profiles")
       .select("*")
@@ -15,12 +25,25 @@ export async function GET() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    const articleList = articleErr ? [] : (articles || []);
+    if (articleErr) throw articleErr;
 
-    const totalMembers = profiles?.length || 0;
-    const verifiedFounders = profiles?.filter((p) => p.is_founding_member).length || 0;
-    const totalRevenue = profiles?.reduce((sum, p) => sum + (Number(p.amount_paid) || 0), 0) || 0;
-    const pendingArticles = articleList.filter((a) => a.status === "pending").length;
+    const profileList = profiles || [];
+    const articleList = articles || [];
+
+    const totalMembers = profileList.length;
+
+    const verifiedFounders = profileList.filter(
+      (p) => p.is_founding_member
+    ).length;
+
+    const totalRevenue = profileList.reduce(
+      (sum, p) => sum + (Number(p.amount_paid) || 0),
+      0
+    );
+
+    const pendingArticles = articleList.filter(
+      (a) => a.status === "pending"
+    ).length;
 
     return NextResponse.json({
       metrics: {
@@ -29,11 +52,19 @@ export async function GET() {
         totalRevenue,
         pendingArticles,
       },
-      profiles: profiles || [],
+      profiles: profileList,
       articles: articleList,
     });
   } catch (error: any) {
-    console.error("Admin Fetch Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to fetch admin data" }, { status: 500 });
+    console.error("[ADMIN DATA]", error);
+
+    return NextResponse.json(
+      {
+        error:
+          error?.message ||
+          "Failed to fetch admin data",
+      },
+      { status: 500 }
+    );
   }
 }

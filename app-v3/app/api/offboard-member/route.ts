@@ -1,10 +1,17 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const { requirePermission } = await import('@/lib/route-authorization');
+    const auth = await requirePermission("DELETE");
+
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { name, email } = await req.json();
 
     if (!email) {
@@ -25,7 +32,7 @@ export async function POST(req: Request) {
           
           <div style="text-align: center; border-bottom: 1px solid #1f2937; padding-bottom: 20px; margin-bottom: 24px;">
             <span style="color: #fbbf24; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px;">
-              PEOPLE & YOUTH • ACCOUNT OFFBOARDING
+              PEOPLE & YOUTH â€¢ ACCOUNT OFFBOARDING
             </span>
             <h2 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 900; text-transform: uppercase;">
               Account Deletion Confirmation
@@ -66,8 +73,8 @@ export async function POST(req: Request) {
           <p style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #1f2937;">
             Until our paths cross again,<br/><br/>
             <strong style="color: #ffffff; font-size: 14px;">People & Youth</strong><br/>
-            <span style="color: #3b82f6; font-size: 12px; font-weight: bold;">At the Heart of Change 💙</span><br/>
-            <span style="color: #9ca3af; font-size: 11px;">Ideas • Society • Humanity</span><br/>
+            <span style="color: #3b82f6; font-size: 12px; font-weight: bold;">At the Heart of Change ðŸ’™</span><br/>
+            <span style="color: #9ca3af; font-size: 11px;">Ideas â€¢ Society â€¢ Humanity</span><br/>
             <a href="https://www.peopleandyouth.org" style="color: #fbbf24; text-decoration: none; font-size: 11px;">peopleandyouth.org</a>
           </p>
 
@@ -78,7 +85,7 @@ export async function POST(req: Request) {
     await resend.emails.send({
       from: 'People & Youth Executive Office <contact@peopleandyouth.org>',
       to: [email],
-      subject: 'Confirmation of Account Deletion — People & Youth',
+      subject: 'Confirmation of Account Deletion â€” People & Youth',
       html: emailHtml
     });
 
@@ -87,3 +94,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err?.message || 'Failed to dispatch email.' }, { status: 500 });
   }
 }
+
+
+
