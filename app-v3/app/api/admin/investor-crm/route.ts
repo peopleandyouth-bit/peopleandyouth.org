@@ -2,6 +2,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/lib/admin-auth";
 import { requirePermission } from "@/lib/route-authorization";
+import {
+  recordAuditEvent,
+  type AuditEventType,
+} from "@/lib/investor-audit";
 
 const STAGES = [
   "PROSPECT",
@@ -102,6 +106,22 @@ function normalizeDate(value: unknown) {
   return date.toISOString();
 }
 
+function buildBeforeAfter(
+  before: Record<string, unknown> | null,
+  after: Record<string, unknown>,
+  fields: string[]
+) {
+  const beforeState: Record<string, unknown> = {};
+  const afterState: Record<string, unknown> = {};
+
+  for (const field of fields) {
+    beforeState[field] = before ? before[field] ?? null : null;
+    afterState[field] = after[field] ?? null;
+  }
+
+  return { before: beforeState, after: afterState };
+}
+
 export async function GET() {
   try {
     const auth = await requireAdmin();
@@ -187,6 +207,7 @@ export async function GET() {
  * Updates the CRM relationship record for an investor.
  *
  * Permission: EDIT (5B.17)
+ * Audit: precise event type derived from changes (5C.6, 5C.8)
  */
 export async function PATCH(
   request: Request
@@ -322,12 +343,18 @@ export async function PATCH(
       updated_at: now,
     };
 
+    /*
+     * 5C.11 — Before/after state.
+     *
+     * Fetch the full existing row (not just the id) so we can capture
+     * the complete before-state for the audit payload.
+     */
     const {
       data: existing,
       error: existingError,
     } = await supabase
       .from("investor_crm_logs")
-      .select("id")
+      .select("*")
       .eq("investor_id", investorId)
       .order("updated_at", { ascending: false })
       .limit(1)
@@ -341,8 +368,11 @@ export async function PATCH(
     }
 
     let crmRecord;
+    let isUpdate = false;
 
     if (existing?.id) {
+      isUpdate = true;
+
       const {
         data,
         error,
@@ -382,6 +412,147 @@ export async function PATCH(
       }
 
       crmRecord = data;
+    }
+
+    /*
+     * 5C.6 / 5C.7 / 5C.8 / 5C.9 / 5C.10 / 5C.11 / 5C.12
+     *
+     * Audit trail — best-effort. Never blocks the primary operation.
+     *
+     * Event type precedence (most significant first):
+     *   STAGE_TRANSITION → CRM_CAPITAL_UPDATED → CRM_PROBABILITY_UPDATED
+     *   → CRM_CONTACT_RECORDED → CRM_NEXT_ACTION_UPDATED
+     *   → ACTIVITY_DETAILS_UPDATED (fallback for notes/assignee only)
+     */
+    const actor = {
+      id: auth.user.id,
+      email: auth.user.email ?? "",
+      role: auth.identity?.role ?? "unknown",
+    };
+
+    if (isUpdate && existing) {
+      const beforeRecord = existing as Record<string, unknown>;
+
+      const stageChanged =
+        beforeRecord.stage !== payload.stage;
+      const capitalChanged =
+        Number(beforeRecord.expected_investment_inr ?? 0) !==
+          payload.expected_investment_inr ||
+        Number(beforeRecord.actual_investment_inr ?? 0) !==
+          payload.actual_investment_inr;
+      const probabilityChanged =
+        Number(beforeRecord.probability_percent ?? 0) !==
+        payload.probability_percent;
+      const contactChanged =
+        (beforeRecord.last_contact_date ?? null) !==
+        payload.last_contact_date;
+      const nextActionChanged =
+        (beforeRecord.next_action ?? null) !==
+        payload.next_action;
+      const assignedChanged =
+        (beforeRecord.assigned_admin ?? null) !==
+        payload.assigned_admin;
+      const notesChanged =
+        (beforeRecord.meeting_notes ?? null) !==
+        payload.meeting_notes;
+
+      const changedFields: string[] = [];
+
+      if (stageChanged) changedFields.push("stage");
+      if (
+        Number(beforeRecord.expected_investment_inr ?? 0) !==
+        payload.expected_investment_inr
+      ) {
+        changedFields.push("expected_investment_inr");
+      }
+      if (
+        Number(beforeRecord.actual_investment_inr ?? 0) !==
+        payload.actual_investment_inr
+      ) {
+        changedFields.push("actual_investment_inr");
+      }
+      if (probabilityChanged) {
+        changedFields.push("probability_percent");
+      }
+      if (contactChanged) {
+        changedFields.push("last_contact_date");
+      }
+      if (nextActionChanged) {
+        changedFields.push("next_action");
+      }
+      if (assignedChanged) {
+        changedFields.push("assigned_admin");
+      }
+      if (notesChanged) {
+        changedFields.push("meeting_notes");
+      }
+
+      if (changedFields.length > 0) {
+        let eventType: AuditEventType =
+          "ACTIVITY_DETAILS_UPDATED";
+        let summary = `CRM record updated (${changedFields.join(
+          ", "
+        )})`;
+
+        if (stageChanged) {
+          eventType = "STAGE_TRANSITION";
+          summary = `Stage transition ${String(
+            beforeRecord.stage ?? "UNKNOWN"
+          )} → ${payload.stage}`;
+        } else if (capitalChanged) {
+          eventType = "CRM_CAPITAL_UPDATED";
+          summary = "Capital expectations updated";
+        } else if (probabilityChanged) {
+          eventType = "CRM_PROBABILITY_UPDATED";
+          summary = `Probability updated from ${Number(
+            beforeRecord.probability_percent ?? 0
+          )}% to ${payload.probability_percent}%`;
+        } else if (contactChanged) {
+          eventType = "CRM_CONTACT_RECORDED";
+          summary = "Last contact date updated";
+        } else if (nextActionChanged) {
+          eventType = "CRM_NEXT_ACTION_UPDATED";
+          summary = "Next action updated";
+        }
+
+        const { before, after } = buildBeforeAfter(
+          beforeRecord,
+          payload as Record<string, unknown>,
+          changedFields
+        );
+
+        await recordAuditEvent({
+          investorId,
+          eventType,
+          actor,
+          source: "PATCH /api/admin/investor-crm",
+          summary,
+          payload: {
+            before,
+            after,
+            changed_fields: changedFields,
+            stage_before:
+              beforeRecord.stage ?? null,
+            stage_after: payload.stage,
+          },
+        });
+      }
+    } else {
+      /*
+       * First CRM record for this investor.
+       */
+      await recordAuditEvent({
+        investorId,
+        eventType: "CRM_CAPITAL_UPDATED",
+        actor,
+        source: "PATCH /api/admin/investor-crm",
+        summary: `CRM record initialised at stage ${payload.stage}`,
+        payload: {
+          initialised: true,
+          after: payload,
+          stage_after: payload.stage,
+        },
+      });
     }
 
     return NextResponse.json({

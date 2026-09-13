@@ -2,6 +2,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/lib/admin-auth";
 import { requirePermission } from "@/lib/route-authorization";
+import {
+  recordAuditEvent,
+  type AuditEventType,
+} from "@/lib/investor-audit";
 
 const ACTIVITY_TYPES = [
   "NOTE",
@@ -172,6 +176,7 @@ export async function GET(request: NextRequest) {
  * Creates a new institutional activity or operational follow-up.
  *
  * Permission: CREATE (5B.17)
+ * Audit: ACTIVITY_CREATED (5C.8)
  */
 export async function POST(request: NextRequest) {
   const admin = await requirePermission("CREATE");
@@ -229,13 +234,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    /*
-     * 5B.1 — Follow-up Action
-     *
-     * Follow-ups are operational CRM actions. They must be explicitly
-     * created as FOLLOW_UP activities and remain OPEN until resolved
-     * by a later Phase 5B/5C action.
-     */
     if (activityType === "FOLLOW_UP") {
       if (body?.status !== undefined && body.status !== "OPEN") {
         return NextResponse.json(
@@ -321,6 +319,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /*
+     * 5C.8 — Immutable audit trail.
+     *
+     * Best-effort. Never blocks the primary insert.
+     */
+    await recordAuditEvent({
+      investorId,
+      activityId: data.id,
+      eventType: "ACTIVITY_CREATED",
+      actor: {
+        id: admin.user.id,
+        email: admin.user.email ?? "",
+        role: admin.identity?.role ?? "unknown",
+      },
+      source: "POST /api/admin/investor-crm/activities",
+      summary: `Created ${activityType} activity${
+        subject ? ` — ${subject}` : ""
+      }`,
+      payload: {
+        activity_type: activityType,
+        status: requestedStatus,
+        subject,
+        details,
+        due_at: dueAt,
+        occurred_at: occurredAt,
+        assigned_admin: assignedAdmin,
+      },
+    });
+
     return NextResponse.json(
       {
         activity: data,
@@ -347,8 +374,11 @@ export async function POST(request: NextRequest) {
  *   assigned_admin
  *   subject
  *   details
+ *   resolution_reason  (5C.4)
+ *   outcome            (5C.5)
  *
  * Permission: EDIT (5B.17)
+ * Audit: precise event type derived from the change (5C.8)
  */
 export async function PATCH(request: NextRequest) {
   const admin = await requirePermission("EDIT");
@@ -373,9 +403,15 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = getAdminSupabase();
 
+    /*
+     * 5C.11 — Before/after state.
+     *
+     * Fetch the full row so we can capture the complete before-state
+     * for the audit payload.
+     */
     const { data: existing, error: existingError } = await supabase
       .from("investor_crm_activities")
-      .select("id")
+      .select("*")
       .eq("id", activityId)
       .maybeSingle();
 
@@ -426,6 +462,48 @@ export async function PATCH(request: NextRequest) {
       update.details = cleanString(body.details, 10000);
     }
 
+    /*
+     * 5C.4 — Resolution reason
+     * 5C.5 — Outcome recording
+     *
+     * These are not separate columns. When an OPEN action transitions to
+     * COMPLETED or CANCELLED, the supplied reason and outcome are
+     * appended to the details column as a structured resolution block.
+     * The structured version is preserved in the audit payload.
+     */
+    const resolutionReason = cleanString(
+      body?.resolution_reason,
+      2000
+    );
+    const outcome = cleanString(body?.outcome, 2000);
+
+    const isResolutionTransition =
+      (update.status === "COMPLETED" ||
+        update.status === "CANCELLED") &&
+      existing.status === "OPEN";
+
+    if (
+      isResolutionTransition &&
+      (resolutionReason || outcome) &&
+      body?.details === undefined
+    ) {
+      const blockParts: string[] = [];
+
+      if (resolutionReason) {
+        blockParts.push(`Resolution: ${resolutionReason}`);
+      }
+
+      if (outcome) {
+        blockParts.push(`Outcome: ${outcome}`);
+      }
+
+      const existingDetails = String(existing.details ?? "").trim();
+      const block = blockParts.join("\n");
+      const separator = existingDetails ? "\n\n— — —\n" : "";
+
+      update.details = `${existingDetails}${separator}${block}`;
+    }
+
     if (Object.keys(update).length === 0) {
       return NextResponse.json(
         { error: "No valid fields supplied for update." },
@@ -462,6 +540,82 @@ export async function PATCH(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    /*
+     * 5C.8 — Immutable audit trail.
+     *
+     * Derive the precise event type from what actually changed. Order
+     * matters: status transitions take precedence over field updates.
+     */
+    let eventType: AuditEventType = "ACTIVITY_DETAILS_UPDATED";
+    let summary = `Updated ${existing.activity_type} activity`;
+
+    if (
+      update.status === "COMPLETED" &&
+      existing.status !== "COMPLETED"
+    ) {
+      eventType = "ACTIVITY_COMPLETED";
+      summary = `Completed ${existing.activity_type} activity${
+        existing.subject ? ` — ${existing.subject}` : ""
+      }`;
+    } else if (
+      update.status === "CANCELLED" &&
+      existing.status !== "CANCELLED"
+    ) {
+      eventType = "ACTIVITY_CANCELLED";
+      summary = `Cancelled ${existing.activity_type} activity${
+        existing.subject ? ` — ${existing.subject}` : ""
+      }`;
+    } else if (
+      update.assigned_admin !== undefined &&
+      update.assigned_admin !== existing.assigned_admin &&
+      Object.keys(update).length === 1
+    ) {
+      eventType = "ACTIVITY_REASSIGNED";
+      summary = `Reassigned ${
+        existing.activity_type
+      } activity to ${update.assigned_admin}`;
+    } else if (
+      update.due_at !== undefined &&
+      Object.keys(update).length === 1
+    ) {
+      eventType = "ACTIVITY_RESCHEDULED";
+      summary = `Rescheduled ${
+        existing.activity_type
+      } activity${
+        update.due_at
+          ? ` to ${new Date(String(update.due_at)).toLocaleString()}`
+          : ""
+      }`;
+    }
+
+    const beforeState: Record<string, unknown> = {};
+    const afterState: Record<string, unknown> = {};
+
+    for (const key of Object.keys(update)) {
+      beforeState[key] = (existing as Record<string, unknown>)[key];
+      afterState[key] = (data as Record<string, unknown>)[key];
+    }
+
+    await recordAuditEvent({
+      investorId: existing.investor_id,
+      activityId,
+      eventType,
+      actor: {
+        id: admin.user.id,
+        email: admin.user.email ?? "",
+        role: admin.identity?.role ?? "unknown",
+      },
+      source: "PATCH /api/admin/investor-crm/activities",
+      summary,
+      payload: {
+        before: beforeState,
+        after: afterState,
+        changed_fields: Object.keys(update),
+        resolution_reason: resolutionReason,
+        outcome,
+      },
+    });
 
     return NextResponse.json({
       activity: data,

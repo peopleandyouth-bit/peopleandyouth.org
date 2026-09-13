@@ -1,6 +1,11 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  ResolutionModal,
+  type ResolutionTarget,
+} from "./ResolutionModal";
+import { InvestorAuditPanel } from "./InvestorAuditPanel";
 
 const STAGES = [
   "PROSPECT",
@@ -152,12 +157,6 @@ type DecisionContext = {
   recent_activities: DecisionActivity[];
 };
 
-/*
- * 5B.5 — Record investor interaction
- *
- * Generic interaction capture. The founder selects one of these
- * interaction categories and records what happened.
- */
 type InteractionType = "CALL" | "EMAIL" | "MEETING" | "NOTE" | "OTHER";
 
 const INTERACTION_TYPES: Array<{
@@ -171,21 +170,6 @@ const INTERACTION_TYPES: Array<{
   { value: "OTHER", label: "Other" },
 ];
 
-/*
- * 5B.7 — 5B.13 — Unified Activity Composer
- *
- * Each composer tab captures a specific kind of institutional
- * activity with tailored fields. The storage layer remains the
- * existing investor_crm_activities table:
- *
- *   Call        → CALL
- *   Meeting     → MEETING
- *   Email       → EMAIL
- *   Document    → NOTE  with [DOCUMENT] prefix in subject
- *   Commitment  → COMMITMENT
- *   Objection   → NOTE  with [OBJECTION] prefix in subject
- *   Next Step   → FOLLOW_UP with OPEN status (operational action)
- */
 type ComposerType =
   | "CALL"
   | "MEETING"
@@ -1253,9 +1237,10 @@ function DecisionContextPanel({
   const [updatingDueDateId, setUpdatingDueDateId] =
     useState<string | null>(null);
   const [dueDateError, setDueDateError] = useState("");
-  const [updatingStatusId, setUpdatingStatusId] =
-    useState<string | null>(null);
-  const [statusError, setStatusError] = useState("");
+
+  // 5C.4 / 5C.5 — Resolution modal target
+  const [resolutionTarget, setResolutionTarget] =
+    useState<ResolutionTarget | null>(null);
 
   // 5B.5 — Record investor interaction
   const [interactionType, setInteractionType] =
@@ -1278,14 +1263,7 @@ function DecisionContextPanel({
   const [noteError, setNoteError] = useState("");
   const [noteSuccess, setNoteSuccess] = useState("");
 
-  /*
-   * 5B.7 — 5B.13 — Unified Activity Composer
-   *
-   * A single tabbed composer that records seven distinct activity
-   * kinds through the existing investor_crm_activities table. The
-   * active tab determines which fields render and which payload
-   * is sent to the API.
-   */
+  // 5B.7 — 5B.13 — Unified Activity Composer
   const [composerTab, setComposerTab] =
     useState<ComposerType>("CALL");
 
@@ -1293,37 +1271,30 @@ function DecisionContextPanel({
   const [composerDetails, setComposerDetails] = useState("");
   const [composerOccurredAt, setComposerOccurredAt] = useState("");
 
-  // CALL
   const [callOutcome, setCallOutcome] =
     useState<CallOutcome>("CONNECTED");
   const [callDurationMinutes, setCallDurationMinutes] =
     useState("");
 
-  // MEETING
   const [meetingLocation, setMeetingLocation] = useState("");
   const [meetingAttendees, setMeetingAttendees] = useState("");
 
-  // EMAIL
   const [emailDirection, setEmailDirection] =
     useState<EmailDirection>("OUTBOUND");
 
-  // DOCUMENT
   const [documentAction, setDocumentAction] =
     useState<DocumentAction>("SENT");
   const [documentName, setDocumentName] = useState("");
 
-  // COMMITMENT
   const [commitmentAmount, setCommitmentAmount] = useState("");
   const [commitmentExpectedDate, setCommitmentExpectedDate] =
     useState("");
 
-  // OBJECTION
   const [objectionCategory, setObjectionCategory] =
     useState<ObjectionCategory>("VALUATION");
   const [objectionSeverity, setObjectionSeverity] =
     useState<ObjectionSeverity>("MEDIUM");
 
-  // NEXT_STEP
   const [nextStepDueAt, setNextStepDueAt] = useState("");
   const [nextStepAssignee, setNextStepAssignee] = useState("Founder");
 
@@ -1373,9 +1344,7 @@ function DecisionContextPanel({
     setNextStepAssignee("Founder");
   }
 
-  async function setActivityDueDate(
-    activityId: string
-  ) {
+  async function setActivityDueDate(activityId: string) {
     const dueAtInput =
       activityDueDates[activityId]?.trim() || "";
 
@@ -1440,60 +1409,8 @@ function DecisionContextPanel({
     }
   }
 
-  async function setActivityStatus(
-    activityId: string,
-    status: "COMPLETED" | "CANCELLED"
-  ) {
-    setUpdatingStatusId(activityId);
-    setStatusError("");
-
-    try {
-      const response = await fetch(
-        "/api/admin/investor-crm/activities",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            id: activityId,
-            status,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Unable to update the action status."
-        );
-      }
-
-      if (!data.activity) {
-        throw new Error(
-          "The action status update was not confirmed."
-        );
-      }
-
-      onActivityUpdated();
-    } catch (err) {
-      setStatusError(
-        err instanceof Error
-          ? err.message
-          : "Unable to update the action status."
-      );
-    } finally {
-      setUpdatingStatusId(null);
-    }
-  }
-
   /*
    * 5B.5 — Record Investor Interaction
-   *
-   * Generic interaction capture. Saves a COMPLETED activity with the
-   * selected type, subject, details, and optional occurred_at.
    */
   async function recordInteraction() {
     const subject = interactionSubject.trim();
@@ -1569,10 +1486,6 @@ function DecisionContextPanel({
 
   /*
    * 5B.6 — Add Internal CRM Note
-   *
-   * A frictionless internal annotation. The subject is derived from
-   * the first line of the note so the timeline has a readable label,
-   * while the full text is preserved in details.
    */
   async function saveInternalNote() {
     const body = noteBody.trim();
@@ -1636,13 +1549,6 @@ function DecisionContextPanel({
 
   /*
    * 5B.7 — 5B.13 — Submit the Activity Composer
-   *
-   * Each tab builds a different payload. Type-specific fields are
-   * formatted into the details column as a readable header block so
-   * that the CRM timeline remains human-legible without a schema
-   * change. The DOCUMENT and OBJECTION tabs persist as NOTE with a
-   * bracketed marker because the database CHECK constraint does not
-   * include those literal type values.
    */
   async function submitComposer() {
     const subject = composerSubject.trim();
@@ -2271,12 +2177,6 @@ function DecisionContextPanel({
                 </div>
               )}
 
-              {statusError && (
-                <div className="mt-3 rounded-lg border border-red-900/60 bg-red-950/30 px-3 py-2 text-sm text-red-300">
-                  {statusError}
-                </div>
-              )}
-
               <div className="mt-3 space-y-3">
                 {context.obligations.items
                   .slice(0, 4)
@@ -2365,32 +2265,35 @@ function DecisionContextPanel({
                           <div className="mt-3 flex flex-wrap gap-2">
                             <button
                               onClick={() =>
-                                void setActivityStatus(
-                                  activity.id,
-                                  "COMPLETED"
-                                )
+                                setResolutionTarget({
+                                  id: activity.id,
+                                  subject:
+                                    activity.subject ||
+                                    activity.activity_type,
+                                  action: "COMPLETED",
+                                })
                               }
                               disabled={
-                                updatingStatusId ===
+                                updatingDueDateId ===
                                 activity.id
                               }
-                              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="rounded-lg border border-emerald-700/60 bg-emerald-950/30 px-3 py-2 text-xs font-semibold text-emerald-300 hover:border-emerald-500 hover:bg-emerald-900/40 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              {updatingStatusId ===
-                              activity.id
-                                ? "Saving..."
-                                : "Mark Completed"}
+                              Mark Completed
                             </button>
 
                             <button
                               onClick={() =>
-                                void setActivityStatus(
-                                  activity.id,
-                                  "CANCELLED"
-                                )
+                                setResolutionTarget({
+                                  id: activity.id,
+                                  subject:
+                                    activity.subject ||
+                                    activity.activity_type,
+                                  action: "CANCELLED",
+                                })
                               }
                               disabled={
-                                updatingStatusId ===
+                                updatingDueDateId ===
                                 activity.id
                               }
                               className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-semibold text-slate-400 hover:border-slate-600 hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
@@ -2632,7 +2535,6 @@ function DecisionContextPanel({
             </div>
 
             <div className="mt-5 space-y-4">
-              {/* Type-specific fields */}
               {composerTab === "CALL" && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Call Outcome">
@@ -2891,7 +2793,6 @@ function DecisionContextPanel({
                 </div>
               )}
 
-              {/* Common fields */}
               <Field label="Subject">
                 <input
                   value={composerSubject}
@@ -3040,12 +2941,22 @@ function DecisionContextPanel({
             </div>
           )}
 
+          {/* 5C.13 — Per-investor audit panel */}
+          <InvestorAuditPanel investorId={investorId} />
+
           <div className="flex flex-wrap gap-2">
             <a
               href="/admin/investor-operations"
               className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
             >
               Operations
+            </a>
+
+            <a
+              href="/admin/investor-audit"
+              className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+            >
+              Audit Trail
             </a>
 
             <a
@@ -3057,6 +2968,15 @@ function DecisionContextPanel({
           </div>
         </div>
       )}
+
+      {/* 5C.4 / 5C.5 — Resolution Modal */}
+      <ResolutionModal
+        target={resolutionTarget}
+        onClose={() => setResolutionTarget(null)}
+        onSuccess={() => {
+          onActivityUpdated();
+        }}
+      />
     </section>
   );
 }
