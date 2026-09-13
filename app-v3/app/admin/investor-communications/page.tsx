@@ -34,6 +34,21 @@ type Activity = {
   updated_at: string;
 };
 
+type ChannelFilter =
+  | "ALL"
+  | "EMAIL"
+  | "CALL"
+  | "MEETING"
+  | "NOTE";
+
+const CHANNEL_LABELS: Record<ChannelFilter, string> = {
+  ALL: "All",
+  EMAIL: "Email",
+  CALL: "Call",
+  MEETING: "Meeting",
+  NOTE: "Note",
+};
+
 const MESSAGE_TEMPLATES = [
   {
     name: "Follow-up",
@@ -168,6 +183,9 @@ export default function InvestorCommunicationsPage() {
     useState<Activity | null>(null);
 
   const [completeAfterSend, setCompleteAfterSend] = useState(true);
+
+  const [channelFilter, setChannelFilter] =
+    useState<ChannelFilter>("ALL");
 
   async function loadInvestors() {
     try {
@@ -320,6 +338,72 @@ export default function InvestorCommunicationsPage() {
         .slice(0, 8),
     [activities]
   );
+
+  /*
+   * 7A.7 — Communication Overview
+   *
+   * Channel distribution: counts of EMAIL / CALL / MEETING / NOTE
+   * across the full activity set for the selected investor.
+   */
+  const channelDistribution = useMemo(() => {
+    const counts: Record<string, number> = {
+      EMAIL: 0,
+      CALL: 0,
+      MEETING: 0,
+      NOTE: 0,
+    };
+
+    activities.forEach((activity) => {
+      const key = activity.activity_type;
+
+      if (key in counts) {
+        counts[key] = counts[key] + 1;
+      }
+    });
+
+    return counts;
+  }, [activities]);
+
+  /*
+   * 7A.7 — Ownership distribution.
+   *
+   * Groups activities by assigned_admin, sorted by frequency.
+   */
+  const ownershipDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    activities.forEach((activity) => {
+      const owner = activity.assigned_admin?.trim() || "Unassigned";
+      counts[owner] = (counts[owner] ?? 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([owner, count]) => ({ owner, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [activities]);
+
+  /*
+   * 7A.3 / 7A.4 / 7A.6 — Channel filter.
+   *
+   * Filters the recent CRM activity timeline by the currently
+   * selected channel: Email, Call, Meeting, Note.
+   */
+  const filteredRecentActivities = useMemo(() => {
+    const sorted = [...activities].sort(
+      (a, b) =>
+        new Date(b.occurred_at).getTime() -
+        new Date(a.occurred_at).getTime()
+    );
+
+    const filtered =
+      channelFilter === "ALL"
+        ? sorted
+        : sorted.filter(
+            (activity) => activity.activity_type === channelFilter
+          );
+
+    return filtered.slice(0, 10);
+  }, [activities, channelFilter]);
 
   function applyTemplate(index: string) {
     setTemplate(index);
@@ -489,8 +573,15 @@ export default function InvestorCommunicationsPage() {
             </a>
 
             <a
-              href="/admin/investor-operations"
+              href="/admin/investor-communications/actions"
               className="rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/15"
+            >
+              Actions
+            </a>
+
+            <a
+              href="/admin/investor-operations"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08]"
             >
               Operations
             </a>
@@ -549,6 +640,7 @@ export default function InvestorCommunicationsPage() {
                         setSelectedId(investor.id);
                         setError("");
                         setNotice("");
+                        setChannelFilter("ALL");
                         clearComposer();
                       }}
                       className={`w-full rounded-2xl border p-4 text-left transition ${
@@ -907,6 +999,131 @@ export default function InvestorCommunicationsPage() {
                   </div>
                 </section>
 
+                {/* 7A.7 — Communication Overview */}
+                <section className="grid gap-6 lg:grid-cols-2">
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20">
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+                          7A.3 · 7A.4 · 7A.6
+                        </div>
+                        <h3 className="mt-1 text-lg font-semibold">
+                          Channel Distribution
+                        </h3>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Activity counts by channel. Click a channel to
+                          filter the recent timeline.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {(
+                        [
+                          "EMAIL",
+                          "CALL",
+                          "MEETING",
+                          "NOTE",
+                        ] as ChannelFilter[]
+                      ).map((channel) => {
+                        const count =
+                          channelDistribution[channel] ?? 0;
+                        const active = channelFilter === channel;
+
+                        return (
+                          <button
+                            key={channel}
+                            type="button"
+                            onClick={() =>
+                              setChannelFilter(
+                                active ? "ALL" : channel
+                              )
+                            }
+                            className={`rounded-2xl border p-4 text-left transition ${
+                              active
+                                ? "border-cyan-400/40 bg-cyan-400/[0.09]"
+                                : "border-white/8 bg-black/10 hover:border-white/15 hover:bg-white/[0.035]"
+                            }`}
+                          >
+                            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                              {CHANNEL_LABELS[channel]}
+                            </div>
+                            <div
+                              className={`mt-2 text-2xl font-semibold ${
+                                active
+                                  ? "text-cyan-200"
+                                  : "text-slate-200"
+                              }`}
+                            >
+                              {count}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {channelFilter !== "ALL" && (
+                      <button
+                        type="button"
+                        onClick={() => setChannelFilter("ALL")}
+                        className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300 transition hover:text-cyan-200"
+                      >
+                        Clear channel filter
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20">
+                    <div className="mb-5">
+                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+                        7A.7
+                      </div>
+                      <h3 className="mt-1 text-lg font-semibold">
+                        Communication Ownership
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Distribution of activities across owners.
+                      </p>
+                    </div>
+
+                    {ownershipDistribution.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-white/10 px-5 py-8 text-center text-xs text-slate-500">
+                        No activity recorded yet.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {ownershipDistribution
+                          .slice(0, 5)
+                          .map((entry) => {
+                            const total = activities.length || 1;
+                            const pct = Math.round(
+                              (entry.count / total) * 100
+                            );
+
+                            return (
+                              <div key={entry.owner}>
+                                <div className="mb-1 flex items-center justify-between text-xs">
+                                  <span className="truncate text-slate-300">
+                                    {entry.owner}
+                                  </span>
+                                  <span className="font-semibold text-slate-200">
+                                    {entry.count}
+                                  </span>
+                                </div>
+                                <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                                  <div
+                                    className="h-full rounded-full bg-cyan-300/70"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
                 <section className="grid gap-6 lg:grid-cols-2">
                   <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20">
                     <div className="mb-5 flex items-start justify-between gap-4">
@@ -982,17 +1199,50 @@ export default function InvestorCommunicationsPage() {
                       </h3>
                     </div>
 
+                    <div className="mb-4 flex flex-wrap gap-2 border-b border-white/8 pb-4">
+                      {(
+                        [
+                          "ALL",
+                          "EMAIL",
+                          "CALL",
+                          "MEETING",
+                          "NOTE",
+                        ] as ChannelFilter[]
+                      ).map((channel) => {
+                        const active = channelFilter === channel;
+
+                        return (
+                          <button
+                            key={channel}
+                            type="button"
+                            onClick={() => setChannelFilter(channel)}
+                            className={`rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition ${
+                              active
+                                ? "border-cyan-400/40 bg-cyan-400/[0.09] text-cyan-200"
+                                : "border-white/8 bg-black/10 text-slate-500 hover:border-white/15 hover:text-slate-300"
+                            }`}
+                          >
+                            {CHANNEL_LABELS[channel]}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     {loadingActivities ? (
                       <div className="rounded-2xl border border-white/8 bg-black/10 p-5 text-sm text-slate-500">
                         Loading activity...
                       </div>
-                    ) : recentActivities.length === 0 ? (
+                    ) : filteredRecentActivities.length === 0 ? (
                       <div className="rounded-2xl border border-white/8 bg-black/10 p-5 text-sm text-slate-500">
-                        No CRM activity recorded yet.
+                        {channelFilter === "ALL"
+                          ? "No CRM activity recorded yet."
+                          : `No ${CHANNEL_LABELS[
+                              channelFilter
+                            ].toLowerCase()} activity recorded for this investor.`}
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {recentActivities.map((activity) => (
+                        {filteredRecentActivities.map((activity) => (
                           <div
                             key={activity.id}
                             className="rounded-xl border border-white/8 bg-black/10 p-4"
@@ -1020,6 +1270,12 @@ export default function InvestorCommunicationsPage() {
                                   {activity.subject ||
                                     "CRM activity"}
                                 </div>
+
+                                {activity.details && (
+                                  <p className="mt-2 line-clamp-3 whitespace-pre-line text-xs leading-5 text-slate-500">
+                                    {activity.details}
+                                  </p>
+                                )}
                               </div>
 
                               <span
