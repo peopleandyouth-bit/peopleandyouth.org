@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/investor-automation/scan",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
