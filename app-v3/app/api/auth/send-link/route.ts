@@ -100,7 +100,7 @@ export async function POST(req: Request) {
      * 2. ENSURE SUPABASE AUTH USER EXISTS
      * ============================================================
      *
-     * Your authors table currently contains 12 people, while
+     * The authors table currently contains 12 people, while
      * auth.users contains only the Founder.
      *
      * We therefore provision the Auth user automatically the
@@ -126,9 +126,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const existingUser = existingUsers.users.find(
+        type AuthUserLike = {
+      id: string;
+      email?: string | null;
+    };
+
+    const usersList = (existingUsers?.users ?? []) as AuthUserLike[];
+
+    const existingUser = usersList.find(
       (user) =>
-        email
+        typeof user.email === "string" &&
+        user.email.toLowerCase() === email
     );
 
     if (existingUser) {
@@ -239,8 +247,8 @@ export async function POST(req: Request) {
     const resend = new Resend(resendApiKey);
 
     const subject = isMagicLink
-      ? 'One-Click Admin Access â€” People & Youth Console'
-      : 'Set / Reset Your Password â€” People & Youth Console';
+      ? 'One-Click Admin Access - People & Youth Console'
+      : 'Set / Reset Your Password - People & Youth Console';
 
     const heading = isMagicLink
       ? 'One-Click Console Login'
@@ -251,8 +259,8 @@ export async function POST(req: Request) {
       : 'configure your personal account password';
 
     const buttonText = isMagicLink
-      ? 'âœ¨ Access Admin Console Now'
-      : 'ðŸ”‘ Set / Update Your Password';
+      ? 'Access Admin Console Now'
+      : 'Set / Update Your Password';
 
     const { error: resendError } = await resend.emails.send({
       from: 'People & Youth Security <contact@peopleandyouth.org>',
@@ -263,7 +271,7 @@ export async function POST(req: Request) {
           <div style="max-width:550px;margin:0 auto;background:#070b19;border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:28px;text-align:center;">
 
             <div style="color:#fbbf24;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">
-              SECURITY & AUTHENTICATION PORTAL
+              SECURITY &amp; AUTHENTICATION PORTAL
             </div>
 
             <h2 style="color:#ffffff;margin:12px 0 16px;font-size:20px;">
@@ -291,13 +299,13 @@ export async function POST(req: Request) {
                 text-decoration:none;
               "
             >
-              ${buttonText} â†’
+              ${buttonText} &rarr;
             </a>
 
             <p style="font-size:10px;color:#6b7280;line-height:1.5;margin-top:24px;">
               This secure authentication link is single-use and expires
               according to the authentication policy configured for
-              People & Youth.
+              People &amp; Youth.
             </p>
 
           </div>
@@ -328,8 +336,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       message: isMagicLink
-        ? 'âœ¨ One-click login link sent! Check your email inbox.'
-        : 'ðŸ“§ Password setup email sent! Check your inbox to configure your password.',
+        ? 'One-click login link sent. Check your email inbox.'
+        : 'Password setup email sent. Check your inbox to configure your password.',
     });
 
   } catch (err: any) {

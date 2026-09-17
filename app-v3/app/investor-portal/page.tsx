@@ -1,34 +1,28 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { requireInvestor } from "@/lib/investor-portal-auth";
+import { projectProfileForInvestor } from "@/lib/investor-portal-projection";
 import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-type InvestorProfile = {
-  id: string;
-  full_name: string;
-  email: string;
-  organization: string | null;
-  investor_type: string | null;
-  proposed_ticket_inr: number | null;
-  verification_status: string;
-  access_level: string;
-  kyc_completed: boolean;
-  nda_signed: boolean;
-};
-type InvestorDocument = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  file_type: string | null;
-  file_size_bytes: number | null;
-  access_level: string;
-  display_order: number | null;
-};
+function greetingForHour(hour: number) {
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default async function InvestorPortalPage() {
+  const auth = await requireInvestor();
+
+  if (auth.authorized === false) {
+    if (auth.reason === "UNAUTHENTICATED") {
+      redirect("/investor-login");
+    }
+    redirect("/investor-login");
+  }
+
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -39,243 +33,203 @@ export default async function InvestorPortalPage() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Safe for server component compatibility.
-          }
+        setAll() {
+          // Read-only path.
         },
       },
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/investors");
-  }
-
-  await supabase.rpc("link_current_investor");
-
-  const { data: profileData } = await supabase
-    .from("investor_profiles")
+  const { data: crmRow } = await supabase
+    .from("investor_crm_logs")
     .select(
-      [
-        "id",
-        "full_name",
-        "email",
-        "organization",
-        "investor_type",
-        "proposed_ticket_inr",
-        "verification_status",
-        "access_level",
-        "kyc_completed",
-        "nda_signed",
-      ].join(", ")
+      "stage, expected_investment_inr, actual_investment_inr, last_contact_date"
     )
-    .eq("user_id", user.id)
-    .eq("verification_status", "VERIFIED")
-    .eq("access_level", "APPROVED")
+    .eq("investor_id", auth.profile.id)
+    .order("updated_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
-  const profile = profileData as unknown as InvestorProfile | null;
+  const projection = projectProfileForInvestor(
+    auth.profile,
+    crmRow
+      ? {
+          stage: crmRow.stage,
+          expected_investment_inr: crmRow.expected_investment_inr,
+          actual_investment_inr: crmRow.actual_investment_inr,
+          last_contact_date: crmRow.last_contact_date,
+        }
+      : null
+  );
 
-  if (!profile) {
-    redirect("/investors");
-  }
-
-  const { data: documentsData } = await supabase
+  const { count: documentCount } = await supabase
     .from("investor_documents")
-    .select(
-      [
-        "id",
-        "title",
-        "description",
-        "category",
-        "file_type",
-        "file_size_bytes",
-        "access_level",
-        "display_order",
-      ].join(", ")
-    )
+    .select("id", { count: "exact", head: true })
     .eq("is_active", true)
-    .in("access_level", ["PUBLIC", "APPROVED"])
-    .order("display_order", { ascending: true });
+    .in("access_level", ["PUBLIC", "APPROVED"]);
 
-  const documents = documentsData as unknown as InvestorDocument[] | null;
+  const firstName =
+    projection.full_name.split(" ")[0] || projection.full_name;
+
+  const hour = new Date().getHours();
+  const greeting = greetingForHour(hour);
 
   return (
-    <main className="min-h-screen bg-white text-neutral-950">
-      <header className="border-b border-neutral-200">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
+    <div className="space-y-12">
+      {/* Greeting */}
+      <section>
+        <p className="text-[10px] uppercase tracking-[0.28em] text-[#c8a56b]/70">
+          {greeting}
+        </p>
+        <h1 className="mt-3 text-4xl font-light leading-tight tracking-tight text-[#f5f0e6] sm:text-5xl">
+          {greeting}, {firstName}.
+        </h1>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#f5f0e6]/50">
+          Here is what is happening in your relationship with People &amp;
+          Youth.
+        </p>
+      </section>
+
+      {/* Relationship status */}
+      <section className="border-l-2 border-[#c8a56b] pl-6">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-[#f5f0e6]/40">
+          Your relationship
+        </p>
+        <p className="mt-2 text-2xl font-light tracking-tight text-[#f5f0e6] sm:text-3xl">
+          {projection.relationship.stage_label}
+        </p>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-[#f5f0e6]/50">
+          {projection.relationship.stage_description}
+        </p>
+      </section>
+
+      {/* Summary tiles */}
+      <section className="grid gap-6 sm:grid-cols-3">
+        <div className="border-t border-[#f5f0e6]/8 pt-5">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#f5f0e6]/40">
+            Documents
+          </p>
+          <p className="mt-2 text-3xl font-light text-[#f5f0e6]">
+            {documentCount ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-[#f5f0e6]/40">
+            Available in your private room
+          </p>
           <Link
-            href="/investors"
-            className="text-sm font-semibold tracking-wide"
+            href="/investor-portal/documents"
+            className="mt-4 inline-block text-xs tracking-wider text-[#c8a56b] transition hover:text-[#d8b57b]"
           >
-            PEOPLE &amp; YOUTH
+            View documents →
           </Link>
-
-          <span className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
-            Investor Relations
-          </span>
         </div>
-      </header>
 
-      <section className="border-b border-neutral-200 bg-neutral-50">
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500">
-            Restricted Investor Portal
+        <div className="border-t border-[#f5f0e6]/8 pt-5">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#f5f0e6]/40">
+            Verification
           </p>
+          <p className="mt-2 text-3xl font-light text-[#f5f0e6]">
+            {projection.portal_access.verified &&
+            projection.portal_access.approved
+              ? "Complete"
+              : "In progress"}
+          </p>
+          <p className="mt-1 text-xs text-[#f5f0e6]/40">
+            {projection.portal_access.kyc_complete
+              ? "KYC · complete"
+              : "KYC · pending"}
+          </p>
+        </div>
 
-          <h1 className="max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl">
-            Institutional access to People &amp; Youth.
-          </h1>
-
-          <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600">
-            Welcome, {profile.full_name}. This is the secure investor
-            environment for institutional materials, fundraising information
-            and ongoing investor relations.
+        <div className="border-t border-[#f5f0e6]/8 pt-5">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#f5f0e6]/40">
+            Member since
+          </p>
+          <p className="mt-2 text-3xl font-light text-[#f5f0e6]">
+            {projection.member_since
+              ? new Date(projection.member_since).toLocaleDateString(
+                  "en-IN",
+                  { month: "short", year: "numeric" }
+                )
+              : "—"}
+          </p>
+          <p className="mt-1 text-xs text-[#f5f0e6]/40">
+            Relationship with People &amp; Youth
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-neutral-200 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-              Investor
-            </p>
+      {/* Investment section — only when appropriate */}
+      {projection.investment.show_investment_section && (
+        <section className="border-t border-[#f5f0e6]/8 pt-8">
+          <p className="text-[10px] uppercase tracking-[0.28em] text-[#f5f0e6]/40">
+            Investment
+          </p>
 
-            <h2 className="mt-3 text-xl font-semibold">
-              {profile.full_name}
-            </h2>
+          <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            {projection.investment.committed_inr !== null && (
+              <div>
+                <p className="text-xs tracking-wider text-[#f5f0e6]/40">
+                  Committed
+                </p>
+                <p className="mt-2 text-2xl font-light text-[#f5f0e6]">
+                  {new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                    maximumFractionDigits: 0,
+                  }).format(
+                    projection.investment.committed_inr
+                  )}
+                </p>
+              </div>
+            )}
 
-            <p className="mt-2 text-sm text-neutral-600">
-              {profile.organization || profile.investor_type || "Investor"}
-            </p>
-
-            <p className="mt-1 text-sm text-neutral-500">
-              {profile.email}
-            </p>
+            {projection.investment.invested_inr !== null && (
+              <div>
+                <p className="text-xs tracking-wider text-[#f5f0e6]/40">
+                  Invested
+                </p>
+                <p className="mt-2 text-2xl font-light text-[#f5f0e6]">
+                  {new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                    maximumFractionDigits: 0,
+                  }).format(
+                    projection.investment.invested_inr
+                  )}
+                </p>
+              </div>
+            )}
           </div>
+        </section>
+      )}
 
-          <div className="rounded-2xl border border-neutral-200 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-              Access
-            </p>
-
-            <p className="mt-3 text-xl font-semibold">
-              {profile.access_level}
-            </p>
-
-            <p className="mt-2 text-sm text-neutral-600">
-              Verification: {profile.verification_status}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-neutral-200 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-              Investor Readiness
-            </p>
-
-            <div className="mt-3 space-y-2 text-sm text-neutral-600">
-              <p>
-                KYC: {profile.kyc_completed ? "Complete" : "Pending"}
-              </p>
-
-              <p>
-                NDA: {profile.nda_signed ? "Signed" : "Pending"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-16">
-          <div className="flex flex-col justify-between gap-3 border-b border-neutral-200 pb-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
-                Secure Data Room
-              </p>
-
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-                Investor materials
-              </h2>
-            </div>
-
-            <p className="text-sm text-neutral-500">
-              {documents?.length ?? 0} active document
-              {(documents?.length ?? 0) === 1 ? "" : "s"}
-            </p>
-          </div>
-
-          {!documents || documents.length === 0 ? (
-            <div className="mt-8 rounded-2xl border border-dashed border-neutral-300 p-10 text-center">
-              <h3 className="text-lg font-semibold">
-                The data room is being prepared.
-              </h3>
-
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Investor materials will appear here as they are released by
-                People &amp; Youth.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
-              {documents.map((document) => (
-                <article
-                  key={document.id}
-                  className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
-                      {document.category || "Investor Material"}
-                    </p>
-
-                    <h3 className="mt-2 text-lg font-semibold">
-                      {document.title}
-                    </h3>
-
-                    {document.description && (
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
-                        {document.description}
-                      </p>
-                    )}
-
-                    <div className="mt-2 flex gap-3 text-[11px] text-neutral-400">
-                      {document.file_type && (
-                        <span>{document.file_type.toUpperCase()}</span>
-                      )}
-
-                      {document.file_size_bytes && (
-                        <span>
-                          {(document.file_size_bytes / 1024 / 1024).toFixed(2)} MB
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <a
-                    href={`/api/investors/document?id=${encodeURIComponent(
-                      document.id
-                    )}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex shrink-0 items-center justify-center rounded-full border border-neutral-900 px-5 py-2.5 text-sm font-semibold transition hover:bg-neutral-900 hover:text-white"
-                  >
-                    Open document
-                  </a>
-                </article>
-              ))}
-            </div>
-          )}
+      {/* What next */}
+      <section className="border-t border-[#f5f0e6]/8 pt-8">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-[#f5f0e6]/40">
+          What comes next
+        </p>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-[#f5f0e6]/60">
+          Your relationship with People &amp; Youth is a private, long-lived
+          engagement. New materials will appear in your documents section
+          as they become available. When there is a next conversation to
+          schedule, you will see it here and receive an email from Investor
+          Relations.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/investor-portal/documents"
+            className="rounded-lg border border-[#c8a56b]/40 px-5 py-2.5 text-xs tracking-wider text-[#c8a56b] transition hover:bg-[#c8a56b]/10"
+          >
+            Open documents
+          </Link>
+          <Link
+            href="/investor-portal/profile"
+            className="rounded-lg border border-[#f5f0e6]/10 px-5 py-2.5 text-xs tracking-wider text-[#f5f0e6]/60 transition hover:bg-[#f5f0e6]/[0.04] hover:text-[#f5f0e6]"
+          >
+            View profile
+          </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
-

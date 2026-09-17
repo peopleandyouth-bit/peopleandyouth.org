@@ -91,11 +91,11 @@ export default function CompleteMasterHeadquartersPage() {
   };
 
   const tickers = [
-    "🔥 RELEASE: CAG Audit Critique on Statutory Compliance Disclosures Released",
-    "📜 DISSENT DIAS: New Philosophical Essay 'Dialectics of Consciousness' Published",
-    "🏛️ CAMPUS SUMMIT: Annual Leadership Roundtable Scheduled at Headquarters",
-    "📊 RESEARCH LAB: Working Paper #42 on Macro-Strategy & Trade Analytics Staged",
-    "💼 RECRUITMENT: Universal Opportunity Gateway Processing Applications for 13 Divisions"
+    "RELEASE: CAG Audit Critique on Statutory Compliance Disclosures Released",
+    "DISSENT DIAS: New Philosophical Essay 'Dialectics of Consciousness' Published",
+    "CAMPUS SUMMIT: Annual Leadership Roundtable Scheduled at Headquarters",
+    "RESEARCH LAB: Working Paper #42 on Macro-Strategy & Trade Analytics Staged",
+    "RECRUITMENT: Universal Opportunity Gateway Processing Applications for 13 Divisions"
   ];
 
   const activities = [
@@ -135,6 +135,7 @@ export default function CompleteMasterHeadquartersPage() {
             <Link href="/leadership-network" className="text-amber-300 hover:underline">Leadership Network</Link>
             <Link href="/activity" className="text-amber-300 hover:underline">Live Activity Feed</Link>
             <Link href="/careers" className="text-amber-300 hover:underline">Global Careers</Link>
+            <Link href="/investors" className="text-amber-300 hover:underline">Investor Relations</Link>
             <Link href="/passport" className="text-gray-300 hover:text-white">Civic Passport</Link>
             <Link href="/admin/login" className="text-gray-300 hover:text-white">Institution OS</Link>
           </div>
@@ -172,7 +173,7 @@ export default function CompleteMasterHeadquartersPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔍 Search publications, authors, categories..."
+                  placeholder="Search publications, authors, categories..."
                   className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none text-[11px]"
                 />
 
@@ -192,7 +193,7 @@ export default function CompleteMasterHeadquartersPage() {
                 onClick={() => setIsAiOpen(true)}
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold uppercase hover:from-amber-300 transition-all text-[10px] shrink-0 shadow-lg"
               >
-                🤖 Ask AI
+                Ask AI
               </button>
             </div>
           </div>
@@ -209,6 +210,7 @@ export default function CompleteMasterHeadquartersPage() {
             <Link href="/caves" className="hover:text-amber-400 text-amber-300">Knowledge Caves</Link>
             <Link href="/activity" className="hover:text-amber-400 text-amber-300">Live Activity</Link>
             <Link href="/careers" className="hover:text-amber-400 text-amber-300">Global Careers</Link>
+            <Link href="/investors" className="hover:text-amber-400 text-amber-300">Investor Relations</Link>
             <Link href="/passport" className="hover:text-amber-400">Civic Passport</Link>
           </nav>
         </header>
@@ -219,10 +221,10 @@ export default function CompleteMasterHeadquartersPage() {
             <div className="bg-[#0a1024] border border-amber-400/40 p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl">
               <div className="flex justify-between items-center border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🤖</span>
+                  <span className="text-lg">AI</span>
                   <h3 className="text-sm font-bold text-amber-400 uppercase">Sovereign AI Knowledge Assistant</h3>
                 </div>
-                <button onClick={() => setIsAiOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+                <button onClick={() => setIsAiOpen(false)} className="text-gray-400 hover:text-white">Close</button>
               </div>
 
               <form onSubmit={handleAiQuery} className="space-y-3">
@@ -251,7 +253,7 @@ export default function CompleteMasterHeadquartersPage() {
           </div>
         )}
 
-        {/* 5. AMAZON / FLIPKART STYLE DYNAMIC CAROUSEL */}
+        {/* 5. DYNAMIC CAROUSEL */}
         {featuredSlides.length > 0 && (
           <section className="max-w-7xl mx-auto p-6 border-b border-white/10">
             <div className="relative bg-gradient-to-r from-[#0a1024] via-[#0f1733] to-[#141f45] border border-amber-400/30 p-8 sm:p-12 rounded-3xl space-y-4 overflow-hidden shadow-2xl">
@@ -295,20 +297,20 @@ export default function CompleteMasterHeadquartersPage() {
                     onClick={() => setCurrentSlide((prev) => (prev - 1 + featuredSlides.length) % featuredSlides.length)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold"
                   >
-                    ‹
+                    &lsaquo;
                   </button>
                   <button
                     onClick={() => setCurrentSlide((prev) => (prev + 1) % featuredSlides.length)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold"
                   >
-                    ›
+                    &rsaquo;
                   </button>
 
                   <Link
                     href={`/articles/${featuredSlides[currentSlide]?.slug}`}
                     className="px-6 py-2.5 bg-amber-400 text-black font-extrabold rounded-xl uppercase hover:bg-amber-300 transition-all text-xs"
                   >
-                    Read Full Paper →
+                    Read Full Paper &rarr;
                   </Link>
                 </div>
               </div>
@@ -335,9 +337,9 @@ export default function CompleteMasterHeadquartersPage() {
                   href="/passport"
                   className="px-6 py-3 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs shadow-lg"
                 >
-                  Unlock Civic Passport ID (₹499) →
+                  Unlock Civic Passport ID (Rs 499) &rarr;
                 </Link>
-                <span className="text-[10px] text-gray-400">Click pass on the right to flip 🔄</span>
+                <span className="text-[10px] text-gray-400">Click pass on the right to flip</span>
               </div>
             </div>
 
@@ -366,7 +368,7 @@ export default function CompleteMasterHeadquartersPage() {
                         <span className="text-amber-400 font-bold text-[9px] uppercase tracking-widest block">PEOPLE & YOUTH</span>
                         <h4 className="text-base font-black text-white uppercase font-serif">Civic Passport</h4>
                       </div>
-                      <span className="px-2.5 py-1 bg-amber-400 text-black font-extrabold text-[9px] rounded uppercase">₹499 MEMBER</span>
+                      <span className="px-2.5 py-1 bg-amber-400 text-black font-extrabold text-[9px] rounded uppercase">Rs 499 MEMBER</span>
                     </div>
 
                     <div className="space-y-1">
@@ -377,7 +379,7 @@ export default function CompleteMasterHeadquartersPage() {
 
                     <div className="flex justify-between items-end border-t border-white/10 pt-2 text-[9px] text-gray-400">
                       <span>ISSUED BY: INSTITUTION BOARD</span>
-                      <span className="text-amber-400 font-bold uppercase">FLIP CARD 🔄</span>
+                      <span className="text-amber-400 font-bold uppercase">FLIP CARD</span>
                     </div>
                   </div>
 
@@ -396,22 +398,22 @@ export default function CompleteMasterHeadquartersPage() {
 
                     <div className="grid grid-cols-2 gap-2 text-[9px]">
                       <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
-                        <span>📷</span>
+                        <span>IG</span>
                         <div><span className="text-white font-bold block">Instagram</span><span className="text-gray-400 text-[7px]">@peopleandyouth</span></div>
                       </a>
 
                       <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
-                        <span>▶️</span>
+                        <span>YT</span>
                         <div><span className="text-white font-bold block">YouTube</span><span className="text-gray-400 text-[7px]">@peopleandyouth</span></div>
                       </a>
 
                       <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
-                        <span>💼</span>
+                        <span>LI</span>
                         <div><span className="text-white font-bold block">LinkedIn</span><span className="text-gray-400 text-[7px]">Swaraj Shandilya</span></div>
                       </a>
 
                       <a href="mailto:contact@peopleandyouth.org" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
-                        <span>✉️</span>
+                        <span>@</span>
                         <div><span className="text-white font-bold block">Email</span><span className="text-gray-400 text-[7px]">contact@...</span></div>
                       </a>
                     </div>
@@ -455,7 +457,7 @@ export default function CompleteMasterHeadquartersPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-[9px] font-bold uppercase">
                     <span className="px-2.5 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">{act.type}</span>
-                    <span className="text-emerald-400 font-mono">● {act.status}</span>
+                    <span className="text-emerald-400 font-mono">{act.status}</span>
                   </div>
                   <h4 className="text-base font-bold text-white font-serif">{act.title}</h4>
                   <p className="text-gray-300 text-[11px] leading-relaxed font-serif">{act.desc}</p>
@@ -463,7 +465,7 @@ export default function CompleteMasterHeadquartersPage() {
 
                 <div className="pt-3 border-t border-white/10 flex justify-between items-center text-[10px] text-gray-400">
                   <span>Date: {act.date}</span>
-                  <Link href="/activity" className="text-amber-400 font-bold hover:underline">View Live Activity →</Link>
+                  <Link href="/activity" className="text-amber-400 font-bold hover:underline">View Live Activity &rarr;</Link>
                 </div>
               </div>
             ))}
@@ -480,7 +482,7 @@ export default function CompleteMasterHeadquartersPage() {
                   <h2 className="text-2xl font-extrabold text-white mt-0.5">{section.title}</h2>
                 </div>
                 <Link href={`/${section.id}`} className="text-amber-400 font-bold text-[10px] uppercase hover:underline">
-                  Access Division Portal →
+                  Access Division Portal &rarr;
                 </Link>
               </div>
 
@@ -500,7 +502,7 @@ export default function CompleteMasterHeadquartersPage() {
         <section className="max-w-4xl mx-auto p-6 sm:p-10 my-8">
           <div className="bg-[#0B192C] border border-[#C59B27]/40 p-8 sm:p-12 rounded-3xl text-center space-y-6 shadow-2xl">
             <h3 className="text-amber-400 font-extrabold uppercase tracking-widest text-sm sm:text-base font-mono">
-              PEOPLEANDYOUTH.ORG — AT THE HEART OF CHANGE
+              PEOPLEANDYOUTH.ORG &mdash; AT THE HEART OF CHANGE
             </h3>
 
             <p className="text-gray-200 text-xs sm:text-sm font-serif max-w-xl mx-auto leading-relaxed">

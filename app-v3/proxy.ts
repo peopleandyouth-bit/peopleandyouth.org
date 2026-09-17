@@ -51,50 +51,86 @@ export async function proxy(request: NextRequest) {
 
   /*
    * ============================================================
-   * ONLY PROTECT /admin/*
+   * PUBLIC INVESTOR AUTH ROUTES
    * ============================================================
    */
 
-  if (!pathname.startsWith('/admin')) {
+  if (
+    pathname === '/investor-login' ||
+    pathname.startsWith('/investor-login/')
+  ) {
     return response;
   }
 
   /*
    * ============================================================
-   * SERVER-SIDE AUTHENTICATION CHECK
+   * PROTECT /admin/*
    * ============================================================
-   *
-   * getUser() asks Supabase to validate the authenticated user.
-   * We do not trust a cookie merely because it exists.
    */
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  if (pathname.startsWith('/admin')) {
+    /*
+     * ============================================================
+     * SERVER-SIDE AUTHENTICATION CHECK
+     * ============================================================
+     *
+     * getUser() asks Supabase to validate the authenticated user.
+     * We do not trust a cookie merely because it exists.
+     */
 
-  if (error || !user) {
-    console.log(
-      '[PROXY] No authenticated Supabase user:',
-      error?.message || 'No user'
-    );
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    const loginUrl = request.nextUrl.clone();
+    if (error || !user) {
+      console.log(
+        '[PROXY] No authenticated Supabase user:',
+        error?.message || 'No user'
+      );
 
-    loginUrl.pathname = '/admin/login';
-    loginUrl.search = '';
+      const loginUrl = request.nextUrl.clone();
 
-    loginUrl.searchParams.set(
-      'redirect',
-      pathname
-    );
+      loginUrl.pathname = '/admin/login';
+      loginUrl.search = '';
 
-    return NextResponse.redirect(loginUrl);
+      loginUrl.searchParams.set('redirect', pathname);
+
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return response;
   }
 
   /*
    * ============================================================
-   * AUTHENTICATED
+   * PROTECT /investor-portal/*
+   * ============================================================
+   */
+
+  if (pathname.startsWith('/investor-portal')) {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      const loginUrl = request.nextUrl.clone();
+
+      loginUrl.pathname = '/investor-login';
+      loginUrl.search = '';
+
+      loginUrl.searchParams.set('redirect', pathname);
+
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return response;
+  }
+
+  /*
+   * ============================================================
+   * ALL OTHER PATHS
    * ============================================================
    */
 
@@ -102,5 +138,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/investor-portal/:path*'],
 };
