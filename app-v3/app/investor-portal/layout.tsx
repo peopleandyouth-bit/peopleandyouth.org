@@ -4,7 +4,11 @@ import Link from "next/link";
 const NAV_ITEMS = [
   { href: "/investor-portal", label: "Overview" },
   { href: "/investor-portal/relationship", label: "Relationship" },
+  { href: "/investor-portal/meetings", label: "Meetings" },
+  { href: "/investor-portal/next-steps", label: "Next Steps" },
   { href: "/investor-portal/documents", label: "Documents" },
+  { href: "/investor-portal/updates", label: "Updates" },
+  { href: "/investor-portal/notifications", label: "Notifications" },
   { href: "/investor-portal/profile", label: "Profile" },
   { href: "/investor-portal/security", label: "Security" },
 ];
@@ -36,7 +40,7 @@ export default function InvestorPortalLayout({
 
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-10 lg:flex-row lg:px-10">
         {/* Sidebar navigation */}
-        <aside className="lg:w-52 lg:shrink-0">
+        <aside className="lg:w-56 lg:shrink-0">
           <nav className="flex gap-1 overflow-x-auto border-b border-[#f5f0e6]/8 pb-3 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0">
             {NAV_ITEMS.map((item) => (
               <Link
