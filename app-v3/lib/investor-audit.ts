@@ -1,6 +1,7 @@
 ﻿// lib/investor-audit.ts
 //
 // Phase 5C — Institutional audit trail writer.
+// Phase 15 Layer 3.5 — Extended with data room operation event types.
 //
 // Every mutation performed on investor CRM entities flows through this
 // helper. The audit log is append-only by construction and is never
@@ -25,7 +26,13 @@ export type AuditEventType =
   | "CRM_PROBABILITY_UPDATED"
   | "CRM_NEXT_ACTION_UPDATED"
   | "CRM_CONTACT_RECORDED"
-  | "INVESTOR_NOTES_UPDATED";
+  | "INVESTOR_NOTES_UPDATED"
+  | "DD_ACCESS_GRANTED"
+  | "DD_ACCESS_REVOKED"
+  | "ACCESS_REQUEST_DECIDED"
+  | "UPLOAD_REQUEST_CREATED"
+  | "UPLOAD_REQUEST_CANCELLED"
+  | "UPLOAD_REVIEWED";
 
 export interface AuditActor {
   id: string;

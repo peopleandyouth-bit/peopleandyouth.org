@@ -6,6 +6,7 @@ import {
   type ResolutionTarget,
 } from "./ResolutionModal";
 import { InvestorAuditPanel } from "./InvestorAuditPanel";
+import { DataRoomOperationsPanel } from "./DataRoomOperationsPanel";
 
 const STAGES = [
   "PROSPECT",
@@ -2943,6 +2944,9 @@ function DecisionContextPanel({
 
           {/* 5C.13 — Per-investor audit panel */}
           <InvestorAuditPanel investorId={investorId} />
+
+          {/* 3.5D — Data room operations summary */}
+          <DataRoomOperationsPanel investorId={investorId} />
 
           <div className="flex flex-wrap gap-2">
             <a
