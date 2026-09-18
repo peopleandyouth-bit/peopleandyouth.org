@@ -7,6 +7,8 @@ const NAV_ITEMS = [
   { href: "/investor-portal/meetings", label: "Meetings" },
   { href: "/investor-portal/next-steps", label: "Next Steps" },
   { href: "/investor-portal/documents", label: "Documents" },
+  { href: "/investor-portal/access", label: "Access" },
+  { href: "/investor-portal/uploads", label: "Uploads" },
   { href: "/investor-portal/updates", label: "Updates" },
   { href: "/investor-portal/notifications", label: "Notifications" },
   { href: "/investor-portal/profile", label: "Profile" },
@@ -20,7 +22,6 @@ export default function InvestorPortalLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#0a1020] text-[#f5f0e6]">
-      {/* Top bar */}
       <header className="border-b border-[#f5f0e6]/8">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
           <Link href="/investor-portal" className="flex items-center gap-3">
@@ -39,7 +40,6 @@ export default function InvestorPortalLayout({
       </header>
 
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-10 lg:flex-row lg:px-10">
-        {/* Sidebar navigation */}
         <aside className="lg:w-56 lg:shrink-0">
           <nav className="flex gap-1 overflow-x-auto border-b border-[#f5f0e6]/8 pb-3 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0">
             {NAV_ITEMS.map((item) => (
@@ -54,11 +54,9 @@ export default function InvestorPortalLayout({
           </nav>
         </aside>
 
-        {/* Main content */}
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-[#f5f0e6]/8">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-8 lg:px-10">
           <p className="text-[10px] tracking-[0.28em] text-[#f5f0e6]/25">

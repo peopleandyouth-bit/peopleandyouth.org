@@ -9,6 +9,10 @@ import {
   projectDocumentsForInvestor,
   type InternalDocument,
 } from "@/lib/investor-portal-projection";
+import {
+  loadInvestorAccessState,
+  canSeeDocument,
+} from "@/lib/investor-document-access";
 
 export const dynamic = "force-dynamic";
 
@@ -39,13 +43,23 @@ export async function GET() {
     }
   );
 
+  // Load investor access state (verification + DD grant).
+  const accessState = await loadInvestorAccessState(
+    supabase,
+    auth.profile.id,
+    auth.profile.verification_status,
+    auth.profile.access_level
+  );
+
+  // Fetch all active documents. Broader filter than before — we now
+  // fetch everything active and let canSeeDocument apply the tier
+  // logic per row.
   const { data, error } = await supabase
     .from("investor_documents")
     .select(
       "id, title, description, category, file_type, file_size_bytes, access_level, display_order, created_at, updated_at"
     )
     .eq("is_active", true)
-    .in("access_level", ["PUBLIC", "APPROVED"])
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 
@@ -57,12 +71,28 @@ export async function GET() {
     );
   }
 
+  // Apply per-investor access filter.
+  const visible = (data ?? []).filter((doc) =>
+    canSeeDocument(
+      {
+        access_level: doc.access_level,
+        investor_id: null, // investor_documents has no investor_id column
+      },
+      accessState
+    )
+  );
+
   const projection = projectDocumentsForInvestor(
-    (data ?? []) as unknown as InternalDocument[]
+    visible as unknown as InternalDocument[]
   );
 
   return NextResponse.json({
     success: true,
     documents: projection,
+    access: {
+      has_dd_access: accessState.hasDdAccess,
+      verified: accessState.verificationStatus === "VERIFIED",
+      approved: accessState.accessLevel === "APPROVED",
+    },
   });
 }
