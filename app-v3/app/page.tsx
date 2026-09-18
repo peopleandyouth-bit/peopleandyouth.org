@@ -133,6 +133,7 @@ export default function CompleteMasterHeadquartersPage() {
           <div className="flex items-center gap-4 flex-wrap font-bold">
             <Link href="/constitution" className="text-amber-300 hover:underline">Constitution Charter</Link>
             <Link href="/leadership-network" className="text-amber-300 hover:underline">Leadership Network</Link>
+            <Link href="/leadership" className="text-amber-300 hover:underline">Leadership Directory</Link>
             <Link href="/activity" className="text-amber-300 hover:underline">Live Activity Feed</Link>
             <Link href="/careers" className="text-amber-300 hover:underline">Global Careers</Link>
             <Link href="/investors" className="text-amber-300 hover:underline">Investor Relations</Link>
@@ -205,6 +206,7 @@ export default function CompleteMasterHeadquartersPage() {
             <Link href="/about" className="hover:text-amber-400">About Us</Link>
             <Link href="/constitution" className="hover:text-amber-400 text-amber-300">Constitution Charter</Link>
             <Link href="/leadership-network" className="hover:text-amber-400 text-amber-300">Leadership Network</Link>
+            <Link href="/leadership" className="hover:text-amber-400 text-amber-300">Leadership Directory</Link>
             <Link href="/policy-lab" className="hover:text-amber-400">Policy Lab</Link>
             <Link href="/realms" className="hover:text-amber-400 text-amber-300">Knowledge Realms</Link>
             <Link href="/caves" className="hover:text-amber-400 text-amber-300">Knowledge Caves</Link>
@@ -373,7 +375,7 @@ export default function CompleteMasterHeadquartersPage() {
 
                     <div className="space-y-1">
                       <span className="text-[9px] text-gray-400 uppercase block">Passport Holder</span>
-                      <div className="text-sm font-bold text-white">Swaraj Shandilya</div>
+                      <div className="text-sm font-bold text-white">Your Name</div>
                       <div className="text-[9px] text-amber-300 font-mono">ID: PY-PASSPORT-2026-8841</div>
                     </div>
 
@@ -409,7 +411,7 @@ export default function CompleteMasterHeadquartersPage() {
 
                       <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
                         <span>LI</span>
-                        <div><span className="text-white font-bold block">LinkedIn</span><span className="text-gray-400 text-[7px]">Swaraj Shandilya</span></div>
+                        <div><span className="text-white font-bold block">LinkedIn</span><span className="text-gray-400 text-[7px]">People & Youth</span></div>
                       </a>
 
                       <a href="mailto:contact@peopleandyouth.org" className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-amber-400 flex items-center gap-1.5">
@@ -488,10 +490,14 @@ export default function CompleteMasterHeadquartersPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {section.items.map((item: string, idx: number) => (
-                  <div key={idx} className="bg-white/5 border border-white/10 hover:border-amber-400/50 p-3.5 rounded-xl transition-all space-y-1">
+                  <Link
+                    key={idx}
+                    href={`/${section.id}`}
+                    className="block bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 p-3.5 rounded-xl transition-all space-y-1 cursor-pointer"
+                  >
                     <span className="text-amber-400/60 font-mono text-[8px] uppercase block">ENT-{idx + 1}</span>
                     <span className="text-white font-bold text-[11px] block leading-snug">{item}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -512,7 +518,7 @@ export default function CompleteMasterHeadquartersPage() {
             <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-xs font-mono text-gray-300 pt-2 border-t border-white/10">
               <p><strong className="text-amber-400">Instagram:</strong> <a href="https://instagram.com/peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">instagram.com/peopleandyouth</a></p>
               <p><strong className="text-amber-400">YouTube:</strong> <a href="https://youtube.com/@peopleandyouth" target="_blank" rel="noreferrer" className="hover:underline">youtube.com/@peopleandyouth</a></p>
-              <p><strong className="text-amber-400">LinkedIn:</strong> <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="hover:underline">Swaraj Shandilya</a></p>
+              <p><strong className="text-amber-400">LinkedIn:</strong> <a href="https://www.linkedin.com/company/https-www.peopleandyouth.org-/" target="_blank" rel="noreferrer" className="hover:underline">People & Youth</a></p>
               <p><strong className="text-amber-400">Email:</strong> <a href="mailto:contact@peopleandyouth.org" className="hover:underline">contact@peopleandyouth.org</a></p>
             </div>
 
