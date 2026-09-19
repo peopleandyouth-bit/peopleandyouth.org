@@ -239,7 +239,7 @@ export default function LeadershipNetworkPage() {
             <section className="space-y-4">
               <div className="border-b border-white/10 pb-2">
                 <span className="text-amber-400 font-bold uppercase text-[9px] tracking-widest">LEVEL IV</span>
-                <h2 className="text-xl font-extrabold text-white">Global Leadership Network Network Offices</h2>
+                <h2 className="text-xl font-extrabold text-white">Global Leadership Network Offices</h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
