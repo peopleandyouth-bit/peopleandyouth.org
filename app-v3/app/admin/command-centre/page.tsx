@@ -40,6 +40,75 @@ const GLOBAL_CAREER_ROLES = [
   "Institutional Relations Officer", "Records & Protocol Officer"
 ];
 
+// ---------------------------------------------------------------------------
+// ADMIN LAUNCHER — cross-page directory of every admin surface.
+// Static data only. No state, no side-effects, no IAM logic.
+// Destination pages already gate themselves via requirePermission.
+// ---------------------------------------------------------------------------
+const ADMIN_LAUNCHER: Array<{
+  section: string;
+  accent: string;
+  items: Array<{ label: string; href: string }>;
+}> = [
+  {
+    section: 'People & Talent',
+    accent: 'amber',
+    items: [
+      { label: 'Applications Board', href: '/admin/candidate-applications' },
+      { label: 'Careers', href: '/admin/careers' },
+      { label: 'Candidate Information (CIMS)', href: '/admin/cims' },
+    ],
+  },
+  {
+    section: 'Investor Relations',
+    accent: 'cyan',
+    items: [
+      { label: 'Investor CRM', href: '/admin/investor-crm' },
+      { label: 'Intelligence', href: '/admin/investor-intelligence' },
+      { label: 'Operations', href: '/admin/investor-operations' },
+      { label: 'Relations', href: '/admin/investor-relations' },
+      { label: 'Relationship', href: '/admin/investor-relationship' },
+      { label: 'Communications', href: '/admin/investor-communications' },
+      { label: 'Communications Actions', href: '/admin/investor-communications/actions' },
+      { label: 'Pipeline', href: '/admin/investor-pipeline' },
+      { label: 'Access Control', href: '/admin/investor-access' },
+      { label: 'Documents', href: '/admin/investor-documents' },
+      { label: 'Uploads', href: '/admin/investor-uploads' },
+      { label: 'Events', href: '/admin/investor-events' },
+      { label: 'Governance', href: '/admin/investor-governance' },
+      { label: 'Audit', href: '/admin/investor-audit' },
+      { label: 'Analytics', href: '/admin/investor-analytics' },
+      { label: 'Automation', href: '/admin/investor-automation' },
+      { label: 'Automation Scans', href: '/admin/investor-automation/scans' },
+      { label: 'Executive', href: '/admin/investor-executive' },
+      { label: 'Reports', href: '/admin/investor-reports' },
+      { label: 'Investors', href: '/admin/investors' },
+    ],
+  },
+  {
+    section: 'Content & Editorial',
+    accent: 'violet',
+    items: [
+      { label: 'CMS', href: '/admin/cms' },
+      { label: 'Essays', href: '/admin/essays' },
+      { label: 'Policy', href: '/admin/policy' },
+      { label: 'Governance', href: '/admin/governance' },
+    ],
+  },
+  {
+    section: 'Operations',
+    accent: 'emerald',
+    items: [
+      { label: 'CRM', href: '/admin/crm' },
+      { label: 'ERP', href: '/admin/erp' },
+      { label: 'Dashboard', href: '/admin/dashboard' },
+      { label: 'War Room', href: '/admin/war-room' },
+      { label: 'iOS', href: '/admin/ios' },
+      { label: 'Print', href: '/admin/print' },
+    ],
+  },
+];
+
 export default function CommandCentreDashboard() {
   const [activeTab, setActiveTab] = useState<
     'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER' | '💼 INVESTORS'
@@ -769,6 +838,52 @@ export default function CommandCentreDashboard() {
           </span>
         </div>
 
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* ADMIN LAUNCHER — cross-page directory of every admin surface.       */}
+      {/* Static links only. Destination pages gate themselves via IAM.       */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="mb-6 rounded-xl border border-white/10 bg-[#070b19] p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Admin Launcher — All Surfaces
+            </h2>
+            <p className="mt-1 text-[11px] text-gray-400">
+              Direct links to every admin extension. No hunting required.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {ADMIN_LAUNCHER.map((group) => (
+            <div
+              key={group.section}
+              className="rounded-lg border border-white/[0.08] bg-[#030611] p-4"
+            >
+              <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
+                {group.section}
+              </h3>
+
+              <ul className="space-y-1.5">
+                {group.items.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      className="group flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-[11px] text-gray-300 transition hover:border-amber-500/40 hover:bg-amber-500/[0.08] hover:text-amber-200"
+                    >
+                      <span className="truncate">{item.label}</span>
+                      <span className="shrink-0 text-gray-600 transition group-hover:text-amber-400">
+                        →
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex border-b border-gray-800 overflow-x-auto gap-1 mb-6">
@@ -2261,4 +2376,4 @@ export default function CommandCentreDashboard() {
 
     </div>
   );
-} 
+}
