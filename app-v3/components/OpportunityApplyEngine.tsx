@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 export interface OpportunityProps {
   opportunityId: string;
-  opportunityType: string; // Fellowship, Career, Journal, Ambassador, etc.
+  opportunityType: string;
   department: string;
   title: string;
   location?: string;
@@ -85,6 +85,8 @@ export function OpportunityApplySection({ opportunityId, opportunityType, depart
 export function ApplyWizardModal({ opportunityId, opportunityType, department, title, location, onClose }: OpportunityProps & { onClose: () => void }) {
   const [stage, setStage] = useState(1);
   const [submittedData, setSubmittedData] = useState<any | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // FORM DATA STATES
   // Stage I: Identity
@@ -125,44 +127,96 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
   const [digitalSignature, setDigitalSignature] = useState('');
   const [agreedTerms, setAgreedTerms] = useState(false);
 
-  const handleNextStage = (e: React.FormEvent) => {
+  const handleNextStage = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (stage < 6) {
       setStage(stage + 1);
-    } else {
-      // Final Submit Execution
-      const candId = `PY-CAND-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      const appId = `PY-APP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      return;
+    }
+
+    // Final Submit Execution — persist to server, then show success card.
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const response = await fetch('/api/careers/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          opportunity_id: opportunityId,
+          opportunity_type: opportunityType,
+          department,
+          role_title: title,
+          location,
+
+          full_name: fullName,
+          dob: dob || null,
+          email,
+          phone: phone || null,
+          district: district || null,
+          linkedin_url: linkedin || null,
+
+          qualification,
+          institution: institution || null,
+          experience_years:
+            experienceYears && !Number.isNaN(Number(experienceYears))
+              ? Number(experienceYears)
+              : null,
+          resume_url: resumeUrl || null,
+          technical_skills: technicalSkills || null,
+
+          preferred_role_type: preferredRoleType || null,
+          availability_date: availabilityDate || null,
+          compensation_expectation: compensationExpectation || null,
+
+          why_py_essay: whyPyEssay || null,
+          leadership_essay: leadershipEssay || null,
+          sop_sample: sopSample || null,
+
+          reference_1: ref1 || null,
+          reference_2: ref2 || null,
+          verification_consent: verificationConsent,
+
+          digital_signature: digitalSignature || null,
+          agreed_terms: agreedTerms,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data?.error ?? 'Unable to submit your application.'
+        );
+      }
 
       const payload = {
-        candidateId: candId,
-        applicationId: appId,
+        candidateId: data.application.candidate_id,
+        applicationId: data.application.application_id,
         opportunityTitle: title,
         opportunityType,
         department,
         fullName,
         email,
         district,
-        submittedAt: new Date().toISOString()
+        submittedAt: data.application.submitted_at,
       };
 
-      localStorage.setItem('py_candidate_session', JSON.stringify(payload));
-      // Trigger Institutional Email Communication Engine
-      const isFellowship = opportunityType.toLowerCase().includes('fellowship') || opportunityType.toLowerCase().includes('internship');
-      fetch('/api/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scenario: isFellowship ? 'fellowship' : 'career',
-          email,
-          firstName: fullName.split(' ')[0],
-          applicationId: appId,
-          roleName: title,
-          department,
-          programmeName: title
-        })
-      }).catch(err => console.error('Email API trigger background error:', err));
+      localStorage.setItem(
+        'py_candidate_session',
+        JSON.stringify(payload)
+      );
+
       setSubmittedData(payload);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to submit your application. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -228,7 +282,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
             </div>
             <h3 className="text-2xl font-bold text-white uppercase font-serif">Application Submitted</h3>
             <p className="text-gray-300 text-xs max-w-md mx-auto leading-relaxed">
-              Your profile for <strong>{submittedData.opportunityTitle}</strong> has entered the 6-stage candidate screening pipeline.
+              Your profile for <strong>{submittedData.opportunityTitle}</strong> has entered the 9-stage candidate screening pipeline.
             </p>
 
             <div className="bg-[#070b19] border border-amber-400/30 p-6 rounded-2xl max-w-md mx-auto space-y-2 text-left font-mono">
@@ -242,7 +296,7 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-gray-400">Status:</span>
-                <span className="text-emerald-400 font-bold">Automated Screening</span>
+                <span className="text-emerald-400 font-bold">Application Submitted</span>
               </div>
             </div>
 
@@ -403,13 +457,19 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
                   <input type="checkbox" required checked={agreedTerms} onChange={(e) => setAgreedTerms(e.target.checked)} className="rounded text-amber-400 focus:ring-0" />
                   <span className="text-[10px] text-gray-300">I declare that all provided details are accurate and abide by the Research & Editorial Charter.</span>
                 </label>
+
+                {submitError && (
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/[0.06] px-4 py-3 text-xs text-red-200">
+                    {submitError}
+                  </div>
+                )}
               </div>
             )}
 
             {/* STAGE NAVIGATION BUTTONS */}
             <div className="flex justify-between items-center pt-4 border-t border-white/10">
               {stage > 1 ? (
-                <button type="button" onClick={() => setStage(stage - 1)} className="px-4 py-2 bg-white/10 text-white rounded-xl font-bold uppercase hover:bg-white/20">
+                <button type="button" onClick={() => setStage(stage - 1)} disabled={submitting} className="px-4 py-2 bg-white/10 text-white rounded-xl font-bold uppercase hover:bg-white/20 disabled:opacity-40">
                   ← Previous Stage
                 </button>
               ) : <div />}
@@ -418,12 +478,17 @@ export function ApplyWizardModal({ opportunityId, opportunityType, department, t
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors"
+                  disabled={submitting}
+                  className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors disabled:opacity-40"
                 >
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs">
-                  {stage === 6 ? '🚀 Submit Application' : 'Proceed to Next Stage →'}
+                <button type="submit" disabled={submitting} className="px-6 py-2.5 bg-amber-400 text-black font-extrabold uppercase rounded-xl hover:bg-amber-300 transition-all text-xs disabled:cursor-not-allowed disabled:opacity-50">
+                  {stage === 6
+                    ? submitting
+                      ? 'Submitting...'
+                      : '🚀 Submit Application'
+                    : 'Proceed to Next Stage →'}
                 </button>
               </div>
             </div>
