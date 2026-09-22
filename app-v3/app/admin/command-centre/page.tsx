@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateReadingTime } from '@/lib/cms';
+import AdminPageGuard from '@/components/AdminPageGuard';
 
 const GLOBAL_CAREER_ROLES = [
   "Founder & Chair", "Chief Executive Officer", "Chief Operating Officer", "Chief Technology Officer", "Chief Editor",
@@ -42,8 +43,6 @@ const GLOBAL_CAREER_ROLES = [
 
 // ---------------------------------------------------------------------------
 // ADMIN LAUNCHER — cross-page directory of every admin surface.
-// Static data only. No state, no side-effects, no IAM logic.
-// Destination pages already gate themselves via requirePermission.
 // ---------------------------------------------------------------------------
 const ADMIN_LAUNCHER: Array<{
   section: string;
@@ -109,7 +108,43 @@ const ADMIN_LAUNCHER: Array<{
   },
 ];
 
+const PRIVILEGED_ROLES = ['founder', 'chairperson'];
+
+type ActorIdentity = {
+  id: string;
+  user_id: string | null;
+  name: string;
+  email: string;
+  role: 'founder' | 'chairperson' | 'cto' | 'admin';
+  permissions: string[];
+  status: 'ACTIVE' | 'INACTIVE';
+};
+
+type Permission = 'VIEW' | 'CREATE' | 'EDIT' | 'REVIEW' | 'APPROVE' | 'PUBLISH' | 'ARCHIVE' | 'DELETE' | 'ADMIN';
+
+function isPrivileged(identity: ActorIdentity | null): boolean {
+  if (!identity) return false;
+  return PRIVILEGED_ROLES.includes(identity.role);
+}
+
+function actorHasPermission(identity: ActorIdentity | null, permission: Permission): boolean {
+  if (!identity) return false;
+  if (identity.status !== 'ACTIVE') return false;
+  if (isPrivileged(identity)) return true;
+  return identity.permissions.includes(permission);
+}
+
 export default function CommandCentreDashboard() {
+  return (
+    <AdminPageGuard>
+      <CommandCentreInner />
+    </AdminPageGuard>
+  );
+}
+
+function CommandCentreInner() {
+  const [actor, setActor] = useState<ActorIdentity | null>(null);
+
   const [activeTab, setActiveTab] = useState<
     'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER' | '💼 INVESTORS'
   >('ARTICLES');
@@ -127,7 +162,6 @@ export default function CommandCentreDashboard() {
   const [investorDocs, setInvestorDocs] = useState<any[]>([]);
   const [investorLogs, setInvestorLogs] = useState<any[]>([]);
 
-  // STEP 6 — Institutional / Founder Office settings
   const [institutionalSettings, setInstitutionalSettings] = useState<any>(null);
 
   const [editorMode, setEditorMode] = useState<'LIST' | 'EDIT'>('LIST');
@@ -173,8 +207,10 @@ export default function CommandCentreDashboard() {
 
   const [admName, setAdmName] = useState('');
   const [admEmail, setAdmEmail] = useState('');
+  const [admUserId, setAdmUserId] = useState('');
+  const [admRole, setAdmRole] = useState<'cto' | 'admin'>('admin');
+  const [admCareerRole, setAdmCareerRole] = useState(GLOBAL_CAREER_ROLES[0]);
   const [admPhoto, setAdmPhoto] = useState('');
-  const [admRole, setAdmRole] = useState(GLOBAL_CAREER_ROLES[0]);
   const [admDesignation, setAdmDesignation] = useState('');
   const [admOrg, setAdmOrg] = useState('People & Youth');
   const [admOffice, setAdmOffice] = useState('Global Secretariat & Executive Offices');
@@ -183,46 +219,48 @@ export default function CommandCentreDashboard() {
   const [admLinkedin, setAdmLinkedin] = useState('');
   const [admWebsite, setAdmWebsite] = useState('');
 
-  const [perms, setPerms] = useState({
-    view: true, create: true, edit: true, review: true,
-    approve: false, publish: false, archive: false, delete: false, admin: false
+  const [admPermissions, setAdmPermissions] = useState<Record<Permission, boolean>>({
+    VIEW: true, CREATE: true, EDIT: true, REVIEW: true,
+    APPROVE: false, PUBLISH: false, ARCHIVE: false, DELETE: false, ADMIN: false,
   });
 
-  const [teamMembers, setTeamMembers] = useState<any[]>([
-    {
-      id: '1',
-      name: 'Founder & Chair',
-      email: 'contact@peopleandyouth.org',
-      role: 'Founder & Chair',
-      organization: 'People & Youth',
-      permissions: ['VIEW', 'CREATE', 'EDIT', 'REVIEW', 'APPROVE', 'PUBLISH', 'ARCHIVE', 'DELETE', 'ADMIN']
+  const [provisioning, setProvisioning] = useState(false);
+  const [provisionError, setProvisionError] = useState('');
+
+  const fetchActor = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/iam', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) return;
+
+      const data = (await response.json()) as { identity: ActorIdentity | null };
+      if (data.identity) setActor(data.identity);
+    } catch {
+      // Guard already handles the failure state
     }
-  ]);
+  }, []);
+
+  useEffect(() => {
+    void fetchActor();
+  }, [fetchActor]);
 
   useEffect(() => {
     fetchAllData();
   }, []);
 
-  // STEP 6 — Load persisted Founder Office settings into the UI
   useEffect(() => {
     if (!institutionalSettings) return;
 
-    setWatermarkEnabled(
-      institutionalSettings.watermark_enabled ?? true
-    );
-
+    setWatermarkEnabled(institutionalSettings.watermark_enabled ?? true);
     setWatermarkText(
       institutionalSettings.watermark_text ||
-      'OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE'
+        'OFFICIAL RECORD | PEOPLE & YOUTH | DO NOT DUPLICATE'
     );
-
-    setPublicIntakeOpen(
-      institutionalSettings.public_intake_open ?? true
-    );
-
-    setRequireEditorialReview(
-      institutionalSettings.require_editorial_review ?? true
-    );
+    setPublicIntakeOpen(institutionalSettings.public_intake_open ?? true);
+    setRequireEditorialReview(institutionalSettings.require_editorial_review ?? true);
   }, [institutionalSettings]);
 
   async function fetchAllData() {
@@ -239,7 +277,7 @@ export default function CommandCentreDashboard() {
       invProfRes,
       invDocRes,
       invCrmRes,
-      institutionalSettingsRes
+      institutionalSettingsRes,
     ] = await Promise.all([
       supabase.from('articles').select('*, authors(name), publications(name)').order('updated_at', { ascending: false }),
       supabase.from('publications').select('*').order('name', { ascending: true }),
@@ -251,7 +289,7 @@ export default function CommandCentreDashboard() {
       supabase.from('investor_profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('investor_documents').select('*').order('display_order', { ascending: true }),
       supabase.from('investor_crm_logs').select('*').order('updated_at', { ascending: false }),
-      supabase.from('institutional_settings').select('*').maybeSingle()
+      supabase.from('institutional_settings').select('*').maybeSingle(),
     ]);
 
     if (artRes.data) setArticles(artRes.data);
@@ -264,10 +302,7 @@ export default function CommandCentreDashboard() {
     if (invProfRes.data) setInvestorProfiles(invProfRes.data);
     if (invDocRes.data) setInvestorDocs(invDocRes.data);
     if (invCrmRes.data) setInvestorLogs(invCrmRes.data);
-
-    if (institutionalSettingsRes.data) {
-      setInstitutionalSettings(institutionalSettingsRes.data);
-    }
+    if (institutionalSettingsRes.data) setInstitutionalSettings(institutionalSettingsRes.data);
 
     setLoading(false);
   }
@@ -295,8 +330,8 @@ export default function CommandCentreDashboard() {
           designation,
           department,
           office: office || 'Global Secretariat & Executive Offices',
-          profile_url: 'https://www.peopleandyouth.org/leadership'
-        })
+          profile_url: 'https://www.peopleandyouth.org/leadership',
+        }),
       });
     } catch (err) {
       console.error('Email trigger error:', err);
@@ -377,17 +412,10 @@ export default function CommandCentreDashboard() {
     let error;
 
     if (articleId) {
-      const res = await supabase
-        .from('articles')
-        .update(payload)
-        .eq('id', articleId);
-
+      const res = await supabase.from('articles').update(payload).eq('id', articleId);
       error = res.error;
     } else {
-      const res = await supabase
-        .from('articles')
-        .insert(payload);
-
+      const res = await supabase.from('articles').insert(payload);
       error = res.error;
     }
 
@@ -404,21 +432,18 @@ export default function CommandCentreDashboard() {
 
   async function handleCreateJournal(e: React.FormEvent) {
     e.preventDefault();
-
     if (!jName) return;
 
     const computedSlug = generateSlug(jName);
 
-    const { error } = await supabase
-      .from('publications')
-      .insert({
-        name: jName,
-        slug: computedSlug,
-        publication_type: jType,
-        description: jDesc,
-        issn: jIssn || null,
-        editor_in_chief: jEditor || 'Founder'
-      });
+    const { error } = await supabase.from('publications').insert({
+      name: jName,
+      slug: computedSlug,
+      publication_type: jType,
+      description: jDesc,
+      issn: jIssn || null,
+      editor_in_chief: jEditor || 'Founder',
+    });
 
     if (error) {
       alert('Failed to create journal: ' + error.message);
@@ -434,7 +459,6 @@ export default function CommandCentreDashboard() {
 
   async function handleSaveAuthor(e: React.FormEvent) {
     e.preventDefault();
-
     if (!aName) return;
 
     const computedSlug = generateSlug(aName);
@@ -453,37 +477,22 @@ export default function CommandCentreDashboard() {
       photo_url: aPhoto || null,
       is_leadership: true,
       display_order: 10,
-      expertise: aExpertise
-        ? aExpertise.split(',').map(s => s.trim())
-        : [],
+      expertise: aExpertise ? aExpertise.split(',').map((s) => s.trim()) : [],
       linkedin_url: aLinkedin || null,
-      website_url: aWebsite || null
+      website_url: aWebsite || null,
     };
 
     let error;
 
     if (editingAuthorId) {
-      const res = await supabase
-        .from('authors')
-        .update(payload)
-        .eq('id', editingAuthorId);
-
+      const res = await supabase.from('authors').update(payload).eq('id', editingAuthorId);
       error = res.error;
     } else {
-      const res = await supabase
-        .from('authors')
-        .insert(payload);
-
+      const res = await supabase.from('authors').insert(payload);
       error = res.error;
 
       if (!error && aEmail) {
-        await triggerOnboardingEmail(
-          aName,
-          aEmail,
-          aDesignation,
-          aDept,
-          aOffice
-        );
+        await triggerOnboardingEmail(aName, aEmail, aDesignation, aDept, aOffice);
       }
     }
 
@@ -513,19 +522,10 @@ export default function CommandCentreDashboard() {
     setAWebsite(author.website_url || '');
   }
 
-  async function handleDeleteAuthor(
-    id: string,
-    name: string,
-    email?: string
-  ) {
-    if (!confirm(`Are you sure you want to permanently delete the profile for "${name}"?`)) {
-      return;
-    }
+  async function handleDeleteAuthor(id: string, name: string, email?: string) {
+    if (!confirm(`Are you sure you want to permanently delete the profile for "${name}"?`)) return;
 
-    const { error } = await supabase
-      .from('authors')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('authors').delete().eq('id', id);
 
     if (error) {
       alert('Failed to delete author: ' + error.message);
@@ -535,7 +535,7 @@ export default function CommandCentreDashboard() {
           await fetch('/api/offboard-member', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email })
+            body: JSON.stringify({ name, email }),
           });
         } catch (e) {
           console.error('Failed to dispatch offboarding email:', e);
@@ -566,100 +566,85 @@ export default function CommandCentreDashboard() {
 
   async function handleAddAdministrator(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!admName || !admEmail) return;
-
-    const computedSlug = generateSlug(admName);
-
-    const activePerms = Object.keys(perms)
-      .filter(k => (perms as any)[k])
-      .map(k => k.toUpperCase());
-
-    const newAdmin = {
-      id: Date.now().toString(),
-      name: admName,
-      email: admEmail,
-      photo_url: admPhoto,
-      role: admRole,
-      designation: admDesignation || admRole,
-      organization: admOrg,
-      office: admOffice,
-      bio: admBio,
-      expertise: admExpertise
-        ? admExpertise.split(',').map(s => s.trim())
-        : [],
-      linkedin_url: admLinkedin,
-      website_url: admWebsite,
-      permissions: activePerms,
-      status: 'ACTIVE'
-    };
-
-    const { error } = await supabase
-      .from('authors')
-      .insert({
-        name: admName,
-        slug: computedSlug,
-        email: admEmail,
-        photo_url: admPhoto || null,
-        designation: admDesignation || admRole,
-        organization: admOrg,
-        office: admOffice,
-        bio: admBio || null,
-        department: 'Executive Board',
-        is_leadership: true,
-        display_order: 10,
-        expertise: admExpertise
-          ? admExpertise.split(',').map(s => s.trim())
-          : [],
-        linkedin_url: admLinkedin || null,
-        website_url: admWebsite || null
-      });
-
-    if (error) {
-      alert('Failed to register administrator: ' + error.message);
+    if (!admName || !admEmail || !admUserId) {
+      setProvisionError('Name, email, and Supabase user ID are required.');
       return;
     }
 
-    await triggerOnboardingEmail(
-      admName,
-      admEmail,
-      admDesignation || admRole,
-      'Executive Board',
-      admOffice
-    );
+    setProvisioning(true);
+    setProvisionError('');
 
-    setTeamMembers([...teamMembers, newAdmin]);
+    try {
+      const activePermissions = (
+        Object.keys(admPermissions) as Permission[]
+      ).filter((key) => admPermissions[key]);
 
-    alert(`Administrator "${admName}" registered as ${admRole}! Appointment letter dispatched.`);
+      const response = await fetch('/api/admin/iam', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: admUserId.trim(),
+          name: admName.trim(),
+          email: admEmail.trim(),
+          role: admRole,
+          designation: admDesignation || admCareerRole,
+          organization: admOrg,
+          department: 'Executive Board',
+          office: admOffice,
+          permissions: activePermissions,
+        }),
+      });
 
-    setAdmName('');
-    setAdmEmail('');
-    setAdmPhoto('');
-    setAdmDesignation('');
-    setAdmBio('');
-    setAdmLinkedin('');
-    setAdmWebsite('');
+      const data = await response.json();
 
-    fetchAllData();
-  }
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Failed to provision administrator.');
+      }
 
-  function handleRemoveMember(id: string) {
-    setTeamMembers(teamMembers.filter(m => m.id !== id));
+      await triggerOnboardingEmail(
+        admName,
+        admEmail,
+        admDesignation || admCareerRole,
+        'Executive Board',
+        admOffice
+      );
+
+      alert(`Administrator "${admName}" registered as ${admRole}. Appointment letter dispatched.`);
+
+      setAdmName('');
+      setAdmEmail('');
+      setAdmUserId('');
+      setAdmPhoto('');
+      setAdmDesignation('');
+      setAdmBio('');
+      setAdmLinkedin('');
+      setAdmWebsite('');
+      setAdmPermissions({
+        VIEW: true, CREATE: true, EDIT: true, REVIEW: true,
+        APPROVE: false, PUBLISH: false, ARCHIVE: false, DELETE: false, ADMIN: false,
+      });
+    } catch (err) {
+      setProvisionError(
+        err instanceof Error ? err.message : 'Failed to provision administrator.'
+      );
+    } finally {
+      setProvisioning(false);
+    }
   }
 
   async function handleSaveInvestorConfig(e: React.FormEvent) {
     e.preventDefault();
-
     if (!investorConfig) return;
 
     const funds = investorConfig.use_of_funds || {};
 
-   const totalPct: number = Object.values(
-  funds as Record<string, unknown>
-).reduce<number>(
-  (sum: number, value: unknown) => sum + Number(value ?? 0),
-  0
-);
+    const totalPct: number = Object.values(funds as Record<string, unknown>).reduce<number>(
+      (sum: number, value: unknown) => sum + Number(value ?? 0),
+      0
+    );
 
     if (Math.abs(totalPct - 100) > 0.01) {
       if (!confirm(`⚠️ Warning: The current Use of Funds allocation totals ${totalPct.toFixed(1)}%, not 100%. Save anyway?`)) {
@@ -668,22 +653,22 @@ export default function CommandCentreDashboard() {
     }
 
     const { error } = await supabase
-  .from('investor_cms_config')
-  .update({
-    target_raise_inr: investorConfig.target_raise_inr,
-    min_ticket_inr: investorConfig.min_ticket_inr,
-    max_ticket_inr: investorConfig.max_ticket_inr,
-    founder_capital_inr: investorConfig.founder_capital_inr,
-    existing_debt_inr: investorConfig.existing_debt_inr,
-    round_status: investorConfig.round_status,
-    valuation_status: investorConfig.valuation_status,
-    desired_dilution_percent: investorConfig.desired_dilution_percent,
-    closing_date: investorConfig.closing_date,
-    use_of_funds: investorConfig.use_of_funds,
-    platform_metrics: investorConfig.platform_metrics,
-    updated_by: 'Superadmin',
-    updated_at: new Date().toISOString()
-  })
+      .from('investor_cms_config')
+      .update({
+        target_raise_inr: investorConfig.target_raise_inr,
+        min_ticket_inr: investorConfig.min_ticket_inr,
+        max_ticket_inr: investorConfig.max_ticket_inr,
+        founder_capital_inr: investorConfig.founder_capital_inr,
+        existing_debt_inr: investorConfig.existing_debt_inr,
+        round_status: investorConfig.round_status,
+        valuation_status: investorConfig.valuation_status,
+        desired_dilution_percent: investorConfig.desired_dilution_percent,
+        closing_date: investorConfig.closing_date,
+        use_of_funds: investorConfig.use_of_funds,
+        platform_metrics: investorConfig.platform_metrics,
+        updated_by: 'Superadmin',
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', investorConfig.id);
 
     if (error) {
@@ -694,7 +679,6 @@ export default function CommandCentreDashboard() {
     }
   }
 
-  // STEP 6 — REAL FOUNDER OFFICE SAVE
   async function handleSaveGlobalSettings() {
     if (!institutionalSettings?.id) {
       alert('Institutional settings record not found.');
@@ -710,7 +694,7 @@ export default function CommandCentreDashboard() {
         watermark_text: watermarkText,
         public_intake_open: publicIntakeOpen,
         require_editorial_review: requireEditorialReview,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', institutionalSettings.id);
 
@@ -721,14 +705,13 @@ export default function CommandCentreDashboard() {
       return;
     }
 
-    // Immediately synchronize the local state with the saved database values.
     setInstitutionalSettings({
       ...institutionalSettings,
       watermark_enabled: watermarkEnabled,
       watermark_text: watermarkText,
       public_intake_open: publicIntakeOpen,
       require_editorial_review: requireEditorialReview,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     });
 
     alert('Global institutional controls saved successfully.');
@@ -744,7 +727,7 @@ export default function CommandCentreDashboard() {
       .update({
         verification_status: status,
         access_level: accessLevel,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', profileId);
 
@@ -772,6 +755,13 @@ export default function CommandCentreDashboard() {
           <p className="text-xs text-gray-400 mt-1">
             People & Youth • Operating System for Publishing, Leadership & Civic Dispatches
           </p>
+
+          {actor && (
+            <p className="text-[10px] text-gray-500 mt-2 font-mono">
+              Signed in as <span className="text-amber-400">{actor.email}</span> · role{' '}
+              <span className="text-amber-400 uppercase">{actor.role}</span>
+            </p>
+          )}
         </div>
 
         <button
@@ -840,10 +830,6 @@ export default function CommandCentreDashboard() {
 
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* ADMIN LAUNCHER — cross-page directory of every admin surface.       */}
-      {/* Static links only. Destination pages gate themselves via IAM.       */}
-      {/* ------------------------------------------------------------------ */}
       <div className="mb-6 rounded-xl border border-white/10 bg-[#070b19] p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -968,16 +954,18 @@ export default function CommandCentreDashboard() {
           💼 INVESTORS ({investorProfiles.length})
         </button>
 
-        <button
-          onClick={() => setActiveTab('🏛️ FOUNDER')}
-          className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
-            activeTab === '🏛️ FOUNDER'
-              ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
-              : 'text-gray-400 hover:text-gray-200'
-          }`}
-        >
-          🏛️ FOUNDER'S OFFICE
-        </button>
+        {isPrivileged(actor) && (
+          <button
+            onClick={() => setActiveTab('🏛️ FOUNDER')}
+            className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
+              activeTab === '🏛️ FOUNDER'
+                ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            🏛️ FOUNDER'S OFFICE
+          </button>
+        )}
 
       </div>
 
@@ -1968,410 +1956,373 @@ export default function CommandCentreDashboard() {
       )}
 
       {activeTab === '🏛️ FOUNDER' && (
-        <div className="space-y-6">
+        isPrivileged(actor) ? (
+          <div className="space-y-6">
 
-          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+            <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
 
-            <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
+              <div className="border-b border-gray-800 pb-4 flex justify-between items-center">
 
-              <div>
+                <div>
 
-                <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">
-                  🏛️ FOUNDER'S OFFICE & IOS GOVERNANCE
-                </h2>
+                  <h2 className="text-lg font-black text-amber-400 uppercase tracking-wide">
+                    🏛️ FOUNDER'S OFFICE & IOS GOVERNANCE
+                  </h2>
 
-                <p className="text-xs text-gray-400 mt-1">
-                  Super-Administrator Controls, Watermarking Shields & Platform Overrides
-                </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Super-Administrator Controls, Watermarking Shields & Platform Overrides
+                  </p>
+
+                </div>
+
+                <button
+                  onClick={handleSaveGlobalSettings}
+                  disabled={saving || !institutionalSettings?.id}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs uppercase rounded transition"
+                >
+                  {saving ? 'SAVING...' : '💾 SAVE GLOBAL OVERRIDES'}
+                </button>
 
               </div>
 
-              {/* STEP 6 — REAL SAVE BUTTON */}
-              <button
-                onClick={handleSaveGlobalSettings}
-                disabled={saving || !institutionalSettings?.id}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs uppercase rounded transition"
-              >
-                {saving ? 'SAVING...' : '💾 SAVE GLOBAL OVERRIDES'}
-              </button>
-
-            </div>
-
-            {!institutionalSettings && (
-              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs">
-                Institutional settings are not currently available from Supabase.
-                The Founder Office controls are using their local defaults until an
-                institutional settings record is available.
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
-                  🛡️ INSTITUTIONAL WATERMARK SHIELD
-                </span>
-
-                <input
-                  type="text"
-                  value={watermarkText}
-                  onChange={(e) => setWatermarkText(e.target.value)}
-                  className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded font-mono outline-none"
-                />
-
-              </div>
-
-              <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
-
-                <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
-                  ⚙️ GLOBAL OPERATIONAL OVERRIDES
-                </span>
-
-                <div className="space-y-3 text-xs">
-
-                  <div className="flex justify-between items-center">
-
-                    <span>
-                      Reader Dispatches Intake (/reflections)
-                    </span>
-
-                    <input
-                      type="checkbox"
-                      checked={publicIntakeOpen}
-                      onChange={(e) =>
-                        setPublicIntakeOpen(e.target.checked)
-                      }
-                      className="accent-amber-500 h-4 w-4"
-                    />
-
-                  </div>
-
-                  <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
-
-                    <span>
-                      Require Editorial Review
-                    </span>
-
-                    <input
-                      type="checkbox"
-                      checked={requireEditorialReview}
-                      onChange={(e) =>
-                        setRequireEditorialReview(e.target.checked)
-                      }
-                      className="accent-amber-500 h-4 w-4"
-                    />
-
-                  </div>
-
+              {!institutionalSettings && (
+                <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs">
+                  Institutional settings are not currently available from Supabase.
+                  The Founder Office controls are using their local defaults until an
+                  institutional settings record is available.
                 </div>
+              )}
 
-              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            </div>
+                <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
 
-          </div>
-
-          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
-
-            <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
-              👥 GRANT MEMBER ACCESS & CONCONFIGURE ADMINISTRATOR PROFILES (147 GLOBAL ROLES)
-            </h2>
-
-            <form
-              onSubmit={handleAddAdministrator}
-              className="space-y-6"
-            >
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#030611] p-4 rounded-xl border border-gray-800">
-
-                <div>
-
-                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
-                    NAME *
-                  </label>
+                  <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
+                    🛡️ INSTITUTIONAL WATERMARK SHIELD
+                  </span>
 
                   <input
                     type="text"
-                    value={admName}
-                    onChange={(e) => setAdmName(e.target.value)}
-                    placeholder="Full Official Name"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                    required
+                    value={watermarkText}
+                    onChange={(e) => setWatermarkText(e.target.value)}
+                    className="w-full bg-[#070b19] border border-gray-800 p-2.5 text-xs text-white rounded font-mono outline-none"
                   />
 
                 </div>
 
-                <div>
+                <div className="p-5 bg-[#030611] border border-gray-800 rounded-xl space-y-4">
 
-                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
-                    EMAIL *
-                  </label>
+                  <span className="font-bold text-xs text-amber-400 uppercase block border-b border-gray-800/80 pb-2">
+                    ⚙️ GLOBAL OPERATIONAL OVERRIDES
+                  </span>
 
-                  <input
-                    type="email"
-                    value={admEmail}
-                    onChange={(e) => setAdmEmail(e.target.value)}
-                    placeholder="email@peopleandyouth.org"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                    required
-                  />
+                  <div className="space-y-3 text-xs">
 
-                </div>
+                    <div className="flex justify-between items-center">
 
-                <div>
-
-                  <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
-                    CAREER ROLE (147 AVAILABLE) *
-                  </label>
-
-                  <select
-                    value={admRole}
-                    onChange={(e) => {
-                      setAdmRole(e.target.value);
-
-                      if (!admDesignation) {
-                        setAdmDesignation(e.target.value);
-                      }
-                    }}
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none"
-                  >
-
-                    {GLOBAL_CAREER_ROLES.map((r, idx) => (
-                      <option
-                        key={idx}
-                        value={r}
-                      >
-                        {r}
-                      </option>
-                    ))}
-
-                  </select>
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    PHOTOGRAPH URL
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admPhoto}
-                    onChange={(e) => setAdmPhoto(e.target.value)}
-                    placeholder="https://peopleandyouth.org/team/photo.jpg"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    DESIGNATION
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admDesignation}
-                    onChange={(e) => setAdmDesignation(e.target.value)}
-                    placeholder="e.g. Senior Research Fellow"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    OFFICE / DIVISION
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admOffice}
-                    onChange={(e) => setAdmOffice(e.target.value)}
-                    placeholder="e.g. Global Secretariat & Executive Offices"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    ORGANIZATION
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admOrg}
-                    onChange={(e) => setAdmOrg(e.target.value)}
-                    placeholder="e.g. People & Youth"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    EXPERTISE (TAGS)
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admExpertise}
-                    onChange={(e) => setAdmExpertise(e.target.value)}
-                    placeholder="Public Policy, AI, Governance"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    LINKEDIN URL
-                  </label>
-
-                  <input
-                    type="text"
-                    value={admLinkedin}
-                    onChange={(e) => setAdmLinkedin(e.target.value)}
-                    placeholder="https://linkedin.com/in/username"
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-                <div className="md:col-span-3">
-
-                  <label className="block text-[10px] text-gray-400 uppercase mb-1">
-                    BIOGRAPHY
-                  </label>
-
-                  <textarea
-                    rows={2}
-                    value={admBio}
-                    onChange={(e) => setAdmBio(e.target.value)}
-                    placeholder="Full academic or professional biography..."
-                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-                  />
-
-                </div>
-
-              </div>
-
-              <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
-
-                <span className="text-xs font-bold text-amber-400 uppercase block">
-                  🔒 Granular Administrator Permissions Matrix
-                </span>
-
-                <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
-
-                  {Object.keys(perms).map((key) => (
-                    <label
-                      key={key}
-                      className="flex items-center gap-1.5 p-2 bg-[#070b19] border border-gray-800 rounded cursor-pointer hover:border-amber-500/50"
-                    >
+                      <span>
+                        Reader Dispatches Intake (/reflections)
+                      </span>
 
                       <input
                         type="checkbox"
-                        checked={(perms as any)[key]}
+                        checked={publicIntakeOpen}
                         onChange={(e) =>
-                          setPerms({
-                            ...perms,
-                            [key]: e.target.checked
-                          })
+                          setPublicIntakeOpen(e.target.checked)
                         }
-                        className="accent-amber-500"
+                        className="accent-amber-500 h-4 w-4"
                       />
 
-                      <span className="uppercase text-[10px] font-bold text-gray-200">
-                        {key}
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-gray-800/50 pt-2">
+
+                      <span>
+                        Require Editorial Review
                       </span>
 
-                    </label>
-                  ))}
+                      <input
+                        type="checkbox"
+                        checked={requireEditorialReview}
+                        onChange={(e) =>
+                          setRequireEditorialReview(e.target.checked)
+                        }
+                        className="accent-amber-500 h-4 w-4"
+                      />
+
+                    </div>
+
+                  </div>
 
                 </div>
 
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded transition"
+            </div>
+
+            <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+
+              <h2 className="text-md font-bold text-amber-400 uppercase border-b border-gray-800 pb-2">
+                👥 PROVISION ADMINISTRATOR IDENTITY
+              </h2>
+
+              <form
+                onSubmit={handleAddAdministrator}
+                className="space-y-6"
               >
-                + REGISTER ADMINISTRATOR & DISPATCH INSTITUTIONAL LETTER
-              </button>
 
-            </form>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#030611] p-4 rounded-xl border border-gray-800">
 
-            <div className="space-y-3 pt-4 border-t border-gray-800">
+                  <div>
 
-              <span className="text-xs font-bold text-amber-400 uppercase block">
-                Active Personnel & Permissions Registry
-              </span>
+                    <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                      NAME *
+                    </label>
 
-              <div className="space-y-2">
-
-                {teamMembers.map((m) => (
-                  <div
-                    key={m.id}
-                    className="p-3 bg-[#030611] border border-gray-800 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs"
-                  >
-
-                    <div>
-
-                      <span className="font-bold text-white">
-                        {m.name}
-                      </span>
-
-                      <span className="text-amber-400 text-[11px] block">
-                        {m.role} ({m.organization})
-                      </span>
-
-                      <span className="text-gray-400 text-[10px] block">
-                        {m.email}
-                      </span>
-
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-
-                      {m.permissions?.map((p: string, i: number) => (
-                        <span
-                          key={i}
-                          className="px-1.5 py-0.5 bg-gray-800 text-gray-300 text-[9px] font-mono rounded"
-                        >
-                          {p}
-                        </span>
-                      ))}
-
-                      {m.role !== 'Founder & Chair' && (
-                        <button
-                          onClick={() => handleRemoveMember(m.id)}
-                          className="ml-2 text-red-400 hover:text-red-300 text-[10px] uppercase font-bold"
-                        >
-                          Revoke Access
-                        </button>
-                      )}
-
-                    </div>
+                    <input
+                      type="text"
+                      value={admName}
+                      onChange={(e) => setAdmName(e.target.value)}
+                      placeholder="Full Official Name"
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                      required
+                    />
 
                   </div>
-                ))}
 
-              </div>
+                  <div>
+
+                    <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                      EMAIL *
+                    </label>
+
+                    <input
+                      type="email"
+                      value={admEmail}
+                      onChange={(e) => setAdmEmail(e.target.value)}
+                      placeholder="email@peopleandyouth.org"
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                      required
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                      SUPABASE USER ID *
+                    </label>
+
+                    <input
+                      type="text"
+                      value={admUserId}
+                      onChange={(e) => setAdmUserId(e.target.value)}
+                      placeholder="UUID from auth.users"
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white font-mono"
+                      required
+                    />
+
+                    <p className="mt-1 text-[9px] text-gray-500">
+                      Must exist in auth.users. Copy from Supabase Auth.
+                    </p>
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                      ACCESS ROLE *
+                    </label>
+
+                    <select
+                      value={admRole}
+                      onChange={(e) =>
+                        setAdmRole(e.target.value as 'cto' | 'admin')
+                      }
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none"
+                    >
+                      <option value="admin">admin</option>
+                      <option value="cto">cto</option>
+                    </select>
+
+                    <p className="mt-1 text-[9px] text-gray-500">
+                      Only founder and chairperson may grant these. Founder
+                      role is not grantable through this form.
+                    </p>
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] text-gray-400 uppercase mb-1">
+                      CAREER TITLE (DISPLAY ONLY)
+                    </label>
+
+                    <select
+                      value={admCareerRole}
+                      onChange={(e) => {
+                        setAdmCareerRole(e.target.value);
+                        if (!admDesignation) {
+                          setAdmDesignation(e.target.value);
+                        }
+                      }}
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none"
+                    >
+                      {GLOBAL_CAREER_ROLES.map((r, idx) => (
+                        <option key={idx} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] text-gray-400 uppercase mb-1">
+                      DESIGNATION
+                    </label>
+
+                    <input
+                      type="text"
+                      value={admDesignation}
+                      onChange={(e) => setAdmDesignation(e.target.value)}
+                      placeholder="e.g. Chief Technology Officer"
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] text-gray-400 uppercase mb-1">
+                      ORGANIZATION
+                    </label>
+
+                    <input
+                      type="text"
+                      value={admOrg}
+                      onChange={(e) => setAdmOrg(e.target.value)}
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="block text-[10px] text-gray-400 uppercase mb-1">
+                      OFFICE / DIVISION
+                    </label>
+
+                    <input
+                      type="text"
+                      value={admOffice}
+                      onChange={(e) => setAdmOffice(e.target.value)}
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    />
+
+                  </div>
+
+                  <div className="md:col-span-3">
+
+                    <label className="block text-[10px] text-gray-400 uppercase mb-1">
+                      BIOGRAPHY
+                    </label>
+
+                    <textarea
+                      rows={2}
+                      value={admBio}
+                      onChange={(e) => setAdmBio(e.target.value)}
+                      className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="bg-[#030611] p-4 rounded-xl border border-gray-800 space-y-3">
+
+                  <span className="text-xs font-bold text-amber-400 uppercase block">
+                    🔒 PERMISSIONS MATRIX
+                  </span>
+
+                  <p className="text-[10px] text-gray-500">
+                    Only permissions you yourself hold may be granted. Privileged
+                    roles hold all permissions implicitly.
+                  </p>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-9 gap-2 text-xs">
+
+                    {(Object.keys(admPermissions) as Permission[]).map((key) => {
+                      const allowed =
+                        isPrivileged(actor) || actorHasPermission(actor, key);
+
+                      return (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-1.5 p-2 rounded border ${
+                            allowed
+                              ? 'bg-[#070b19] border-gray-800 cursor-pointer hover:border-amber-500/50'
+                              : 'bg-[#070b19]/40 border-gray-900 opacity-40 cursor-not-allowed'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            disabled={!allowed}
+                            checked={admPermissions[key] && allowed}
+                            onChange={(e) =>
+                              setAdmPermissions({
+                                ...admPermissions,
+                                [key]: e.target.checked,
+                              })
+                            }
+                            className="accent-amber-500"
+                          />
+
+                          <span className="uppercase text-[10px] font-bold text-gray-200">
+                            {key}
+                          </span>
+                        </label>
+                      );
+                    })}
+
+                  </div>
+
+                </div>
+
+                {provisionError && (
+                  <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-xs">
+                    {provisionError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={provisioning}
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black text-xs uppercase tracking-wider rounded transition"
+                >
+                  {provisioning
+                    ? 'PROVISIONING…'
+                    : '+ REGISTER ADMINISTRATOR & DISPATCH INSTITUTIONAL LETTER'}
+                </button>
+
+              </form>
 
             </div>
 
           </div>
-
-        </div>
+        ) : (
+          <div className="bg-[#070b19] border border-red-500/30 rounded-xl p-8 text-center space-y-4">
+            <h2 className="text-lg font-black uppercase tracking-wider text-red-400">
+              Access denied
+            </h2>
+            <p className="text-xs text-gray-400">
+              The Founder's Office is restricted to founder and chairperson
+              roles. Your role ({actor?.role ?? 'unknown'}) cannot view this
+              surface.
+            </p>
+          </div>
+        )
       )}
 
     </div>
