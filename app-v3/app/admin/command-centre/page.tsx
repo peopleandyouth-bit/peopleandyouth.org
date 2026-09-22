@@ -43,6 +43,7 @@ const GLOBAL_CAREER_ROLES = [
 
 // ---------------------------------------------------------------------------
 // ADMIN LAUNCHER — cross-page directory of every admin surface.
+// Collapsed by default; expands on click.
 // ---------------------------------------------------------------------------
 const ADMIN_LAUNCHER: Array<{
   section: string;
@@ -120,7 +121,25 @@ type ActorIdentity = {
   status: 'ACTIVE' | 'INACTIVE';
 };
 
+type AdminIdentityRow = {
+  id: string;
+  user_id: string | null;
+  name: string;
+  email: string;
+  role: 'founder' | 'chairperson' | 'cto' | 'admin';
+  permissions: string[];
+  status: 'ACTIVE' | 'INACTIVE';
+};
+
 type Permission = 'VIEW' | 'CREATE' | 'EDIT' | 'REVIEW' | 'APPROVE' | 'PUBLISH' | 'ARCHIVE' | 'DELETE' | 'ADMIN';
+
+type SessionRow = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_agent: string | null;
+  ip: string | null;
+};
 
 function isPrivileged(identity: ActorIdentity | null): boolean {
   if (!identity) return false;
@@ -146,7 +165,15 @@ function CommandCentreInner() {
   const [actor, setActor] = useState<ActorIdentity | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    'ARTICLES' | '📜 JOURNALS' | '👥 AUTHORS' | 'COLUMNS' | 'REFLECTIONS' | '📌 REVISIONS' | '🏛️ FOUNDER' | '💼 INVESTORS'
+    | 'ARTICLES'
+    | '📜 JOURNALS'
+    | '👥 AUTHORS'
+    | 'COLUMNS'
+    | 'REFLECTIONS'
+    | '📌 REVISIONS'
+    | 'MY SESSION'
+    | '🏛️ FOUNDER'
+    | '💼 INVESTORS'
   >('ARTICLES');
 
   const [articles, setArticles] = useState<any[]>([]);
@@ -227,6 +254,213 @@ function CommandCentreInner() {
   const [provisioning, setProvisioning] = useState(false);
   const [provisionError, setProvisionError] = useState('');
 
+  // -------------------------------------------------------------------------
+  // ADMIN LAUNCHER — collapsed by default, expands on click
+  // -------------------------------------------------------------------------
+  const [launcherExpanded, setLauncherExpanded] = useState(false);
+
+  // -------------------------------------------------------------------------
+  // PHASE 18 — My Session state
+  // -------------------------------------------------------------------------
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [sessionsError, setSessionsError] = useState('');
+  const [sessionActionMessage, setSessionActionMessage] = useState('');
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordChanging, setPasswordChanging] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  // -------------------------------------------------------------------------
+  // PHASE 19 — Admin registry (real list from API) + revoke
+  // -------------------------------------------------------------------------
+  const [adminRegistry, setAdminRegistry] = useState<AdminIdentityRow[]>([]);
+  const [adminRegistryLoading, setAdminRegistryLoading] = useState(false);
+  const [adminRegistryError, setAdminRegistryError] = useState('');
+
+  const fetchSessions = useCallback(async () => {
+    setSessionsLoading(true);
+    setSessionsError('');
+    try {
+      const response = await fetch('/api/admin/iam/session', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to load sessions.');
+      }
+      setSessions(data.sessions ?? []);
+      setCurrentSessionId(data.current_session_id ?? null);
+    } catch (err) {
+      setSessionsError(
+        err instanceof Error ? err.message : 'Unable to load sessions.'
+      );
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, []);
+
+  const fetchAdminRegistry = useCallback(async () => {
+    setAdminRegistryLoading(true);
+    setAdminRegistryError('');
+    try {
+      const response = await fetch('/api/admin/iam/list', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to load admin registry.');
+      }
+      setAdminRegistry(data.identities ?? []);
+    } catch (err) {
+      setAdminRegistryError(
+        err instanceof Error ? err.message : 'Unable to load admin registry.'
+      );
+    } finally {
+      setAdminRegistryLoading(false);
+    }
+  }, []);
+
+  async function terminateSession(sessionId: string) {
+    if (!confirm('Terminate this session? The device will be signed out.')) return;
+    setSessionActionMessage('');
+    try {
+      const response = await fetch(
+        `/api/admin/iam/session?session_id=${encodeURIComponent(sessionId)}`,
+        { method: 'DELETE', credentials: 'include' }
+      );
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to terminate session.');
+      }
+      setSessionActionMessage('Session terminated.');
+      await fetchSessions();
+    } catch (err) {
+      setSessionActionMessage(
+        err instanceof Error ? err.message : 'Unable to terminate session.'
+      );
+    }
+  }
+
+  async function terminateAllOtherSessions() {
+    if (
+      !confirm(
+        'Terminate all other sessions? Every other device will be signed out.'
+      )
+    ) {
+      return;
+    }
+    setSessionActionMessage('');
+    try {
+      const response = await fetch('/api/admin/iam/session?all=true', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to terminate sessions.');
+      }
+      setSessionActionMessage(
+        data.terminated > 0
+          ? `${data.terminated} session(s) terminated.`
+          : 'No other sessions to terminate.'
+      );
+      await fetchSessions();
+    } catch (err) {
+      setSessionActionMessage(
+        err instanceof Error ? err.message : 'Unable to terminate sessions.'
+      );
+    }
+  }
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPassword) {
+      setPasswordError('Current password is required.');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      setPasswordError('New password must differ from the current one.');
+      return;
+    }
+
+    setPasswordChanging(true);
+
+    try {
+      const response = await fetch('/api/admin/iam/password', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to change password.');
+      }
+      setPasswordSuccess(
+        'Password changed. All other sessions have been terminated.'
+      );
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setPasswordError(
+        err instanceof Error ? err.message : 'Unable to change password.'
+      );
+    } finally {
+      setPasswordChanging(false);
+    }
+  }
+
+  async function revokeAdmin(identityId: string, adminEmail: string) {
+    if (
+      !confirm(
+        `Revoke access for ${adminEmail}? Their account will be deactivated.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/admin/iam?id=${encodeURIComponent(identityId)}`,
+        { method: 'DELETE', credentials: 'include' }
+      );
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error ?? 'Unable to revoke access.');
+      }
+      alert(`Access revoked for ${adminEmail}.`);
+      await fetchAdminRegistry();
+    } catch (err) {
+      alert(
+        err instanceof Error ? err.message : 'Unable to revoke access.'
+      );
+    }
+  }
+
   const fetchActor = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/iam', {
@@ -246,6 +480,18 @@ function CommandCentreInner() {
   useEffect(() => {
     void fetchActor();
   }, [fetchActor]);
+
+  useEffect(() => {
+    if (activeTab === 'MY SESSION') {
+      void fetchSessions();
+    }
+  }, [activeTab, fetchSessions]);
+
+  useEffect(() => {
+    if (activeTab === '🏛️ FOUNDER') {
+      void fetchAdminRegistry();
+    }
+  }, [activeTab, fetchAdminRegistry]);
 
   useEffect(() => {
     fetchAllData();
@@ -626,6 +872,8 @@ function CommandCentreInner() {
         VIEW: true, CREATE: true, EDIT: true, REVIEW: true,
         APPROVE: false, PUBLISH: false, ARCHIVE: false, DELETE: false, ADMIN: false,
       });
+
+      await fetchAdminRegistry();
     } catch (err) {
       setProvisionError(
         err instanceof Error ? err.message : 'Failed to provision administrator.'
@@ -830,46 +1078,67 @@ function CommandCentreInner() {
 
       </div>
 
-      <div className="mb-6 rounded-xl border border-white/10 bg-[#070b19] p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      {/* ------------------------------------------------------------------ */}
+      {/* ADMIN LAUNCHER — collapsed by default, expands on click.           */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="mb-6 rounded-xl border border-white/10 bg-[#070b19]">
+        <button
+          onClick={() => setLauncherExpanded((v) => !v)}
+          className="w-full flex items-center justify-between gap-3 p-5 text-left hover:bg-white/[0.02] transition rounded-xl"
+          aria-expanded={launcherExpanded}
+        >
           <div>
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
               Admin Launcher — All Surfaces
             </h2>
             <p className="mt-1 text-[11px] text-gray-400">
-              Direct links to every admin extension. No hunting required.
+              {launcherExpanded
+                ? 'Click any entry to jump to that admin surface.'
+                : 'Click to expand the cross-page directory of every admin surface.'}
             </p>
           </div>
-        </div>
+          <span
+            className={`shrink-0 text-amber-400 text-lg transition-transform ${
+              launcherExpanded ? 'rotate-180' : 'rotate-0'
+            }`}
+            aria-hidden="true"
+          >
+            ▾
+          </span>
+        </button>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {ADMIN_LAUNCHER.map((group) => (
-            <div
-              key={group.section}
-              className="rounded-lg border border-white/[0.08] bg-[#030611] p-4"
-            >
-              <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
-                {group.section}
-              </h3>
+        {launcherExpanded && (
+          <div className="px-5 pb-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {ADMIN_LAUNCHER.map((group) => (
+                <div
+                  key={group.section}
+                  className="rounded-lg border border-white/[0.08] bg-[#030611] p-4"
+                >
+                  <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
+                    {group.section}
+                  </h3>
 
-              <ul className="space-y-1.5">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      href={item.href}
-                      className="group flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-[11px] text-gray-300 transition hover:border-amber-500/40 hover:bg-amber-500/[0.08] hover:text-amber-200"
-                    >
-                      <span className="truncate">{item.label}</span>
-                      <span className="shrink-0 text-gray-600 transition group-hover:text-amber-400">
-                        →
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
+                  <ul className="space-y-1.5">
+                    {group.items.map((item) => (
+                      <li key={item.href}>
+                        <a
+                          href={item.href}
+                          className="group flex items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-[11px] text-gray-300 transition hover:border-amber-500/40 hover:bg-amber-500/[0.08] hover:text-amber-200"
+                        >
+                          <span className="truncate">{item.label}</span>
+                          <span className="shrink-0 text-gray-600 transition group-hover:text-amber-400">
+                            →
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="flex border-b border-gray-800 overflow-x-auto gap-1 mb-6">
@@ -941,6 +1210,17 @@ function CommandCentreInner() {
           }`}
         >
           📌 REVISIONS LOG
+        </button>
+
+        <button
+          onClick={() => setActiveTab('MY SESSION')}
+          className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
+            activeTab === 'MY SESSION'
+              ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+              : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          🔐 MY SESSION
         </button>
 
         <button
@@ -1692,6 +1972,219 @@ function CommandCentreInner() {
         </div>
       )}
 
+      {activeTab === 'MY SESSION' && (
+        <div className="space-y-6">
+
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+
+            <div className="border-b border-gray-800 pb-3 flex justify-between items-center gap-3 flex-wrap">
+
+              <div>
+                <h2 className="text-md font-bold text-amber-400 uppercase">
+                  MY ACTIVE SESSIONS
+                </h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Sessions currently signed in to your account. Terminate any you do not recognise.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => void fetchSessions()}
+                  disabled={sessionsLoading}
+                  className="px-3 py-2 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+                >
+                  {sessionsLoading ? 'Refreshing…' : 'Refresh'}
+                </button>
+
+                <button
+                  onClick={() => void terminateAllOtherSessions()}
+                  disabled={sessionsLoading || sessions.length <= 1}
+                  className="px-3 py-2 bg-red-500/20 border border-red-500/40 rounded text-[10px] font-bold uppercase tracking-wider text-red-300 hover:bg-red-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Terminate All Others
+                </button>
+              </div>
+
+            </div>
+
+            {sessionsError && (
+              <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-xs">
+                {sessionsError}
+              </div>
+            )}
+
+            {sessionActionMessage && (
+              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-xs">
+                {sessionActionMessage}
+              </div>
+            )}
+
+            {sessionsLoading && sessions.length === 0 ? (
+              <p className="text-xs text-gray-400">Loading sessions…</p>
+            ) : sessions.length === 0 ? (
+              <p className="text-xs text-gray-400">No active sessions found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-800 text-gray-400 uppercase text-[10px]">
+                      <th className="py-2 px-2">Device</th>
+                      <th className="py-2 px-2">IP</th>
+                      <th className="py-2 px-2">Signed In</th>
+                      <th className="py-2 px-2">Last Active</th>
+                      <th className="py-2 px-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sessions.map((s) => {
+                      const isCurrent = s.id === currentSessionId;
+                      return (
+                        <tr
+                          key={s.id}
+                          className={`border-b border-gray-800/50 hover:bg-white/5 transition ${
+                            isCurrent ? 'bg-amber-500/[0.06]' : ''
+                          }`}
+                        >
+                          <td className="py-2 px-2 text-gray-200">
+                            <span className="block truncate max-w-[420px]">
+                              {s.user_agent || 'Unknown device'}
+                            </span>
+                            {isCurrent && (
+                              <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold uppercase text-amber-300">
+                                Current
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 font-mono text-[10px] text-cyan-400">
+                            {s.ip || '—'}
+                          </td>
+                          <td className="py-2 px-2 text-gray-400 font-mono text-[10px]">
+                            {new Date(s.created_at).toLocaleString()}
+                          </td>
+                          <td className="py-2 px-2 text-gray-400 font-mono text-[10px]">
+                            {new Date(s.updated_at).toLocaleString()}
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            <button
+                              onClick={() => void terminateSession(s.id)}
+                              disabled={isCurrent}
+                              className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                              title={
+                                isCurrent
+                                  ? 'Cannot terminate the current session from here. Use sign out.'
+                                  : 'Terminate this session'
+                              }
+                            >
+                              Terminate
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+          </div>
+
+          <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-6">
+
+            <div className="border-b border-gray-800 pb-3">
+              <h2 className="text-md font-bold text-amber-400 uppercase">
+                CHANGE PASSWORD
+              </h2>
+              <p className="text-xs text-gray-400 mt-1">
+                Changing your password will terminate all other sessions.
+              </p>
+            </div>
+
+            <form onSubmit={changePassword} className="space-y-4 max-w-lg">
+
+              <div>
+                <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                  }}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none focus:border-amber-500"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                  New Password (min 8 chars)
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                  }}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none focus:border-amber-500"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-amber-400 uppercase mb-1">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                  }}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none focus:border-amber-500"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+              </div>
+
+              {passwordError && (
+                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-xs">
+                  {passwordError}
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs">
+                  {passwordSuccess}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={passwordChanging}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black text-xs uppercase tracking-wider rounded transition"
+              >
+                {passwordChanging ? 'Updating…' : 'Change Password'}
+              </button>
+
+            </form>
+
+          </div>
+
+        </div>
+      )}
+
       {activeTab === '💼 INVESTORS' && (
         <div className="space-y-6">
 
@@ -2307,6 +2800,95 @@ function CommandCentreInner() {
                 </button>
 
               </form>
+
+            </div>
+
+            <div className="bg-[#070b19] border border-amber-500/20 p-6 rounded-xl space-y-4">
+
+              <div className="border-b border-gray-800 pb-2 flex justify-between items-center gap-3 flex-wrap">
+                <h2 className="text-md font-bold text-amber-400 uppercase">
+                  ACTIVE PERSONNEL & PERMISSIONS REGISTRY
+                </h2>
+                <button
+                  onClick={() => void fetchAdminRegistry()}
+                  disabled={adminRegistryLoading}
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+                >
+                  {adminRegistryLoading ? 'Refreshing…' : 'Refresh'}
+                </button>
+              </div>
+
+              {adminRegistryError && (
+                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-xs">
+                  {adminRegistryError}
+                </div>
+              )}
+
+              {adminRegistryLoading && adminRegistry.length === 0 ? (
+                <p className="text-xs text-gray-400">Loading registry…</p>
+              ) : adminRegistry.length === 0 ? (
+                <p className="text-xs text-gray-400">No identities found.</p>
+              ) : (
+                <div className="space-y-2">
+                  {adminRegistry.map((m) => {
+                    const isFounderRow = m.role === 'founder';
+                    const isSelfRow = actor?.id === m.id;
+                    const canRevoke =
+                      !isFounderRow && !isSelfRow && m.status === 'ACTIVE';
+
+                    return (
+                      <div
+                        key={m.id}
+                        className="p-3 bg-[#030611] border border-gray-800 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-white">
+                              {m.name}
+                            </span>
+                            <span className="text-[9px] bg-gray-800 text-gray-300 border border-gray-700 px-1.5 py-0.5 rounded font-mono uppercase">
+                              {m.role}
+                            </span>
+                            {m.status !== 'ACTIVE' && (
+                              <span className="text-[9px] bg-red-500/20 text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
+                                {m.status}
+                              </span>
+                            )}
+                            {isSelfRow && (
+                              <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
+                                You
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-gray-400 text-[10px] block mt-0.5 truncate">
+                            {m.email}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 items-center">
+                          {m.permissions?.map((p: string, i: number) => (
+                            <span
+                              key={i}
+                              className="px-1.5 py-0.5 bg-gray-800 text-gray-300 text-[9px] font-mono rounded"
+                            >
+                              {p}
+                            </span>
+                          ))}
+
+                          {canRevoke && (
+                            <button
+                              onClick={() => void revokeAdmin(m.id, m.email)}
+                              className="ml-2 px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30"
+                            >
+                              Revoke Access
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
             </div>
 
