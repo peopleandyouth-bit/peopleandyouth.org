@@ -63,10 +63,20 @@ export async function POST(req: Request) {
       }
     );
 
-    /*
+        /*
      * ============================================================
-     * 1. VERIFY DIRECTORY MEMBERSHIP
+     * 1. VERIFY MEMBERSHIP
      * ============================================================
+     *
+     * An email is authorised for admin access if it appears in EITHER:
+     *   a) public.authors           — Directory members (leadership page)
+     *   b) public.command_centre_admins  — Command Centre identities
+     *
+     * Both tables are checked. If neither has an ACTIVE row for this email,
+     * the request is denied with the same message as before.
+     *
+     * `displayName` is used for the email greeting: prefer the author's name
+     * if present, otherwise fall back to the Command Centre name.
      */
 
     const { data: authorData, error: authorError } =
@@ -85,7 +95,38 @@ export async function POST(req: Request) {
       );
     }
 
+    // If the email is not in `authors`, check `command_centre_admins`.
+    // Supabase `.ilike` on email is case-insensitive; we normalise the
+    // incoming email to lowercase earlier in this route.
+    let adminData: { id: string; name: string; email: string } | null = null;
+
     if (!authorData) {
+      const { data: ccAdmin, error: ccError } = await supabaseAdmin
+        .from('command_centre_admins')
+        .select('id, name, email, status')
+        .ilike('email', email)
+        .eq('status', 'ACTIVE')
+        .maybeSingle();
+
+      if (ccError) {
+        console.error('Command Centre admin lookup error:', ccError);
+
+        return NextResponse.json(
+          { error: 'Unable to verify your institutional record.' },
+          { status: 500 }
+        );
+      }
+
+      if (ccAdmin) {
+        adminData = {
+          id: ccAdmin.id,
+          name: ccAdmin.name,
+          email: ccAdmin.email,
+        };
+      }
+    }
+
+    if (!authorData && !adminData) {
       return NextResponse.json(
         {
           error:
@@ -94,6 +135,9 @@ export async function POST(req: Request) {
         { status: 403 }
       );
     }
+
+    const displayName = authorData?.name || adminData?.name || 'Team Member';
+    const directoryAuthorId = authorData?.id ?? null;
 
     /*
      * ============================================================
@@ -149,16 +193,18 @@ export async function POST(req: Request) {
        * The actual authentication still requires possession of
        * the email inbox through the generated link.
        */
-      const {
+            const {
         data: createdUser,
         error: createUserError,
       } = await supabaseAdmin.auth.admin.createUser({
         email,
         email_confirm: true,
         user_metadata: {
-          name: authorData.name || '',
-          directory_author_id: authorData.id,
-          source: 'peopleandyouth-authors-directory',
+          name: displayName,
+          directory_author_id: directoryAuthorId,
+          source: authorData
+            ? 'peopleandyouth-authors-directory'
+            : 'peopleandyouth-command-centre',
         },
       });
 
@@ -279,7 +325,7 @@ export async function POST(req: Request) {
             </h2>
 
             <p style="font-size:13px;color:#d1d5db;line-height:1.6;margin-bottom:24px;">
-              Dear ${authorData.name || 'Team Member'},
+              Dear ${displayName},
               <br/><br/>
               Click the button below to ${description}.
             </p>

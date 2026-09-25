@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
     const { user } = auth;
     const supabase = getServiceClient();
 
-    const { data, error } = await supabase.rpc('list_my_sessions');
+    const { data, error } = await supabase.rpc('list_my_sessions', { target_user_id: user.id });
 
     if (error) {
       console.error('Session list RPC error:', error);
@@ -272,10 +272,7 @@ export async function DELETE(request: NextRequest) {
 
       // Call the SQL function — it hard-deletes the row, scoped to the
       // caller's own user id.
-      const { data: deleted, error: deleteError } = await supabase.rpc(
-        'delete_my_session',
-        { target_session_id: sessionId }
-      );
+      const { data: deleted, error: deleteError } = await supabase.rpc('delete_my_session', { target_session_id: sessionId, target_user_id: user.id });
 
       if (deleteError) {
         console.error('delete_my_session RPC error:', deleteError);

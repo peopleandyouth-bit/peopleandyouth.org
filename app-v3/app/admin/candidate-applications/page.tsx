@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ManualApplicantModal from '@/components/ManualApplicantModal';
 
 const HAPPY_PATH_STAGES = [
   "APPLICATION_SUBMITTED",
@@ -163,6 +164,9 @@ export default function AdminCandidateApplicationsPage() {
   const [departmentFilter, setDepartmentFilter] = useState("ALL");
   const [terminalTab, setTerminalTab] = useState<TerminalTab>(null);
 
+  // Manual applicant modal
+  const [showManualModal, setShowManualModal] = useState(false);
+
   const loadApplications = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -276,6 +280,13 @@ export default function AdminCandidateApplicationsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setShowManualModal(true)}
+                className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-300"
+              >
+                + Log Applicant
+              </button>
+
               <button
                 onClick={() => void loadApplications()}
                 disabled={loading}
@@ -600,6 +611,15 @@ export default function AdminCandidateApplicationsPage() {
           </div>
         )}
       </div>
+
+      {showManualModal && (
+        <ManualApplicantModal
+          onClose={() => setShowManualModal(false)}
+          onCreated={() => {
+            void loadApplications();
+          }}
+        />
+      )}
     </main>
   );
 }
