@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import AppointmentRequestModal from '@/components/AppointmentRequestModal';
 
 // ---------------------------------------------------------------------------
 // The 10 approved institutional themes, defined in one place so the public
@@ -189,6 +190,7 @@ export default function OfficePage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -395,6 +397,7 @@ export default function OfficePage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <button
+                  onClick={() => setShowAppointmentModal(true)}
                   className="rounded-lg px-5 py-2.5 text-xs font-bold uppercase tracking-wider"
                   style={{
                     backgroundColor: theme.accent,
@@ -662,6 +665,22 @@ export default function OfficePage() {
           </Link>
         </footer>
       </div>
+
+      {showAppointmentModal && (
+        <AppointmentRequestModal
+          officeSlug={data.office.slug}
+          officeName={data.office.name}
+          accent={theme.accent}
+          accentSoft={theme.accentSoft}
+          border={theme.border}
+          surface={theme.surface}
+          heading={theme.heading}
+          text={theme.text}
+          textMuted={theme.textMuted}
+          bg={theme.bg}
+          onClose={() => setShowAppointmentModal(false)}
+        />
+      )}
     </main>
   );
 }
@@ -813,11 +832,6 @@ function ContentSection({
 // ---------------------------------------------------------------------------
 // Produces the footer label for an office, avoiding the "Office of the
 // Founder's Office" redundancy.
-//
-//   "Founder's Office"          → "Office of the Founder"
-//   "Office of the Chairperson" → "Office of the Chairperson"
-//   "Executive Council Chamber" → "Office of the Executive Council Chamber"
-//   "Global Director's Office"  → "Office of the Global Director"
 // ---------------------------------------------------------------------------
 
 function officeFooterLabel(name: string): string {

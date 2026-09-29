@@ -32,6 +32,25 @@ type ContentRow = {
   published_at: string | null;
 };
 
+type AppointmentRow = {
+  id: string;
+  requester_name: string;
+  requester_email: string;
+  requester_organization: string | null;
+  requester_designation: string | null;
+  purpose: string;
+  message: string | null;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  duration_minutes: number;
+  scheduled_at: string | null;
+  location: string | null;
+  meeting_link: string | null;
+  status: string;
+  response_message: string | null;
+  created_at: string;
+};
+
 const APPROVED_THEMES = [
   'institutional-ink',
   'founders-gold',
@@ -56,6 +75,11 @@ export default function OfficeDesk() {
   const [content, setContent] = useState<ContentRow[]>([]);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState('');
+
+  const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [appointmentsError, setAppointmentsError] = useState('');
+  const [appointmentActionId, setAppointmentActionId] = useState<string | null>(null);
 
   // Note form
   const [noteTitle, setNoteTitle] = useState('');
@@ -111,13 +135,36 @@ export default function OfficeDesk() {
     }
   }, []);
 
+  const loadAppointments = useCallback(async (slug: string) => {
+    setAppointmentsLoading(true);
+    setAppointmentsError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/appointments?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setAppointments(json.appointments ?? []);
+    } catch (err) {
+      setAppointmentsError(
+        err instanceof Error ? err.message : 'Failed to load appointments.'
+      );
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadOffices();
   }, [loadOffices]);
 
   useEffect(() => {
-    if (selectedSlug) void loadContent(selectedSlug);
-  }, [selectedSlug, loadContent]);
+    if (selectedSlug) {
+      void loadContent(selectedSlug);
+      void loadAppointments(selectedSlug);
+    }
+  }, [selectedSlug, loadContent, loadAppointments]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -235,6 +282,27 @@ export default function OfficeDesk() {
     }
   }
 
+  async function respondToAppointment(
+    id: string,
+    status: 'ACCEPTED' | 'DECLINED' | 'COMPLETED' | 'CANCELLED'
+  ) {
+    setAppointmentActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/appointments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadAppointments(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setAppointmentActionId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Office selector */}
@@ -345,6 +413,113 @@ export default function OfficeDesk() {
               {metaSubmitting ? 'Saving…' : 'Save Office'}
             </button>
           </form>
+
+          {/* Appointments */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Appointments ({appointments.filter((a) => a.status === 'PENDING').length} pending / {appointments.length} total)
+              </h3>
+              <button
+                onClick={() => void loadAppointments(selectedSlug)}
+                disabled={appointmentsLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {appointmentsLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {appointmentsError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {appointmentsError}
+              </div>
+            )}
+
+            {appointments.length === 0 ? (
+              <p className="text-xs text-gray-500">No appointment requests yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {appointments.map((a) => (
+                  <li
+                    key={a.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">
+                            {a.requester_name}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              a.status === 'PENDING'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : a.status === 'ACCEPTED'
+                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                  : a.status === 'DECLINED'
+                                    ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                                    : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {a.status}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-gray-300">
+                          {a.purpose}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                          {a.requester_email}
+                          {a.requester_organization ? ` · ${a.requester_organization}` : ''}
+                          {a.requester_designation ? ` · ${a.requester_designation}` : ''}
+                        </p>
+                        {(a.preferred_date || a.preferred_time) && (
+                          <p className="mt-0.5 text-[10px] text-gray-500">
+                            Preferred: {a.preferred_date || '—'} {a.preferred_time || ''} · {a.duration_minutes} min
+                          </p>
+                        )}
+                        {a.message && (
+                          <p className="mt-1 text-[11px] text-gray-400 italic">
+                            "{a.message}"
+                          </p>
+                        )}
+                      </div>
+
+                      {a.status === 'PENDING' && (
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => void respondToAppointment(a.id, 'ACCEPTED')}
+                            disabled={appointmentActionId === a.id}
+                            className="px-2 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold uppercase hover:bg-emerald-500/30 disabled:opacity-40"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => void respondToAppointment(a.id, 'DECLINED')}
+                            disabled={appointmentActionId === a.id}
+                            className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+
+                      {a.status === 'ACCEPTED' && (
+                        <div className="shrink-0">
+                          <button
+                            onClick={() => void respondToAppointment(a.id, 'COMPLETED')}
+                            disabled={appointmentActionId === a.id}
+                            className="px-2 py-1 bg-gray-500/20 text-gray-300 border border-gray-500/40 rounded text-[10px] font-bold uppercase hover:bg-gray-500/30 disabled:opacity-40"
+                          >
+                            Mark Completed
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {/* Notes */}
           <form
