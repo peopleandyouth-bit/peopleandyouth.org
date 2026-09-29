@@ -1,0 +1,531 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+
+type OfficeRow = {
+  id: string;
+  slug: string;
+  name: string;
+  level: string;
+  office_number: string | null;
+  mandate: string | null;
+  facilities: string[] | null;
+  tagline: string | null;
+  theme_slug: string;
+  status: string;
+  display_order: number;
+  assignment: {
+    title: string;
+    subtitle: string | null;
+    author: { name: string; photo_url: string | null; designation: string | null } | null;
+  } | null;
+};
+
+type ContentRow = {
+  id: string;
+  type: string;
+  title: string | null;
+  body: string;
+  tags: string[] | null;
+  visibility: string;
+  status: string;
+  published_at: string | null;
+};
+
+const APPROVED_THEMES = [
+  'institutional-ink',
+  'founders-gold',
+  'civic-emerald',
+  'constitutional-navy',
+  'archive-parchment',
+  'research-slate',
+  'editorial-violet',
+  'technology-cyan',
+  'policy-maroon',
+  'heritage-cream',
+];
+
+const CONTENT_TYPES = ['NOTE', 'ARTICLE', 'ESSAY', 'PROPOSAL', 'SPEECH', 'LETTER', 'STATEMENT'];
+
+export default function OfficeDesk() {
+  const [offices, setOffices] = useState<OfficeRow[]>([]);
+  const [selectedSlug, setSelectedSlug] = useState<string>('founder');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [content, setContent] = useState<ContentRow[]>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState('');
+
+  // Note form
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+  const [noteTags, setNoteTags] = useState('');
+  const [noteSubmitting, setNoteSubmitting] = useState(false);
+
+  // Long-form form
+  const [articleType, setArticleType] = useState('ARTICLE');
+  const [articleTitle, setArticleTitle] = useState('');
+  const [articleSubtitle, setArticleSubtitle] = useState('');
+  const [articleBody, setArticleBody] = useState('');
+  const [articleSubmitting, setArticleSubmitting] = useState(false);
+
+  // Office metadata form
+  const [metaName, setMetaName] = useState('');
+  const [metaMandate, setMetaMandate] = useState('');
+  const [metaTagline, setMetaTagline] = useState('');
+  const [metaTheme, setMetaTheme] = useState('institutional-ink');
+  const [metaSubmitting, setMetaSubmitting] = useState(false);
+  const [metaMessage, setMetaMessage] = useState('');
+
+  const loadOffices = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/office', { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setOffices(json.offices ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load offices.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadContent = useCallback(async (slug: string) => {
+    setContentLoading(true);
+    setContentError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/content?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setContent(json.content ?? []);
+    } catch (err) {
+      setContentError(err instanceof Error ? err.message : 'Failed to load content.');
+    } finally {
+      setContentLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadOffices();
+  }, [loadOffices]);
+
+  useEffect(() => {
+    if (selectedSlug) void loadContent(selectedSlug);
+  }, [selectedSlug, loadContent]);
+
+  const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
+
+  useEffect(() => {
+    if (!selected) return;
+    setMetaName(selected.name);
+    setMetaMandate(selected.mandate ?? '');
+    setMetaTagline(selected.tagline ?? '');
+    setMetaTheme(selected.theme_slug);
+  }, [selected]);
+
+  async function submitNote(e: React.FormEvent) {
+    e.preventDefault();
+    if (!noteBody.trim()) return;
+    setNoteSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          type: 'NOTE',
+          title: noteTitle.trim() || null,
+          body: noteBody.trim(),
+          tags: noteTags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean),
+          visibility: 'PUBLIC',
+          status: 'PUBLISHED',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNoteTitle('');
+      setNoteBody('');
+      setNoteTags('');
+      await loadContent(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNoteSubmitting(false);
+    }
+  }
+
+  async function submitArticle(e: React.FormEvent) {
+    e.preventDefault();
+    if (!articleBody.trim()) return;
+    setArticleSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          type: articleType,
+          title: articleTitle.trim() || null,
+          subtitle: articleSubtitle.trim() || null,
+          body: articleBody.trim(),
+          visibility: 'PUBLIC',
+          status: 'PUBLISHED',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setArticleTitle('');
+      setArticleSubtitle('');
+      setArticleBody('');
+      await loadContent(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setArticleSubmitting(false);
+    }
+  }
+
+  async function submitMeta(e: React.FormEvent) {
+    e.preventDefault();
+    setMetaSubmitting(true);
+    setMetaMessage('');
+    try {
+      const res = await fetch('/api/admin/office', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: selectedSlug,
+          name: metaName,
+          mandate: metaMandate || null,
+          tagline: metaTagline || null,
+          theme_slug: metaTheme,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setMetaMessage('Office updated.');
+      await loadOffices();
+    } catch (err) {
+      setMetaMessage(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setMetaSubmitting(false);
+    }
+  }
+
+  async function deleteContent(id: string) {
+    if (!confirm('Delete this content?')) return;
+    try {
+      const res = await fetch(`/api/admin/office/content?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadContent(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Office selector */}
+      <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Office Desk
+            </h2>
+            <p className="mt-1 text-[11px] text-gray-400">
+              Configure office metadata, theme, and content. Select an office below.
+            </p>
+          </div>
+          <button
+            onClick={() => void loadOffices()}
+            disabled={loading}
+            className="px-3 py-2 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+          >
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
+        </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+            {error}
+          </div>
+        )}
+
+        <select
+          value={selectedSlug}
+          onChange={(e) => setSelectedSlug(e.target.value)}
+          className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white outline-none"
+        >
+          {offices.map((o) => (
+            <option key={o.slug} value={o.slug}>
+              {o.office_number ? `${o.office_number} · ` : ''}
+              {o.name}
+              {o.assignment?.author?.name ? ` — ${o.assignment.author.name}` : ' — Vacant'}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selected && (
+        <>
+          {/* Office metadata */}
+          <form
+            onSubmit={submitMeta}
+            className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-4"
+          >
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Office Metadata
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Office Name">
+                <input
+                  value={metaName}
+                  onChange={(e) => setMetaName(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+
+              <Field label="Theme">
+                <select
+                  value={metaTheme}
+                  onChange={(e) => setMetaTheme(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  {APPROVED_THEMES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Tagline" full>
+                <input
+                  value={metaTagline}
+                  onChange={(e) => setMetaTagline(e.target.value)}
+                  placeholder="e.g. Building Institutions. Building Generations."
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+
+              <Field label="Mandate" full>
+                <textarea
+                  rows={3}
+                  value={metaMandate}
+                  onChange={(e) => setMetaMandate(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+            </div>
+
+            {metaMessage && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                {metaMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={metaSubmitting}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+            >
+              {metaSubmitting ? 'Saving…' : 'Save Office'}
+            </button>
+          </form>
+
+          {/* Notes */}
+          <form
+            onSubmit={submitNote}
+            className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3"
+          >
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Add Note (short-form, tweet-like)
+            </h3>
+
+            <Field label="Title (optional)">
+              <input
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+            </Field>
+
+            <Field label="Body">
+              <textarea
+                rows={3}
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                required
+                className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+            </Field>
+
+            <Field label="Tags (comma separated)">
+              <input
+                value={noteTags}
+                onChange={(e) => setNoteTags(e.target.value)}
+                placeholder="Institution Building, Leadership"
+                className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={noteSubmitting}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+            >
+              {noteSubmitting ? 'Publishing…' : 'Publish Note'}
+            </button>
+          </form>
+
+          {/* Long-form */}
+          <form
+            onSubmit={submitArticle}
+            className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3"
+          >
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Add Long-form Content
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Type">
+                <select
+                  value={articleType}
+                  onChange={(e) => setArticleType(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  {CONTENT_TYPES.filter((t) => t !== 'NOTE').map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Title">
+                <input
+                  value={articleTitle}
+                  onChange={(e) => setArticleTitle(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+
+              <Field label="Subtitle" full>
+                <input
+                  value={articleSubtitle}
+                  onChange={(e) => setArticleSubtitle(e.target.value)}
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+            </div>
+
+            <Field label="Body">
+              <textarea
+                rows={8}
+                value={articleBody}
+                onChange={(e) => setArticleBody(e.target.value)}
+                required
+                className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white font-mono"
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={articleSubmitting}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+            >
+              {articleSubmitting ? 'Publishing…' : 'Publish'}
+            </button>
+          </form>
+
+          {/* Content list */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Content ({content.length})
+              </h3>
+              <button
+                onClick={() => void loadContent(selectedSlug)}
+                disabled={contentLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {contentLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {contentError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {contentError}
+              </div>
+            )}
+
+            {content.length === 0 ? (
+              <p className="text-xs text-gray-500">No content yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {content.map((c) => (
+                  <li
+                    key={c.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 flex items-start justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">
+                          {c.type}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-wider text-gray-500">
+                          {c.status}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs font-bold text-white truncate">
+                        {c.title || c.body.slice(0, 60)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => void deleteContent(c.id)}
+                      className="shrink-0 px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30"
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  full,
+  children,
+}: {
+  label: string;
+  full?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={full ? 'md:col-span-2' : ''}>
+      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-400">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}

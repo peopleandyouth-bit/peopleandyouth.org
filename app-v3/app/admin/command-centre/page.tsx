@@ -4,13 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateReadingTime } from '@/lib/cms';
 import AdminPageGuard from '@/components/AdminPageGuard';
+import OfficeDesk from '@/components/OfficeDesk';
 import { GLOBAL_CAREER_ROLES } from '@/lib/career-roles';
 
-
-// ---------------------------------------------------------------------------
-// ADMIN LAUNCHER — cross-page directory of every admin surface.
-// Collapsed by default; expands on click.
-// ---------------------------------------------------------------------------
 const ADMIN_LAUNCHER: Array<{
   section: string;
   accent: string;
@@ -138,6 +134,7 @@ function CommandCentreInner() {
     | 'REFLECTIONS'
     | '📌 REVISIONS'
     | 'MY SESSION'
+    | 'OFFICE DESK'
     | '🏛️ FOUNDER'
     | '💼 INVESTORS'
   >('ARTICLES');
@@ -220,14 +217,8 @@ function CommandCentreInner() {
   const [provisioning, setProvisioning] = useState(false);
   const [provisionError, setProvisionError] = useState('');
 
-  // -------------------------------------------------------------------------
-  // ADMIN LAUNCHER — collapsed by default, expands on click
-  // -------------------------------------------------------------------------
   const [launcherExpanded, setLauncherExpanded] = useState(false);
 
-  // -------------------------------------------------------------------------
-  // PHASE 18 — My Session state
-  // -------------------------------------------------------------------------
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -241,9 +232,6 @@ function CommandCentreInner() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
-  // -------------------------------------------------------------------------
-  // PHASE 19 — Admin registry (real list from API) + revoke
-  // -------------------------------------------------------------------------
   const [adminRegistry, setAdminRegistry] = useState<AdminIdentityRow[]>([]);
   const [adminRegistryLoading, setAdminRegistryLoading] = useState(false);
   const [adminRegistryError, setAdminRegistryError] = useState('');
@@ -354,17 +342,14 @@ function CommandCentreInner() {
       setPasswordError('Current password is required.');
       return;
     }
-
     if (newPassword.length < 8) {
       setPasswordError('New password must be at least 8 characters.');
       return;
     }
-
     if (newPassword !== confirmPassword) {
       setPasswordError('New passwords do not match.');
       return;
     }
-
     if (newPassword === currentPassword) {
       setPasswordError('New password must differ from the current one.');
       return;
@@ -794,9 +779,7 @@ function CommandCentreInner() {
       const response = await fetch('/api/admin/iam', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: admUserId.trim(),
           name: admName.trim(),
@@ -1044,9 +1027,6 @@ function CommandCentreInner() {
 
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* ADMIN LAUNCHER — collapsed by default, expands on click.           */}
-      {/* ------------------------------------------------------------------ */}
       <div className="mb-6 rounded-xl border border-white/10 bg-[#070b19]">
         <button
           onClick={() => setLauncherExpanded((v) => !v)}
@@ -1188,6 +1168,19 @@ function CommandCentreInner() {
         >
           🔐 MY SESSION
         </button>
+
+        {actor?.role === 'founder' && (
+          <button
+            onClick={() => setActiveTab('OFFICE DESK')}
+            className={`px-4 py-3 text-xs font-bold uppercase tracking-wider transition whitespace-nowrap ${
+              activeTab === 'OFFICE DESK'
+                ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            🏢 OFFICE DESK
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('💼 INVESTORS')}
@@ -2149,6 +2142,10 @@ function CommandCentreInner() {
           </div>
 
         </div>
+      )}
+
+      {activeTab === 'OFFICE DESK' && actor?.role === 'founder' && (
+        <OfficeDesk />
       )}
 
       {activeTab === '💼 INVESTORS' && (

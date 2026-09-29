@@ -9,6 +9,7 @@ export default function LeadershipNetworkPage() {
   const level1Offices = [
     {
       office: "Founder's Office",
+      slug: "founder",
       role: "Guardian of institutional vision, custodian of the Constitution, strategic direction & institutional diplomacy.",
       facilities: ["Founder's Chamber", "Strategic War Room", "Founder Archives", "Private Meeting Lounge", "Executive Secretariat"],
       holder: "Swaraj Shandilya",
@@ -16,49 +17,51 @@ export default function LeadershipNetworkPage() {
     },
     {
       office: "Office of the Chairperson",
+      slug: "chairperson",
       role: "Presides over the Board of Trustees and ensures constitutional governance across all organs.",
       facilities: ["Chairperson's Chamber", "Board Meeting Room"],
-      holder: "Vacant (Blank Profile)",
+      holder: "Vacant (Awaiting Appointment)",
       status: "Open for Recruitment"
     },
     {
       office: "Office of the Chief Executive Officer",
+      slug: "chief-executive-officer",
       role: "Responsible for day-to-day administration, executive operations, and strategic execution.",
       facilities: ["CEO Office", "Executive Operations Centre"],
-      holder: "Vacant (Blank Profile)",
+      holder: "Vacant (Awaiting Appointment)",
       status: "Open for Recruitment"
     }
   ];
 
   const level2Offices = [
-    { office: "Office of Strategy", head: "Chief Strategy Officer", facilities: ["Strategy Room", "Future Planning Lab"] },
-    { office: "Office of Finance", head: "Chief Financial Officer", facilities: ["Finance Office", "Treasury Room", "Audit Vault"] },
-    { office: "Office of Research", head: "Chief Research Officer", facilities: ["Research Headquarters", "Research Review Room", "Research Repository"] },
-    { office: "Office of Publications", head: "Chief Editorial Officer", facilities: ["Editorial Chamber", "Editorial Conference Room", "Publication Studio"] },
-    { office: "Office of Technology", head: "Chief Technology Officer", facilities: ["Technology Command Centre", "AI Lab", "Cyber Security Centre"] },
-    { office: "Office of Growth", head: "Chief Growth Officer", facilities: ["Business Development Room", "Partnership Room", "Corporate Relations Centre"] },
-    { office: "Office of Communications", head: "Chief Communications Officer", facilities: ["Media Studio", "Public Relations Room", "Digital Media Lab"] },
-    { office: "Office of Human Capital", head: "Chief Human Resources Officer", facilities: ["Recruitment Centre", "Learning Centre", "Employee Relations Office"] },
-    { office: "Office of Legal Affairs", head: "Chief Legal & Governance Officer", facilities: ["Legal Chamber", "Compliance Centre", "Ethics Review Room"] }
+    { office: "Office of Strategy", slug: "chief-strategy-officer", head: "Chief Strategy Officer", facilities: ["Strategy Room", "Future Planning Lab"] },
+    { office: "Office of Finance", slug: "chief-financial-officer", head: "Chief Financial Officer", facilities: ["Finance Office", "Treasury Room", "Audit Vault"] },
+    { office: "Office of Research", slug: "chief-research-officer", head: "Chief Research Officer", facilities: ["Research Headquarters", "Research Review Room", "Research Repository"] },
+    { office: "Office of Publications", slug: "chief-editorial-officer", head: "Chief Editorial Officer", facilities: ["Editorial Chamber", "Editorial Conference Room", "Publication Studio"] },
+    { office: "Office of Technology", slug: "chief-technology-officer", head: "Chief Technology Officer", facilities: ["Technology Command Centre", "AI Lab", "Cyber Security Centre"] },
+    { office: "Office of Growth", slug: "chief-growth-officer", head: "Chief Growth Officer", facilities: ["Business Development Room", "Partnership Room", "Corporate Relations Centre"] },
+    { office: "Office of Communications", slug: "chief-communications-officer", head: "Chief Communications Officer", facilities: ["Media Studio", "Public Relations Room", "Digital Media Lab"] },
+    { office: "Office of Human Capital", slug: "chief-human-resources-officer", head: "Chief Human Resources Officer", facilities: ["Recruitment Centre", "Learning Centre", "Employee Relations Office"] },
+    { office: "Office of Legal Affairs", slug: "chief-legal-officer", head: "Chief Legal & Governance Officer", facilities: ["Legal Chamber", "Compliance Centre", "Ethics Review Room"] }
   ];
 
   const level3Chambers = [
-    "Executive Council Chamber (Weekly Executive Meetings)",
-    "Academic Council Chamber (Research Approvals)",
-    "Editorial Council Chamber (Publication Decisions)",
-    "Research Council Chamber (Research Standards)",
-    "Ethics Commission Chamber (Ethics Hearings)",
-    "Audit Commission Chamber (Financial Reviews)",
-    "Ombudsperson Chamber (Member Grievances)"
+    { name: "Executive Council Chamber (Weekly Executive Meetings)", slug: "executive-council-chamber" },
+    { name: "Academic Council Chamber (Research Approvals)", slug: "academic-council-chamber" },
+    { name: "Editorial Council Chamber (Publication Decisions)", slug: "editorial-council-chamber" },
+    { name: "Research Council Chamber (Research Standards)", slug: "research-council-chamber" },
+    { name: "Ethics Commission Chamber (Ethics Hearings)", slug: "ethics-commission-chamber" },
+    { name: "Audit Commission Chamber (Financial Reviews)", slug: "audit-commission-chamber" },
+    { name: "Ombudsperson Chamber (Member Grievances)", slug: "ombudsperson-chamber" }
   ];
 
   const level4Offices = [
-    "Global Director's Office (Coordinates Continents)",
-    "Regional Director's Office (Coordinates Multiple Countries)",
-    "Country Director's Office (Coordinates National Operations)",
-    "State Director's Office (Coordinates State Chapters)",
-    "District Coordinator's Office (Coordinates District Chapters)",
-    "Campus Chapter Office (Coordinates University Chapters)"
+    { name: "Global Director's Office (Coordinates Continents)", slug: "global-director" },
+    { name: "Regional Director's Office (Coordinates Multiple Countries)", slug: null },
+    { name: "Country Director's Office (Coordinates National Operations)", slug: null },
+    { name: "State Director's Office (Coordinates State Chapters)", slug: null },
+    { name: "District Coordinator's Office (Coordinates District Chapters)", slug: null },
+    { name: "Campus Chapter Office (Coordinates University Chapters)", slug: null }
   ];
 
   const level5Divisions = [
@@ -91,7 +94,7 @@ export default function LeadershipNetworkPage() {
             ← Return to Digital Headquarters
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-gray-300 font-bold">PEOPLE & YOUTH</span>
+            <span className="text-gray-300 font-bold">PEOPLE &amp; YOUTH</span>
             <span>&middot;</span>
             <span className="text-amber-300">OFFICE-CENTRIC GOVERNANCE ARCHITECTURE</span>
           </div>
@@ -106,7 +109,7 @@ export default function LeadershipNetworkPage() {
             Leadership is Stewardship
           </h1>
           <p className="text-amber-300 text-sm italic font-serif max-w-2xl mx-auto">
-            "Every office exists to strengthen the institution, not the individual."
+            &ldquo;Every office exists to strengthen the institution, not the individual.&rdquo;
           </p>
           <div className="bg-white/5 border border-white/10 p-4 rounded-2xl max-w-3xl mx-auto text-gray-300 text-[11px] font-serif leading-relaxed text-left border-l-2 border-l-amber-400">
             <strong className="text-amber-400 font-mono uppercase text-[9px] block mb-1">GOVERNANCE PRINCIPLE</strong>
@@ -132,7 +135,7 @@ export default function LeadershipNetworkPage() {
             Level IV — Global Network
           </button>
           <button onClick={() => setActiveLevel('level5')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeLevel === 'level5' ? 'bg-amber-400 text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}>
-            Level V — Research & Knowledge
+            Level V — Research &amp; Knowledge
           </button>
           <button onClick={() => setActiveLevel('campus')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${activeLevel === 'campus' ? 'bg-amber-400 text-black' : 'bg-white/5 text-gray-400 hover:text-white'}`}>
             Campus Master Plan
@@ -141,7 +144,7 @@ export default function LeadershipNetworkPage() {
 
         {/* MAIN DISPLAY */}
         <div className="max-w-6xl mx-auto p-6 sm:p-10 space-y-12">
-          
+
           {/* LEVEL I */}
           {(activeLevel === 'all' || activeLevel === 'level1') && (
             <section className="space-y-4">
@@ -152,13 +155,17 @@ export default function LeadershipNetworkPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {level1Offices.map((off, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-4 flex flex-col justify-between">
+                  <Link
+                    key={i}
+                    href={`/office/${off.slug}`}
+                    className="bg-white/5 border border-white/10 hover:border-amber-400/60 hover:bg-white/[0.07] transition-all p-6 rounded-3xl space-y-4 flex flex-col justify-between group cursor-pointer"
+                  >
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-[9px] font-bold uppercase">
                         <span className="text-amber-400">OFFICE 0{i + 1}</span>
                         <span className={off.status === 'Assigned' ? 'text-emerald-400' : 'text-amber-300'}>● {off.status}</span>
                       </div>
-                      <h3 className="text-base font-bold text-white">{off.office}</h3>
+                      <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">{off.office}</h3>
                       <p className="text-gray-300 text-[11px] leading-relaxed font-serif">{off.role}</p>
 
                       <div className="pt-2">
@@ -173,11 +180,17 @@ export default function LeadershipNetworkPage() {
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/10 flex justify-between items-center text-[10px]">
-                      <span className="text-gray-400">Incumbent:</span>
-                      <span className={off.holder.includes('Vacant') ? 'text-amber-300 italic font-bold' : 'text-white font-bold'}>{off.holder}</span>
+                    <div className="pt-4 border-t border-white/10 space-y-2">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-gray-400">Incumbent:</span>
+                        <span className={off.holder.includes('Vacant') ? 'text-amber-300 italic font-bold' : 'text-white font-bold'}>{off.holder}</span>
+                      </div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-amber-400 group-hover:text-amber-300 transition-colors flex items-center justify-between">
+                        <span>Enter Office</span>
+                        <span>→</span>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -193,10 +206,14 @@ export default function LeadershipNetworkPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {level2Offices.map((off, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-3">
+                  <Link
+                    key={i}
+                    href={`/office/${off.slug}`}
+                    className="bg-white/5 border border-white/10 hover:border-amber-400/60 hover:bg-white/[0.07] transition-all p-5 rounded-2xl space-y-3 group cursor-pointer block"
+                  >
                     <div>
                       <span className="text-amber-400 font-bold text-[9px] uppercase">{off.head}</span>
-                      <h3 className="text-sm font-bold text-white mt-0.5">{off.office}</h3>
+                      <h3 className="text-sm font-bold text-white mt-0.5 group-hover:text-amber-300 transition-colors">{off.office}</h3>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {off.facilities.map((fac, idx) => (
@@ -205,11 +222,11 @@ export default function LeadershipNetworkPage() {
                         </span>
                       ))}
                     </div>
-                    <div className="pt-2 border-t border-white/5 text-[9px] text-amber-300 italic flex justify-between">
-                      <span>Office Profile:</span>
-                      <span>Open via Gateway</span>
+                    <div className="pt-2 border-t border-white/5 text-[9px] font-bold uppercase tracking-wider text-amber-300 flex justify-between">
+                      <span>Enter Office</span>
+                      <span>→</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -225,10 +242,14 @@ export default function LeadershipNetworkPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {level3Chambers.map((ch, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-3">
+                  <Link
+                    key={i}
+                    href={`/office/${ch.slug}`}
+                    className="bg-white/5 border border-white/10 hover:border-amber-400/60 hover:bg-white/[0.07] transition-all p-4 rounded-xl flex items-center gap-3 group cursor-pointer"
+                  >
                     <span className="text-amber-400 font-bold text-sm">🏛️</span>
-                    <span className="text-gray-300 font-bold text-[11px]">{ch}</span>
-                  </div>
+                    <span className="text-gray-300 font-bold text-[11px] group-hover:text-amber-200 transition-colors">{ch.name}</span>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -243,12 +264,35 @@ export default function LeadershipNetworkPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {level4Offices.map((off, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-3">
-                    <span className="text-amber-400 font-bold text-sm">🌐</span>
-                    <span className="text-gray-300 font-bold text-[11px]">{off}</span>
-                  </div>
-                ))}
+                {level4Offices.map((off, i) => {
+                  const content = (
+                    <>
+                      <span className="text-amber-400 font-bold text-sm">🌐</span>
+                      <span className="text-gray-300 font-bold text-[11px] group-hover:text-amber-200 transition-colors">{off.name}</span>
+                    </>
+                  );
+
+                  if (off.slug) {
+                    return (
+                      <Link
+                        key={i}
+                        href={`/office/${off.slug}`}
+                        className="bg-white/5 border border-white/10 hover:border-amber-400/60 hover:bg-white/[0.07] transition-all p-4 rounded-xl flex items-center gap-3 group cursor-pointer"
+                      >
+                        {content}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={i}
+                      className="bg-white/5 border border-white/10 opacity-60 p-4 rounded-xl flex items-center gap-3"
+                    >
+                      {content}
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -258,7 +302,7 @@ export default function LeadershipNetworkPage() {
             <section className="space-y-4">
               <div className="border-b border-white/10 pb-2">
                 <span className="text-amber-400 font-bold uppercase text-[9px] tracking-widest">LEVEL V</span>
-                <h2 className="text-xl font-extrabold text-white">Research, Knowledge & Operational Infrastructure</h2>
+                <h2 className="text-xl font-extrabold text-white">Research, Knowledge &amp; Operational Infrastructure</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,7 +327,7 @@ export default function LeadershipNetworkPage() {
             <section className="space-y-4">
               <div className="border-b border-white/10 pb-2">
                 <span className="text-amber-400 font-bold uppercase text-[9px] tracking-widest">LONG-TERM CAMPUS VISION</span>
-                <h2 className="text-xl font-extrabold text-white">People & Youth Leadership Campus (Bihar Master Plan)</h2>
+                <h2 className="text-xl font-extrabold text-white">People &amp; Youth Leadership Campus (Bihar Master Plan)</h2>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -301,7 +345,7 @@ export default function LeadershipNetworkPage() {
       </div>
 
       <footer className="border-t border-white/10 bg-[#040711] py-8 px-6 text-center text-gray-500 text-[10px]">
-        &copy; 2026 People & Youth &middot; Leadership Network & Office Governance &middot; www.peopleandyouth.org
+        &copy; 2026 People &amp; Youth &middot; Leadership Network &amp; Office Governance &middot; www.peopleandyouth.org
       </footer>
     </main>
   );
