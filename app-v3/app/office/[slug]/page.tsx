@@ -236,7 +236,7 @@ export default function OfficePage() {
             Office not found
           </h1>
           <p className="text-xs text-white/50">
-            The office you're looking for doesn't exist or has been archived.
+            The office you&apos;re looking for doesn&apos;t exist or has been archived.
           </p>
           <Link
             href="/leadership-network"
@@ -656,7 +656,7 @@ export default function OfficePage() {
           className="pt-8 border-t text-[10px] uppercase tracking-[0.24em] flex flex-wrap justify-between gap-3"
           style={{ borderColor: theme.border, color: theme.textMuted }}
         >
-          <span>People &amp; Youth · Office of the {data.office.name}</span>
+          <span>People &amp; Youth · {officeFooterLabel(data.office.name)}</span>
           <Link href="/leadership-network" style={{ color: theme.accent }}>
             Return to Network
           </Link>
@@ -808,4 +808,34 @@ function ContentSection({
       </div>
     </section>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Produces the footer label for an office, avoiding the "Office of the
+// Founder's Office" redundancy.
+//
+//   "Founder's Office"          → "Office of the Founder"
+//   "Office of the Chairperson" → "Office of the Chairperson"
+//   "Executive Council Chamber" → "Office of the Executive Council Chamber"
+//   "Global Director's Office"  → "Office of the Global Director"
+// ---------------------------------------------------------------------------
+
+function officeFooterLabel(name: string): string {
+  if (/^office of the /i.test(name)) {
+    return name;
+  }
+
+  let stripped = name;
+
+  const apostropheOfficeMatch = stripped.match(/^(.+?)'s Office$/i);
+  if (apostropheOfficeMatch) {
+    stripped = apostropheOfficeMatch[1];
+  } else {
+    const plainOfficeMatch = stripped.match(/^(.+?) Office$/i);
+    if (plainOfficeMatch) {
+      stripped = plainOfficeMatch[1];
+    }
+  }
+
+  return `Office of the ${stripped}`;
 }
