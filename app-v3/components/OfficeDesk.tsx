@@ -116,7 +116,7 @@ export default function OfficeDesk() {
   const [noteVisibility, setNoteVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
   const [articleVisibility, setArticleVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
 
-type MemberRow = {
+  type MemberRow = {
     id: string;
     office_id: string;
     author_id: string;
@@ -135,7 +135,7 @@ type MemberRow = {
   const [newMemberRole, setNewMemberRole] = useState<'VIEWER' | 'EDITOR' | 'MANAGER'>('VIEWER');
   const [newMemberSubmitting, setNewMemberSubmitting] = useState(false);
 
-    type PermissionRow = {
+  type PermissionRow = {
     id: string;
     grantee_email: string;
     grantee_name: string | null;
@@ -158,7 +158,7 @@ type MemberRow = {
   const [newGrantExpiresAt, setNewGrantExpiresAt] = useState('');
   const [newGrantSubmitting, setNewGrantSubmitting] = useState(false);
 
-    type AuditRow = {
+  type AuditRow = {
     id: string;
     event_type: string;
     actor_email: string | null;
@@ -175,6 +175,58 @@ type MemberRow = {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditError, setAuditError] = useState('');
   const [auditFilter, setAuditFilter] = useState<string>('');
+
+  // Campus
+  type CampusZoneRow = {
+    id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    status: string;
+    display_order: number;
+  };
+
+  type CampusBuildingRow = {
+    id: string;
+    zone_id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    status: string;
+    display_order: number;
+  };
+
+  type CampusDivisionRow = {
+    id: string;
+    building_id: string | null;
+    slug: string;
+    name: string;
+    description: string | null;
+    icon: string | null;
+    status: string;
+    display_order: number;
+  };
+
+  type CampusOfficeRow = {
+    id: string;
+    slug: string;
+    name: string;
+    level: string;
+    office_number: string | null;
+    status: string;
+    division_id: string | null;
+    display_order: number;
+  };
+
+  const [campusZones, setCampusZones] = useState<CampusZoneRow[]>([]);
+  const [campusBuildings, setCampusBuildings] = useState<CampusBuildingRow[]>([]);
+  const [campusDivisions, setCampusDivisions] = useState<CampusDivisionRow[]>([]);
+  const [campusOffices, setCampusOffices] = useState<CampusOfficeRow[]>([]);
+  const [campusLoading, setCampusLoading] = useState(false);
+  const [campusError, setCampusError] = useState('');
+  const [campusActionId, setCampusActionId] = useState<string | null>(null);
+  const [expandedZoneId, setExpandedZoneId] = useState<string | null>(null);
 
   // Office metadata form
   const [metaName, setMetaName] = useState('');
@@ -237,6 +289,24 @@ type MemberRow = {
     }
   }, []);
 
+  const loadCampus = useCallback(async () => {
+    setCampusLoading(true);
+    setCampusError('');
+    try {
+      const res = await fetch('/api/admin/campus', { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setCampusZones(json.zones ?? []);
+      setCampusBuildings(json.buildings ?? []);
+      setCampusDivisions(json.divisions ?? []);
+      setCampusOffices(json.offices ?? []);
+    } catch (err) {
+      setCampusError(err instanceof Error ? err.message : 'Failed to load campus.');
+    } finally {
+      setCampusLoading(false);
+    }
+  }, []);
+
   const loadAudit = useCallback(async (slug: string, filter?: string) => {
     setAuditLoading(true);
     setAuditError('');
@@ -256,7 +326,7 @@ type MemberRow = {
     }
   }, []);
 
-    const loadPermissions = useCallback(async (slug: string) => {
+  const loadPermissions = useCallback(async (slug: string) => {
     setPermissionsLoading(true);
     setPermissionsError('');
     try {
@@ -276,7 +346,7 @@ type MemberRow = {
     }
   }, []);
 
-    const loadMembers = useCallback(async (slug: string) => {
+  const loadMembers = useCallback(async (slug: string) => {
     setMembersLoading(true);
     setMembersError('');
     try {
@@ -318,9 +388,10 @@ type MemberRow = {
 
   useEffect(() => {
     void loadOffices();
-  }, [loadOffices]);
+    void loadCampus();
+  }, [loadOffices, loadCampus]);
 
-   useEffect(() => {
+  useEffect(() => {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
@@ -467,6 +538,47 @@ type MemberRow = {
       setAppointmentActionId(null);
     }
   }
+
+  async function updateCampusEntity(
+    entity: 'zone' | 'building' | 'division',
+    id: string,
+    patch: Record<string, unknown>
+  ) {
+    setCampusActionId(id);
+    try {
+      const res = await fetch('/api/admin/campus', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity, id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadCampus();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setCampusActionId(null);
+    }
+  }
+
+  async function assignOfficeToDivision(officeSlug: string, divisionId: string | null) {
+    setCampusActionId(officeSlug);
+    try {
+      const res = await fetch('/api/admin/campus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ office_slug: officeSlug, division_id: divisionId }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadCampus();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setCampusActionId(null);
+    }
+  }
+
   async function createGrant() {
     if (!newGranteeEmail.trim()) {
       alert('Grantee email is required.');
@@ -518,7 +630,7 @@ type MemberRow = {
     }
   }
 
-    async function addMember() {
+  async function addMember() {
     if (!newMemberAuthorId) {
       alert('Select an author.');
       return;
@@ -822,6 +934,7 @@ type MemberRow = {
               </ul>
             )}
           </div>
+
           {/* Delegated Access */}
           <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -843,7 +956,6 @@ type MemberRow = {
               </div>
             )}
 
-            {/* Add grant */}
             <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Grant access
@@ -968,6 +1080,7 @@ type MemberRow = {
               </ul>
             )}
           </div>
+
           {/* Audit */}
           <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -1073,7 +1186,6 @@ type MemberRow = {
               </div>
             )}
 
-            {/* Add member */}
             <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Add member
@@ -1127,7 +1239,6 @@ type MemberRow = {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-bold text-white">
                             {m.author?.name ?? 'Unknown author'}
-                        
                           </span>
                           <span
                             className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
@@ -1154,7 +1265,7 @@ type MemberRow = {
                         )}
                       </div>
 
-                                            {m.status === 'ACTIVE' && (
+                      {m.status === 'ACTIVE' && (
                         <div className="flex gap-1 shrink-0">
                           <select
                             value={m.role}
@@ -1181,7 +1292,7 @@ type MemberRow = {
                       )}
                     </div>
                   </li>
-                  ))}
+                ))}
               </ul>
             )}
           </div>
@@ -1295,6 +1406,202 @@ type MemberRow = {
                 ))}
               </ul>
             )}
+          </div>
+
+          {/* Campus Hierarchy */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Campus Hierarchy
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Zones, buildings, and divisions for the public /campus page.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadCampus()}
+                disabled={campusLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {campusLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {campusError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {campusError}
+              </div>
+            )}
+
+            {/* Office → Division assignment */}
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Assign office to a division
+              </p>
+              <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                {campusOffices.map((o) => (
+                  <div
+                    key={o.id}
+                    className="flex items-center justify-between gap-2 rounded border border-gray-800 bg-[#030611] px-2 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-[11px] text-gray-200 truncate block">
+                        {o.name}
+                      </span>
+                      {o.office_number && (
+                        <span className="text-[9px] text-gray-500">{o.office_number}</span>
+                      )}
+                    </div>
+                    <select
+                      value={o.division_id ?? ''}
+                      onChange={(e) =>
+                        void assignOfficeToDivision(o.slug, e.target.value || null)
+                      }
+                      disabled={campusActionId === o.slug}
+                      className="shrink-0 bg-[#070b19] border border-gray-800 p-1 text-[10px] rounded text-white"
+                    >
+                      <option value="">— None —</option>
+                      {campusDivisions.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Zone tree */}
+            <div className="space-y-2">
+              {campusZones.map((z) => {
+                const zBuildings = campusBuildings.filter((b) => b.zone_id === z.id);
+                const isExpanded = expandedZoneId === z.id;
+                return (
+                  <div
+                    key={z.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19]"
+                  >
+                    <button
+                      onClick={() => setExpandedZoneId(isExpanded ? null : z.id)}
+                      className="w-full flex items-center justify-between gap-3 p-3 text-left hover:bg-white/[0.02] transition rounded-lg"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">{z.name}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              z.status === 'PUBLISHED'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : z.status === 'DRAFT'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {z.status}
+                          </span>
+                          <span className="text-[9px] text-gray-500">
+                            {zBuildings.length} building{zBuildings.length === 1 ? '' : 's'}
+                          </span>
+                        </div>
+                        {z.description && (
+                          <p className="mt-1 text-[10px] text-gray-400 truncate">
+                            {z.description}
+                          </p>
+                        )}
+                      </div>
+                      <span className="shrink-0 text-amber-400 text-lg">
+                        {isExpanded ? '▾' : '▸'}
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-gray-800 p-3 space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            defaultValue={z.name}
+                            onBlur={(e) => {
+                              if (e.target.value !== z.name) {
+                                void updateCampusEntity('zone', z.id, { name: e.target.value });
+                              }
+                            }}
+                            className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                            placeholder="Zone name"
+                          />
+                          <select
+                            defaultValue={z.status}
+                            onChange={(e) =>
+                              void updateCampusEntity('zone', z.id, { status: e.target.value })
+                            }
+                            className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                          >
+                            <option value="PUBLISHED">PUBLISHED</option>
+                            <option value="DRAFT">DRAFT</option>
+                            <option value="ARCHIVED">ARCHIVED</option>
+                          </select>
+                          <textarea
+                            defaultValue={z.description ?? ''}
+                            onBlur={(e) => {
+                              if (e.target.value !== (z.description ?? '')) {
+                                void updateCampusEntity('zone', z.id, {
+                                  description: e.target.value || null,
+                                });
+                              }
+                            }}
+                            rows={2}
+                            placeholder="Description"
+                            className="sm:col-span-2 bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                          />
+                        </div>
+
+                        {zBuildings.length === 0 ? (
+                          <p className="text-[10px] text-gray-500 italic">
+                            No buildings in this zone yet.
+                          </p>
+                        ) : (
+                          <div className="space-y-2 pl-3 border-l border-gray-800">
+                            {zBuildings.map((b) => {
+                              const bDivisions = campusDivisions.filter(
+                                (d) => d.building_id === b.id
+                              );
+                              return (
+                                <div
+                                  key={b.id}
+                                  className="rounded border border-gray-800 bg-[#030611] p-2"
+                                >
+                                  <span className="text-[11px] font-bold text-gray-200 block">
+                                    {b.name}
+                                  </span>
+                                  {bDivisions.length > 0 && (
+                                    <div className="mt-1 space-y-1 pl-3 border-l border-gray-800">
+                                      {bDivisions.map((d) => (
+                                        <div
+                                          key={d.id}
+                                          className="flex items-center gap-2 text-[10px]"
+                                        >
+                                          {d.icon && (
+                                            <span className="text-amber-400">{d.icon}</span>
+                                          )}
+                                          <span className="text-gray-300">{d.name}</span>
+                                          <span className="text-gray-500 ml-auto">
+                                            {campusOffices.filter((o) => o.division_id === d.id).length} office(s)
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Notes */}
