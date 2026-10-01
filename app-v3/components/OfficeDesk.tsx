@@ -116,7 +116,7 @@ export default function OfficeDesk() {
   const [noteVisibility, setNoteVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
   const [articleVisibility, setArticleVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
 
-    type MemberRow = {
+type MemberRow = {
     id: string;
     office_id: string;
     author_id: string;
@@ -134,6 +134,29 @@ export default function OfficeDesk() {
   const [newMemberAuthorId, setNewMemberAuthorId] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<'VIEWER' | 'EDITOR' | 'MANAGER'>('VIEWER');
   const [newMemberSubmitting, setNewMemberSubmitting] = useState(false);
+
+    type PermissionRow = {
+    id: string;
+    grantee_email: string;
+    grantee_name: string | null;
+    scope: string;
+    reason: string | null;
+    expires_at: string | null;
+    status: string;
+    granted_at: string;
+  };
+
+  const [permissions, setPermissions] = useState<PermissionRow[]>([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+  const [permissionsError, setPermissionsError] = useState('');
+  const [permissionActionId, setPermissionActionId] = useState<string | null>(null);
+
+  const [newGranteeEmail, setNewGranteeEmail] = useState('');
+  const [newGranteeName, setNewGranteeName] = useState('');
+  const [newGrantScope, setNewGrantScope] = useState<'INTERNAL' | 'RESTRICTED'>('INTERNAL');
+  const [newGrantReason, setNewGrantReason] = useState('');
+  const [newGrantExpiresAt, setNewGrantExpiresAt] = useState('');
+  const [newGrantSubmitting, setNewGrantSubmitting] = useState(false);
 
   // Office metadata form
   const [metaName, setMetaName] = useState('');
@@ -196,6 +219,26 @@ export default function OfficeDesk() {
     }
   }, []);
 
+    const loadPermissions = useCallback(async (slug: string) => {
+    setPermissionsLoading(true);
+    setPermissionsError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/permissions?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setPermissions(json.permissions ?? []);
+    } catch (err) {
+      setPermissionsError(
+        err instanceof Error ? err.message : 'Failed to load grants.'
+      );
+    } finally {
+      setPermissionsLoading(false);
+    }
+  }, []);
+
     const loadMembers = useCallback(async (slug: string) => {
     setMembersLoading(true);
     setMembersError('');
@@ -240,14 +283,15 @@ export default function OfficeDesk() {
     void loadOffices();
   }, [loadOffices]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
       void loadCorrespondence(selectedSlug);
       void loadMembers(selectedSlug);
+      void loadPermissions(selectedSlug);
     }
-  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence, loadMembers]);
+  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -383,6 +427,56 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+  async function createGrant() {
+    if (!newGranteeEmail.trim()) {
+      alert('Grantee email is required.');
+      return;
+    }
+    setNewGrantSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          grantee_email: newGranteeEmail.trim(),
+          grantee_name: newGranteeName.trim() || null,
+          scope: newGrantScope,
+          reason: newGrantReason.trim() || null,
+          expires_at: newGrantExpiresAt ? new Date(newGrantExpiresAt).toISOString() : null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNewGranteeEmail('');
+      setNewGranteeName('');
+      setNewGrantReason('');
+      setNewGrantExpiresAt('');
+      setNewGrantScope('INTERNAL');
+      await loadPermissions(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNewGrantSubmitting(false);
+    }
+  }
+
+  async function revokeGrant(id: string) {
+    if (!confirm('Revoke this grant?')) return;
+    setPermissionActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/permissions?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadPermissions(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setPermissionActionId(null);
     }
   }
 
@@ -681,6 +775,152 @@ export default function OfficeDesk() {
                             className="px-2 py-1 bg-gray-500/20 text-gray-300 border border-gray-500/40 rounded text-[10px] font-bold uppercase hover:bg-gray-500/30 disabled:opacity-40"
                           >
                             Mark Completed
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {/* Delegated Access */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Delegated Access ({permissions.filter((p) => p.status === 'ACTIVE').length} active)
+              </h3>
+              <button
+                onClick={() => void loadPermissions(selectedSlug)}
+                disabled={permissionsLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {permissionsLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {permissionsError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {permissionsError}
+              </div>
+            )}
+
+            {/* Add grant */}
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Grant access
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  type="email"
+                  value={newGranteeEmail}
+                  onChange={(e) => setNewGranteeEmail(e.target.value)}
+                  placeholder="Grantee email *"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="text"
+                  value={newGranteeName}
+                  onChange={(e) => setNewGranteeName(e.target.value)}
+                  placeholder="Grantee name (optional)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <select
+                  value={newGrantScope}
+                  onChange={(e) => setNewGrantScope(e.target.value as 'INTERNAL' | 'RESTRICTED')}
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="RESTRICTED">RESTRICTED</option>
+                </select>
+                <input
+                  type="datetime-local"
+                  value={newGrantExpiresAt}
+                  onChange={(e) => setNewGrantExpiresAt(e.target.value)}
+                  placeholder="Expires at (optional)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="text"
+                  value={newGrantReason}
+                  onChange={(e) => setNewGrantReason(e.target.value)}
+                  placeholder="Reason (optional)"
+                  className="sm:col-span-2 bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => void createGrant()}
+                  disabled={newGrantSubmitting || !newGranteeEmail.trim()}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+                >
+                  {newGrantSubmitting ? 'Granting…' : 'Grant Access'}
+                </button>
+              </div>
+              <p className="text-[9px] text-gray-500">
+                Leave Expires At empty for perpetual access.
+              </p>
+            </div>
+
+            {permissions.length === 0 ? (
+              <p className="text-xs text-gray-500">No grants yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {permissions.map((p) => (
+                  <li
+                    key={p.id}
+                    className={`rounded-lg border p-3 ${
+                      p.status === 'ACTIVE'
+                        ? 'border-gray-800 bg-[#070b19]'
+                        : 'border-gray-900 bg-[#070b19]/50 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">
+                            {p.grantee_name || p.grantee_email}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              p.scope === 'RESTRICTED'
+                                ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                            }`}
+                          >
+                            {p.scope}
+                          </span>
+                          {p.status !== 'ACTIVE' && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-gray-500/20 text-gray-300 border border-gray-500/40 px-1.5 py-0.5 rounded">
+                              {p.status}
+                            </span>
+                          )}
+                        </div>
+                        {p.grantee_name && (
+                          <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                            {p.grantee_email}
+                          </p>
+                        )}
+                        {p.reason && (
+                          <p className="mt-0.5 text-[10px] text-gray-400 italic">
+                            {p.reason}
+                          </p>
+                        )}
+                        <p className="mt-0.5 text-[9px] text-gray-500">
+                          {p.expires_at
+                            ? `Expires ${new Date(p.expires_at).toLocaleString()}`
+                            : 'Perpetual'}
+                        </p>
+                      </div>
+
+                      {p.status === 'ACTIVE' && (
+                        <div className="shrink-0">
+                          <button
+                            onClick={() => void revokeGrant(p.id)}
+                            disabled={permissionActionId === p.id}
+                            className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                          >
+                            Revoke
                           </button>
                         </div>
                       )}
