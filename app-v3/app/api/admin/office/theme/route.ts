@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
-
-// ---------------------------------------------------------------------------
-// The 10 approved institutional themes.
-// Only these values may be set on any office.
-// ---------------------------------------------------------------------------
+import { logAuditEvent, extractRequestMeta } from '@/lib/office-audit';
 
 export const APPROVED_THEMES = [
   'institutional-ink',
@@ -45,20 +41,14 @@ export async function PATCH(request: NextRequest) {
     const auth = await requireAdmin();
 
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let body: PatchBody;
     try {
       body = (await request.json()) as PatchBody;
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
 
     const slug = body.slug?.trim();
@@ -91,16 +81,27 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error('Office theme PATCH error:', error);
-      return NextResponse.json(
-        { error: 'Unable to update theme.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to update theme.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: updated.id,
+      event_type: 'THEME_CHANGED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office',
+      target_id: updated.id,
+      summary: `Theme changed to ${updated.theme_slug}`,
+      payload: { theme_slug: updated.theme_slug },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true, office: updated });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to update theme.';
+    const message = error instanceof Error ? error.message : 'Unable to update theme.';
     console.error('Office theme PATCH exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

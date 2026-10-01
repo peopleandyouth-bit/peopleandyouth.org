@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
+import { logAuditEvent, extractRequestMeta } from '@/lib/office-audit';
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,11 +17,6 @@ function getServiceClient() {
 }
 
 const ALLOWED_SCOPES = ['INTERNAL', 'RESTRICTED'];
-
-// ---------------------------------------------------------------------------
-// GET — list grants for an office
-// ?office_slug=<slug>
-// ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,7 +44,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Office not found.' }, { status: 404 });
     }
 
-    // Auto-expire: mark grants past expires_at as EXPIRED before listing
     await supabase
       .from('office_permissions')
       .update({ status: 'EXPIRED', updated_at: new Date().toISOString() })
@@ -78,11 +73,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// POST — create a grant
-// Body: { office_slug, grantee_email, grantee_name?, scope, reason?, expires_at? }
-// ---------------------------------------------------------------------------
 
 interface PostBody {
   office_slug?: string;
@@ -141,7 +131,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Office not found.' }, { status: 404 });
     }
 
-    // Try to resolve the grantee to an existing author by email
     let granteeAuthorId: string | null = null;
     const { data: author } = await supabase
       .from('authors')
@@ -176,6 +165,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to create grant.' }, { status: 500 });
     }
 
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: created.office_id,
+      event_type: 'GRANT_CREATED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_permissions',
+      target_id: created.id,
+      summary: `Grant created for ${created.grantee_email} (${created.scope})`,
+      payload: {
+        grantee_email: created.grantee_email,
+        scope: created.scope,
+        expires_at: created.expires_at,
+      },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
+
     return NextResponse.json({ success: true, permission: created });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unable to create grant.';
@@ -183,11 +191,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// DELETE — revoke a grant
-// ?id=<uuid>
-// ---------------------------------------------------------------------------
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -205,6 +208,12 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = getServiceClient();
 
+    const { data: existing } = await supabase
+      .from('office_permissions')
+      .select('office_id, grantee_email, scope')
+      .eq('id', id)
+      .maybeSingle();
+
     const { error } = await supabase
       .from('office_permissions')
       .update({
@@ -219,6 +228,21 @@ export async function DELETE(request: NextRequest) {
       console.error('Admin permissions DELETE error:', error);
       return NextResponse.json({ error: 'Unable to revoke grant.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: existing?.office_id ?? null,
+      event_type: 'GRANT_REVOKED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_permissions',
+      target_id: id,
+      summary: `Grant for ${existing?.grantee_email ?? id} revoked`,
+      payload: { scope: existing?.scope ?? null },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

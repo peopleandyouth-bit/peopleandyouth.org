@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
+import { logAuditEvent, extractRequestMeta } from '@/lib/office-audit';
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,34 +16,15 @@ function getServiceClient() {
   });
 }
 
-const ALLOWED_TYPES = [
-  'NOTE',
-  'ARTICLE',
-  'ESSAY',
-  'PROPOSAL',
-  'SPEECH',
-  'LETTER',
-  'STATEMENT',
-];
-
+const ALLOWED_TYPES = ['NOTE', 'ARTICLE', 'ESSAY', 'PROPOSAL', 'SPEECH', 'LETTER', 'STATEMENT'];
 const ALLOWED_VISIBILITY = ['PUBLIC', 'INTERNAL', 'RESTRICTED'];
 const ALLOWED_STATUS = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
-
-// ---------------------------------------------------------------------------
-// GET — list content for an office (admin view, includes drafts)
-//
-// ?office_slug=<slug>          → all content (drafts + published) for the office
-// ?office_slug=<slug>&type=NOTE → filter by type
-// ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const { searchParams } = new URL(request.url);
@@ -50,10 +32,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')?.trim();
 
     if (!officeSlug) {
-      return NextResponse.json(
-        { error: 'office_slug is required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'office_slug is required.' }, { status: 400 });
     }
 
     const supabase = getServiceClient();
@@ -65,10 +44,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (officeError || !office) {
-      return NextResponse.json(
-        { error: 'Office not found.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Office not found.' }, { status: 404 });
     }
 
     let query = supabase
@@ -88,37 +64,16 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Office content GET error:', error);
-      return NextResponse.json(
-        { error: 'Unable to load content.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to load content.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, content: data ?? [] });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to load content.';
+    const message = error instanceof Error ? error.message : 'Unable to load content.';
     console.error('Office content GET exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// POST — create content for an office.
-//
-// Body: {
-//   office_slug: string,
-//   type: 'NOTE' | 'ARTICLE' | ... ,
-//   title?: string,
-//   subtitle?: string,
-//   body: string,
-//   excerpt?: string,
-//   cover_image_url?: string,
-//   tags?: string[],
-//   visibility?: 'PUBLIC' | 'INTERNAL' | 'RESTRICTED',
-//   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
-// }
-// ---------------------------------------------------------------------------
 
 interface PostBody {
   office_slug?: string;
@@ -137,20 +92,14 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let body: PostBody;
     try {
       body = (await request.json()) as PostBody;
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
 
     const officeSlug = body.office_slug?.trim();
@@ -165,10 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ALLOWED_TYPES.includes(type)) {
-      return NextResponse.json(
-        { error: `Unknown type: ${type}.` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Unknown type: ${type}.` }, { status: 400 });
     }
 
     const visibility = body.visibility ?? 'PUBLIC';
@@ -181,10 +127,7 @@ export async function POST(request: NextRequest) {
 
     const status = body.status ?? 'PUBLISHED';
     if (!ALLOWED_STATUS.includes(status)) {
-      return NextResponse.json(
-        { error: `Unknown status: ${status}.` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Unknown status: ${status}.` }, { status: 400 });
     }
 
     const supabase = getServiceClient();
@@ -196,21 +139,16 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (officeError || !office) {
-      return NextResponse.json(
-        { error: 'Office not found.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Office not found.' }, { status: 404 });
     }
 
-    // For NOTE type, title is optional; for others it's useful but not required.
-    const publishedAt =
-      status === 'PUBLISHED' ? new Date().toISOString() : null;
+    const publishedAt = status === 'PUBLISHED' ? new Date().toISOString() : null;
 
     const { data: created, error: createError } = await supabase
       .from('office_content')
       .insert({
         office_id: office.id,
-        author_id: auth.user.id ? null : null, // author of content is set on publish via Office Desk if needed
+        author_id: null,
         type,
         title: body.title ?? null,
         subtitle: body.subtitle ?? null,
@@ -235,20 +173,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: created.office_id,
+      event_type: 'CONTENT_CREATED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_content',
+      target_id: created.id,
+      summary: `Content "${created.title || created.type}" created (${created.visibility})`,
+      payload: {
+        type: created.type,
+        visibility: created.visibility,
+        status: created.status,
+      },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
+
     return NextResponse.json({ success: true, content: created });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to create content.';
+    const message = error instanceof Error ? error.message : 'Unable to create content.';
     console.error('Office content POST exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// PATCH — update existing content
-//
-// Body: { id, ...same fields as POST except office_slug }
-// ---------------------------------------------------------------------------
 
 interface PatchContentBody extends PostBody {
   id?: string;
@@ -258,20 +208,14 @@ export async function PATCH(request: NextRequest) {
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let body: PatchContentBody;
     try {
       body = (await request.json()) as PatchContentBody;
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
 
     const id = body.id?.trim();
@@ -280,10 +224,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (body.type && !ALLOWED_TYPES.includes(body.type)) {
-      return NextResponse.json(
-        { error: `Unknown type: ${body.type}.` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Unknown type: ${body.type}.` }, { status: 400 });
     }
 
     const patch: Record<string, unknown> = {
@@ -295,8 +236,7 @@ export async function PATCH(request: NextRequest) {
     if (body.subtitle !== undefined) patch.subtitle = body.subtitle;
     if (body.body !== undefined) patch.body = body.body;
     if (body.excerpt !== undefined) patch.excerpt = body.excerpt;
-    if (body.cover_image_url !== undefined)
-      patch.cover_image_url = body.cover_image_url;
+    if (body.cover_image_url !== undefined) patch.cover_image_url = body.cover_image_url;
     if (body.tags !== undefined) patch.tags = body.tags;
     if (body.visibility !== undefined) patch.visibility = body.visibility;
     if (body.status !== undefined) {
@@ -319,35 +259,37 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error('Office content PATCH error:', error);
-      return NextResponse.json(
-        { error: 'Unable to update content.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to update content.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: updated.office_id,
+      event_type: 'CONTENT_UPDATED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_content',
+      target_id: updated.id,
+      summary: `Content "${updated.title || updated.type}" updated`,
+      payload: { changed_fields: Object.keys(patch) },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true, content: updated });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to update content.';
+    const message = error instanceof Error ? error.message : 'Unable to update content.';
     console.error('Office content PATCH exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// ---------------------------------------------------------------------------
-// DELETE — remove content by id
-//
-// ?id=<uuid>
-// ---------------------------------------------------------------------------
-
 export async function DELETE(request: NextRequest) {
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const { searchParams } = new URL(request.url);
@@ -359,6 +301,12 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = getServiceClient();
 
+    const { data: existing } = await supabase
+      .from('office_content')
+      .select('office_id, title, type')
+      .eq('id', id)
+      .maybeSingle();
+
     const { error } = await supabase
       .from('office_content')
       .delete()
@@ -366,16 +314,26 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       console.error('Office content DELETE error:', error);
-      return NextResponse.json(
-        { error: 'Unable to delete content.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to delete content.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: existing?.office_id ?? null,
+      event_type: 'CONTENT_DELETED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_content',
+      target_id: id,
+      summary: `Content "${existing?.title || existing?.type || id}" deleted`,
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to delete content.';
+    const message = error instanceof Error ? error.message : 'Unable to delete content.';
     console.error('Office content DELETE exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

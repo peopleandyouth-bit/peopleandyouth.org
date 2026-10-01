@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
+import { logAuditEvent, extractRequestMeta } from '@/lib/office-audit';
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,11 +17,6 @@ function getServiceClient() {
 }
 
 const ALLOWED_ROLES = ['VIEWER', 'EDITOR', 'MANAGER'];
-
-// ---------------------------------------------------------------------------
-// GET — list members of an office
-// ?office_slug=<slug>
-// ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,7 +63,15 @@ export async function GET(request: NextRequest) {
       .select('id, name, email, designation, photo_url')
       .in('id', authorIds);
 
-    const authorMap = new Map<string, { name: string; email: string | null; designation: string | null; photo_url: string | null }>();
+    const authorMap = new Map<
+      string,
+      {
+        name: string;
+        email: string | null;
+        designation: string | null;
+        photo_url: string | null;
+      }
+    >();
     for (const a of authors ?? []) {
       authorMap.set(a.id, {
         name: a.name,
@@ -89,11 +93,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// POST — add a member
-// Body: { office_slug, author_id, role }
-// ---------------------------------------------------------------------------
 
 interface PostBody {
   office_slug?: string;
@@ -168,7 +167,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      // Postgres unique violation = duplicate active membership
       if (createError.code === '23505') {
         return NextResponse.json(
           { error: 'This person is already an active member of this office.' },
@@ -179,6 +177,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to add member.' }, { status: 500 });
     }
 
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: created.office_id,
+      event_type: 'MEMBER_ADDED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_members',
+      target_id: created.id,
+      summary: `Member added with role ${created.role}`,
+      payload: { author_id: created.author_id, role: created.role },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
+
     return NextResponse.json({ success: true, member: created });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unable to add member.';
@@ -186,11 +199,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// PATCH — change role or end membership
-// Body: { id, role?, status? }
-// ---------------------------------------------------------------------------
 
 interface PatchBody {
   id?: string;
@@ -252,6 +260,21 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to update member.' }, { status: 500 });
     }
 
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: updated.office_id,
+      event_type: 'MEMBER_UPDATED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_members',
+      target_id: updated.id,
+      summary: `Member updated`,
+      payload: { changed_fields: Object.keys(patch) },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
+
     return NextResponse.json({ success: true, member: updated });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unable to update member.';
@@ -259,11 +282,6 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// DELETE — remove member (soft-delete: status -> ENDED)
-// ?id=<uuid>
-// ---------------------------------------------------------------------------
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -281,6 +299,12 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = getServiceClient();
 
+    const { data: existing } = await supabase
+      .from('office_members')
+      .select('office_id, author_id')
+      .eq('id', id)
+      .maybeSingle();
+
     const { error } = await supabase
       .from('office_members')
       .update({
@@ -294,6 +318,20 @@ export async function DELETE(request: NextRequest) {
       console.error('Office member DELETE error:', error);
       return NextResponse.json({ error: 'Unable to remove member.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: existing?.office_id ?? null,
+      event_type: 'MEMBER_REMOVED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office_members',
+      target_id: id,
+      summary: `Member ${id} removed`,
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

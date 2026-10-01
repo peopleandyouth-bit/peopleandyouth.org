@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
-
-// ---------------------------------------------------------------------------
-// Service-role client for reads and writes on office tables.
-// RLS on these tables has no write policies, so all mutations must go through
-// this server-side route.
-// ---------------------------------------------------------------------------
+import { logAuditEvent, extractRequestMeta } from '@/lib/office-audit';
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -17,24 +12,9 @@ function getServiceClient() {
   }
 
   return createClient(url, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 }
-
-// ---------------------------------------------------------------------------
-// GET — read one office (by slug or id), or list all offices
-//
-// ?slug=founder                 → one office, with assignment + content
-// ?id=<uuid>                    → one office, same shape
-// (no query params)             → list of all offices with assignments
-//
-// Public read. Uses the service client because office tables have RLS that
-// blocks unauthenticated reads only on content, but the join query is cleaner
-// when run with service role.
-// ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +24,6 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceClient();
 
-    // ---- Single office (with assignment + public content) ----
     if (slug || id) {
       let officeQuery = supabase
         .from('offices')
@@ -59,20 +38,13 @@ export async function GET(request: NextRequest) {
 
       if (officeError) {
         console.error('Office GET error:', officeError);
-        return NextResponse.json(
-          { error: 'Unable to load office.' },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: 'Unable to load office.' }, { status: 500 });
       }
 
       if (!office) {
-        return NextResponse.json(
-          { error: 'Office not found.' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Office not found.' }, { status: 404 });
       }
 
-      // Assignment — only the ACTIVE assignment
       const { data: assignment } = await supabase
         .from('office_assignments')
         .select(
@@ -82,7 +54,6 @@ export async function GET(request: NextRequest) {
         .eq('status', 'ACTIVE')
         .maybeSingle();
 
-      // Author — the person occupying the office, if any
       let author: Record<string, unknown> | null = null;
       if (assignment?.author_id) {
         const { data: authorRow } = await supabase
@@ -96,7 +67,6 @@ export async function GET(request: NextRequest) {
         author = authorRow ?? null;
       }
 
-      // Public content only
       const { data: content } = await supabase
         .from('office_content')
         .select(
@@ -116,7 +86,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // ---- List all offices ----
     const { data: offices, error: listError } = await supabase
       .from('offices')
       .select(
@@ -126,13 +95,9 @@ export async function GET(request: NextRequest) {
 
     if (listError) {
       console.error('Office list error:', listError);
-      return NextResponse.json(
-        { error: 'Unable to list offices.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to list offices.' }, { status: 500 });
     }
 
-    // Attach ACTIVE assignment + author name (light shape) for the list
     const officeIds = (offices ?? []).map((o) => o.id);
 
     const { data: assignments } = await supabase
@@ -150,7 +115,10 @@ export async function GET(request: NextRequest) {
       .select('id, name, photo_url, designation')
       .in('id', authorIds);
 
-    const authorMap = new Map<string, { name: string; photo_url: string | null; designation: string | null }>();
+    const authorMap = new Map<
+      string,
+      { name: string; photo_url: string | null; designation: string | null }
+    >();
     for (const a of authors ?? []) {
       authorMap.set(a.id, {
         name: a.name,
@@ -161,7 +129,11 @@ export async function GET(request: NextRequest) {
 
     const assignmentMap = new Map<
       string,
-      { title: string; subtitle: string | null; author: { name: string; photo_url: string | null; designation: string | null } | null }
+      {
+        title: string;
+        subtitle: string | null;
+        author: { name: string; photo_url: string | null; designation: string | null } | null;
+      }
     >();
     for (const a of assignments ?? []) {
       const author = a.author_id ? authorMap.get(a.author_id) ?? null : null;
@@ -179,24 +151,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, offices: enriched });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to load offices.';
+    const message = error instanceof Error ? error.message : 'Unable to load offices.';
     console.error('Office GET exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// PATCH — update an office (metadata, theme, status)
-//
-// Body: {
-//   slug: string,                         // identifier of the office
-//   mandate?, responsibilities?, facilities?, tagline?, hero_quote?,
-//   hero_image_url?, emblem_url?, theme_slug?, status?
-// }
-//
-// Requires: authenticated admin (requireAdmin).
-// ---------------------------------------------------------------------------
 
 interface PatchBody {
   slug?: string;
@@ -230,28 +189,19 @@ export async function PATCH(request: NextRequest) {
     const auth = await requireAdmin();
 
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let body: PatchBody;
     try {
       body = (await request.json()) as PatchBody;
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
 
     const slug = body.slug?.trim();
     if (!slug) {
-      return NextResponse.json(
-        { error: 'slug is required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'slug is required.' }, { status: 400 });
     }
 
     if (body.theme_slug && !ALLOWED_THEMES.includes(body.theme_slug)) {
@@ -289,27 +239,31 @@ export async function PATCH(request: NextRequest) {
 
     if (updateError) {
       console.error('Office PATCH error:', updateError);
-      return NextResponse.json(
-        { error: 'Unable to update office.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Unable to update office.' }, { status: 500 });
     }
+
+    const meta = extractRequestMeta(request);
+    await logAuditEvent({
+      office_id: updated.id,
+      event_type: 'OFFICE_UPDATED',
+      actor_user_id: auth.user.id,
+      actor_email: auth.user.email ?? null,
+      actor_role: auth.identity?.role ?? null,
+      target_type: 'office',
+      target_id: updated.id,
+      summary: `Office "${updated.name}" updated`,
+      payload: { changed_fields: Object.keys(patch) },
+      ip: meta.ip,
+      user_agent: meta.user_agent,
+    });
 
     return NextResponse.json({ success: true, office: updated });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to update office.';
+    const message = error instanceof Error ? error.message : 'Unable to update office.';
     console.error('Office PATCH exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-// ---------------------------------------------------------------------------
-// POST — create a new office
-//
-// Body: { slug, name, level, mandate?, facilities?, display_order? }
-// Requires: authenticated admin.
-// ---------------------------------------------------------------------------
 
 interface PostBody {
   slug?: string;
@@ -329,20 +283,14 @@ export async function POST(request: NextRequest) {
     const auth = await requireAdmin();
 
     if (!auth.authorized) {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.status }
-      );
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let body: PostBody;
     try {
       body = (await request.json()) as PostBody;
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON body.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
 
     const slug = body.slug?.trim();
@@ -357,10 +305,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ALLOWED_LEVELS.includes(level)) {
-      return NextResponse.json(
-        { error: `Unknown level: ${level}.` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Unknown level: ${level}.` }, { status: 400 });
     }
 
     const supabase = getServiceClient();
@@ -393,8 +338,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, office: created });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to create office.';
+    const message = error instanceof Error ? error.message : 'Unable to create office.';
     console.error('Office POST exception:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
