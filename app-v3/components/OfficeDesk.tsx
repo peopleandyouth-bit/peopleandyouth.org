@@ -51,6 +51,21 @@ type AppointmentRow = {
   created_at: string;
 };
 
+type CorrespondenceRow = {
+  id: string;
+  sender_name: string;
+  sender_email: string;
+  sender_organization: string | null;
+  sender_designation: string | null;
+  subject: string;
+  body: string;
+  category: string | null;
+  tags: string[] | null;
+  status: string;
+  important: boolean;
+  created_at: string;
+};
+
 const APPROVED_THEMES = [
   'institutional-ink',
   'founders-gold',
@@ -80,6 +95,11 @@ export default function OfficeDesk() {
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
   const [appointmentActionId, setAppointmentActionId] = useState<string | null>(null);
+
+  const [correspondence, setCorrespondence] = useState<CorrespondenceRow[]>([]);
+  const [correspondenceLoading, setCorrespondenceLoading] = useState(false);
+  const [correspondenceError, setCorrespondenceError] = useState('');
+  const [correspondenceActionId, setCorrespondenceActionId] = useState<string | null>(null);
 
   // Note form
   const [noteTitle, setNoteTitle] = useState('');
@@ -155,6 +175,26 @@ export default function OfficeDesk() {
     }
   }, []);
 
+  const loadCorrespondence = useCallback(async (slug: string) => {
+    setCorrespondenceLoading(true);
+    setCorrespondenceError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/correspondence?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setCorrespondence(json.correspondence ?? []);
+    } catch (err) {
+      setCorrespondenceError(
+        err instanceof Error ? err.message : 'Failed to load correspondence.'
+      );
+    } finally {
+      setCorrespondenceLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void loadOffices();
   }, [loadOffices]);
@@ -163,8 +203,9 @@ export default function OfficeDesk() {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
+      void loadCorrespondence(selectedSlug);
     }
-  }, [selectedSlug, loadContent, loadAppointments]);
+  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -300,6 +341,27 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+
+  async function updateCorrespondence(
+    id: string,
+    patch: { status?: 'UNREAD' | 'READ' | 'ARCHIVED'; important?: boolean }
+  ) {
+    setCorrespondenceActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/correspondence', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadCorrespondence(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setCorrespondenceActionId(null);
     }
   }
 
@@ -514,6 +576,117 @@ export default function OfficeDesk() {
                           </button>
                         </div>
                       )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Correspondence */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Correspondence ({correspondence.filter((c) => c.status === 'UNREAD').length} unread / {correspondence.length} total)
+              </h3>
+              <button
+                onClick={() => void loadCorrespondence(selectedSlug)}
+                disabled={correspondenceLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {correspondenceLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {correspondenceError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {correspondenceError}
+              </div>
+            )}
+
+            {correspondence.length === 0 ? (
+              <p className="text-xs text-gray-500">No correspondence yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {correspondence.map((c) => (
+                  <li
+                    key={c.id}
+                    className={`rounded-lg border p-3 space-y-2 ${
+                      c.status === 'UNREAD'
+                        ? 'border-amber-500/40 bg-amber-500/[0.04]'
+                        : 'border-gray-800 bg-[#070b19]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {c.important && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 px-1.5 py-0.5 rounded">
+                              Important
+                            </span>
+                          )}
+                          <span className="text-xs font-bold text-white">{c.subject}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              c.status === 'UNREAD'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : c.status === 'READ'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {c.status}
+                          </span>
+                          {c.category && (
+                            <span className="text-[9px] uppercase tracking-wider text-gray-400">
+                              · {c.category}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-[10px] text-gray-500 truncate">
+                          {c.sender_name} · {c.sender_email}
+                          {c.sender_organization ? ` · ${c.sender_organization}` : ''}
+                        </p>
+                        <p className="mt-1 text-[11px] text-gray-400 whitespace-pre-wrap line-clamp-3">
+                          {c.body}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        {c.status === 'UNREAD' && (
+                          <button
+                            onClick={() => void updateCorrespondence(c.id, { status: 'READ' })}
+                            disabled={correspondenceActionId === c.id}
+                            className="px-2 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded text-[10px] font-bold uppercase hover:bg-cyan-500/30 disabled:opacity-40"
+                          >
+                            Mark Read
+                          </button>
+                        )}
+                        <button
+                          onClick={() => void updateCorrespondence(c.id, { important: !c.important })}
+                          disabled={correspondenceActionId === c.id}
+                          className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                        >
+                          {c.important ? 'Unmark' : 'Important'}
+                        </button>
+                        {c.status !== 'ARCHIVED' && (
+                          <button
+                            onClick={() => void updateCorrespondence(c.id, { status: 'ARCHIVED' })}
+                            disabled={correspondenceActionId === c.id}
+                            className="px-2 py-1 bg-gray-500/20 text-gray-300 border border-gray-500/40 rounded text-[10px] font-bold uppercase hover:bg-gray-500/30 disabled:opacity-40"
+                          >
+                            Archive
+                          </button>
+                        )}
+                        <a
+                          href={`mailto:${c.sender_email}?subject=${encodeURIComponent(
+                            `Re: ${c.subject}`
+                          )}`}
+                          className="px-2 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase hover:bg-amber-500/30 text-center"
+                        >
+                          Reply
+                        </a>
+                      </div>
                     </div>
                   </li>
                 ))}

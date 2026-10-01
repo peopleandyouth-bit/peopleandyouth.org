@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import AppointmentRequestModal from '@/components/AppointmentRequestModal';
+import CorrespondenceModal from '@/components/CorrespondenceModal';
 
 // ---------------------------------------------------------------------------
 // The 10 approved institutional themes, defined in one place so the public
@@ -191,6 +192,7 @@ export default function OfficePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [showCorrespondenceModal, setShowCorrespondenceModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -405,6 +407,16 @@ export default function OfficePage() {
                   }}
                 >
                   Request Appointment
+                </button>
+                <button
+                  onClick={() => setShowCorrespondenceModal(true)}
+                  className="rounded-lg px-5 py-2.5 text-xs font-bold uppercase tracking-wider border"
+                  style={{
+                    borderColor: theme.border,
+                    color: theme.text,
+                  }}
+                >
+                  Contact the Office
                 </button>
                 <Link
                   href="/leadership-network"
@@ -679,6 +691,22 @@ export default function OfficePage() {
           textMuted={theme.textMuted}
           bg={theme.bg}
           onClose={() => setShowAppointmentModal(false)}
+        />
+      )}
+
+      {showCorrespondenceModal && (
+        <CorrespondenceModal
+          officeSlug={data.office.slug}
+          officeName={data.office.name}
+          accent={theme.accent}
+          accentSoft={theme.accentSoft}
+          border={theme.border}
+          surface={theme.surface}
+          heading={theme.heading}
+          text={theme.text}
+          textMuted={theme.textMuted}
+          bg={theme.bg}
+          onClose={() => setShowCorrespondenceModal(false)}
         />
       )}
     </main>
