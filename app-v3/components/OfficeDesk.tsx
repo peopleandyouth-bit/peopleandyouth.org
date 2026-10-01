@@ -158,6 +158,24 @@ type MemberRow = {
   const [newGrantExpiresAt, setNewGrantExpiresAt] = useState('');
   const [newGrantSubmitting, setNewGrantSubmitting] = useState(false);
 
+    type AuditRow = {
+    id: string;
+    event_type: string;
+    actor_email: string | null;
+    actor_role: string | null;
+    target_type: string | null;
+    target_id: string | null;
+    summary: string | null;
+    payload: Record<string, unknown> | null;
+    ip: string | null;
+    occurred_at: string;
+  };
+
+  const [auditEvents, setAuditEvents] = useState<AuditRow[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditError, setAuditError] = useState('');
+  const [auditFilter, setAuditFilter] = useState<string>('');
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -216,6 +234,25 @@ type MemberRow = {
       );
     } finally {
       setAppointmentsLoading(false);
+    }
+  }, []);
+
+  const loadAudit = useCallback(async (slug: string, filter?: string) => {
+    setAuditLoading(true);
+    setAuditError('');
+    try {
+      const params = new URLSearchParams({ office_slug: slug, limit: '200' });
+      if (filter) params.set('event_type', filter);
+      const res = await fetch(`/api/admin/office/audit?${params.toString()}`, {
+        cache: 'no-store',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setAuditEvents(json.events ?? []);
+    } catch (err) {
+      setAuditError(err instanceof Error ? err.message : 'Failed to load audit log.');
+    } finally {
+      setAuditLoading(false);
     }
   }, []);
 
@@ -283,15 +320,16 @@ type MemberRow = {
     void loadOffices();
   }, [loadOffices]);
 
-    useEffect(() => {
+   useEffect(() => {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
       void loadCorrespondence(selectedSlug);
       void loadMembers(selectedSlug);
       void loadPermissions(selectedSlug);
+      void loadAudit(selectedSlug, auditFilter || undefined);
     }
-  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions]);
+  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -925,6 +963,89 @@ type MemberRow = {
                         </div>
                       )}
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {/* Audit */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Audit Log ({auditEvents.length})
+              </h3>
+              <div className="flex gap-2 items-center">
+                <select
+                  value={auditFilter}
+                  onChange={(e) => setAuditFilter(e.target.value)}
+                  className="bg-[#070b19] border border-gray-800 p-1.5 text-[10px] rounded text-white"
+                >
+                  <option value="">All events</option>
+                  <option value="CONTENT_CREATED">Content created</option>
+                  <option value="CONTENT_DELETED">Content deleted</option>
+                  <option value="GRANT_CREATED">Grant created</option>
+                  <option value="GRANT_REVOKED">Grant revoked</option>
+                  <option value="MEMBER_ADDED">Member added</option>
+                  <option value="MEMBER_REMOVED">Member removed</option>
+                  <option value="OFFICE_UPDATED">Office updated</option>
+                  <option value="THEME_CHANGED">Theme changed</option>
+                  <option value="ASSIGNMENT_CHANGED">Assignment changed</option>
+                </select>
+                <button
+                  onClick={() => void loadAudit(selectedSlug, auditFilter || undefined)}
+                  disabled={auditLoading}
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+                >
+                  {auditLoading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+            </div>
+
+            {auditError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {auditError}
+              </div>
+            )}
+
+            {auditEvents.length === 0 ? (
+              <p className="text-xs text-gray-500">No audit events yet.</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {auditEvents.map((e) => (
+                  <li
+                    key={e.id}
+                    className="rounded border border-gray-800 bg-[#070b19] p-2.5 text-[11px] flex items-start justify-between gap-3 flex-wrap"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[9px] font-bold uppercase tracking-wider bg-gray-800 text-gray-300 border border-gray-700 px-1.5 py-0.5 rounded">
+                          {e.event_type}
+                        </span>
+                        {e.actor_role && (
+                          <span className="text-[9px] uppercase tracking-wider text-gray-500">
+                            by {e.actor_role}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-gray-300 truncate">
+                        {e.summary ?? '(no summary)'}
+                      </p>
+                      {e.actor_email && (
+                        <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                          {e.actor_email}
+                          {e.ip ? ` · ${e.ip}` : ''}
+                        </p>
+                      )}
+                    </div>
+                    <span className="shrink-0 text-[10px] font-mono text-gray-500">
+                      {new Date(e.occurred_at).toLocaleString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </li>
                 ))}
               </ul>
