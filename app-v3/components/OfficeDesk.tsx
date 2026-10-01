@@ -113,6 +113,8 @@ export default function OfficeDesk() {
   const [articleSubtitle, setArticleSubtitle] = useState('');
   const [articleBody, setArticleBody] = useState('');
   const [articleSubmitting, setArticleSubmitting] = useState(false);
+  const [noteVisibility, setNoteVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
+  const [articleVisibility, setArticleVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
 
   // Office metadata form
   const [metaName, setMetaName] = useState('');
@@ -234,7 +236,7 @@ export default function OfficeDesk() {
             .split(',')
             .map((t) => t.trim())
             .filter(Boolean),
-          visibility: 'PUBLIC',
+          visibility: noteVisibility,
           status: 'PUBLISHED',
         }),
       });
@@ -265,7 +267,7 @@ export default function OfficeDesk() {
           title: articleTitle.trim() || null,
           subtitle: articleSubtitle.trim() || null,
           body: articleBody.trim(),
-          visibility: 'PUBLIC',
+          visibility: articleVisibility,
           status: 'PUBLISHED',
         }),
       });
@@ -730,6 +732,20 @@ export default function OfficeDesk() {
               />
             </Field>
 
+            <Field label="Visibility">
+              <select
+                value={noteVisibility}
+                onChange={(e) =>
+                  setNoteVisibility(e.target.value as 'PUBLIC' | 'INTERNAL' | 'RESTRICTED')
+                }
+                className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              >
+                <option value="PUBLIC">Public — visible to everyone</option>
+                <option value="INTERNAL">Internal — Command Centre admins only</option>
+                <option value="RESTRICTED">Restricted — founder only</option>
+              </select>
+            </Field>
+
             <button
               type="submit"
               disabled={noteSubmitting}
@@ -777,6 +793,20 @@ export default function OfficeDesk() {
                   onChange={(e) => setArticleSubtitle(e.target.value)}
                   className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
                 />
+              </Field>
+
+              <Field label="Visibility" full>
+                <select
+                  value={articleVisibility}
+                  onChange={(e) =>
+                    setArticleVisibility(e.target.value as 'PUBLIC' | 'INTERNAL' | 'RESTRICTED')
+                  }
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="PUBLIC">Public — visible to everyone</option>
+                  <option value="INTERNAL">Internal — Command Centre admins only</option>
+                  <option value="RESTRICTED">Restricted — founder only</option>
+                </select>
               </Field>
             </div>
 
@@ -836,6 +866,17 @@ export default function OfficeDesk() {
                         </span>
                         <span className="text-[9px] uppercase tracking-wider text-gray-500">
                           {c.status}
+                        </span>
+                        <span
+                          className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                            c.visibility === 'PUBLIC'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              : c.visibility === 'INTERNAL'
+                                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                : 'bg-red-500/20 text-red-300 border-red-500/40'
+                          }`}
+                        >
+                          {c.visibility}
                         </span>
                       </div>
                       <p className="mt-1 text-xs font-bold text-white truncate">
