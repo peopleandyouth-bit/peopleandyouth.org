@@ -116,6 +116,25 @@ export default function OfficeDesk() {
   const [noteVisibility, setNoteVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
   const [articleVisibility, setArticleVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
 
+    type MemberRow = {
+    id: string;
+    office_id: string;
+    author_id: string;
+    role: string;
+    status: string;
+    joined_at: string;
+    ended_at: string | null;
+    author: { name: string; email: string | null; designation: string | null; photo_url: string | null } | null;
+  };
+
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersError, setMembersError] = useState('');
+  const [memberActionId, setMemberActionId] = useState<string | null>(null);
+  const [newMemberAuthorId, setNewMemberAuthorId] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'VIEWER' | 'EDITOR' | 'MANAGER'>('VIEWER');
+  const [newMemberSubmitting, setNewMemberSubmitting] = useState(false);
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -177,6 +196,26 @@ export default function OfficeDesk() {
     }
   }, []);
 
+    const loadMembers = useCallback(async (slug: string) => {
+    setMembersLoading(true);
+    setMembersError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/members?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setMembers(json.members ?? []);
+    } catch (err) {
+      setMembersError(
+        err instanceof Error ? err.message : 'Failed to load members.'
+      );
+    } finally {
+      setMembersLoading(false);
+    }
+  }, []);
+
   const loadCorrespondence = useCallback(async (slug: string) => {
     setCorrespondenceLoading(true);
     setCorrespondenceError('');
@@ -206,8 +245,9 @@ export default function OfficeDesk() {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
       void loadCorrespondence(selectedSlug);
+      void loadMembers(selectedSlug);
     }
-  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence]);
+  }, [selectedSlug, loadContent, loadAppointments, loadCorrespondence, loadMembers]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -343,6 +383,72 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+
+    async function addMember() {
+    if (!newMemberAuthorId) {
+      alert('Select an author.');
+      return;
+    }
+    setNewMemberSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          author_id: newMemberAuthorId,
+          role: newMemberRole,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNewMemberAuthorId('');
+      setNewMemberRole('VIEWER');
+      await loadMembers(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNewMemberSubmitting(false);
+    }
+  }
+
+  async function updateMember(
+    id: string,
+    patch: { role?: 'VIEWER' | 'EDITOR' | 'MANAGER'; status?: 'ACTIVE' | 'ENDED' | 'SUSPENDED' }
+  ) {
+    setMemberActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/members', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadMembers(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setMemberActionId(null);
+    }
+  }
+
+  async function removeMember(id: string) {
+    if (!confirm('Remove this member from the office?')) return;
+    setMemberActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/members?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadMembers(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setMemberActionId(null);
     }
   }
 
@@ -581,6 +687,140 @@ export default function OfficeDesk() {
                     </div>
                   </li>
                 ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Members */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Members ({members.filter((m) => m.status === 'ACTIVE').length} active)
+              </h3>
+              <button
+                onClick={() => void loadMembers(selectedSlug)}
+                disabled={membersLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {membersLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {membersError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {membersError}
+              </div>
+            )}
+
+            {/* Add member */}
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Add member
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  value={newMemberAuthorId}
+                  onChange={(e) => setNewMemberAuthorId(e.target.value)}
+                  placeholder="Author UUID"
+                  className="flex-1 bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white font-mono"
+                />
+                <select
+                  value={newMemberRole}
+                  onChange={(e) =>
+                    setNewMemberRole(e.target.value as 'VIEWER' | 'EDITOR' | 'MANAGER')
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="VIEWER">VIEWER</option>
+                  <option value="EDITOR">EDITOR</option>
+                  <option value="MANAGER">MANAGER</option>
+                </select>
+                <button
+                  onClick={() => void addMember()}
+                  disabled={newMemberSubmitting || !newMemberAuthorId}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+                >
+                  {newMemberSubmitting ? 'Adding…' : 'Add'}
+                </button>
+              </div>
+              <p className="text-[9px] text-gray-500">
+                Copy the author UUID from the Authors tab or from the Command Centre.
+              </p>
+            </div>
+
+            {members.length === 0 ? (
+              <p className="text-xs text-gray-500">No members yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {members.map((m) => (
+                  <li
+                    key={m.id}
+                    className={`rounded-lg border p-3 ${
+                      m.status === 'ACTIVE'
+                        ? 'border-gray-800 bg-[#070b19]'
+                        : 'border-gray-900 bg-[#070b19]/50 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">
+                            {m.author?.name ?? 'Unknown author'}
+                        
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              m.role === 'MANAGER'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : m.role === 'EDITOR'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {m.role}
+                          </span>
+                          {m.status !== 'ACTIVE' && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 px-1.5 py-0.5 rounded">
+                              {m.status}
+                            </span>
+                          )}
+                        </div>
+                        {m.author?.email && (
+                          <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                            {m.author.email}
+                            {m.author.designation ? ` · ${m.author.designation}` : ''}
+                          </p>
+                        )}
+                      </div>
+
+                                            {m.status === 'ACTIVE' && (
+                        <div className="flex gap-1 shrink-0">
+                          <select
+                            value={m.role}
+                            onChange={(e) =>
+                              void updateMember(m.id, {
+                                role: e.target.value as 'VIEWER' | 'EDITOR' | 'MANAGER',
+                              })
+                            }
+                            disabled={memberActionId === m.id}
+                            className="bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                          >
+                            <option value="VIEWER">VIEWER</option>
+                            <option value="EDITOR">EDITOR</option>
+                            <option value="MANAGER">MANAGER</option>
+                          </select>
+                          <button
+                            onClick={() => void removeMember(m.id)}
+                            disabled={memberActionId === m.id}
+                            className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                  ))}
               </ul>
             )}
           </div>
