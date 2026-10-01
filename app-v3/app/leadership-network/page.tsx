@@ -90,9 +90,14 @@ export default function LeadershipNetworkPage() {
       <div>
         {/* HEADER */}
         <div className="border-b border-white/10 bg-[#070b19] px-6 py-2.5 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
-          <Link href="/" className="text-amber-400 font-bold hover:underline flex items-center gap-1">
-            ← Return to Digital Headquarters
-          </Link>
+                    <div className="flex items-center gap-4">
+            <Link href="/" className="text-amber-400 font-bold hover:underline flex items-center gap-1">
+              ← Return to Digital Headquarters
+            </Link>
+            <Link href="/campus" className="text-amber-400 font-bold hover:underline">
+              Institutional Campus →
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-gray-300 font-bold">PEOPLE &amp; YOUTH</span>
             <span>&middot;</span>
