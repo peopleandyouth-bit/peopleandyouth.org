@@ -1,7 +1,11 @@
-{
+﻿{
   "crons": [
     {
       "path": "/api/admin/investor-automation/scan",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/office-digest",
       "schedule": "0 6 * * *"
     }
   ]
