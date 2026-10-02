@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       let officeQuery = supabase
         .from('offices')
         .select(
-          'id, slug, name, level, office_number, mandate, responsibilities, facilities, tagline, hero_quote, hero_image_url, emblem_url, theme_slug, status, display_order, created_at, updated_at'
+          'id, slug, name, level, office_number, mandate, responsibilities, facilities, tagline, hero_quote, hero_image_url, emblem_url, theme_slug, status, display_order, division_id, created_at, updated_at'
         );
 
       if (slug) officeQuery = officeQuery.eq('slug', slug);
@@ -98,10 +98,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const { data: offices, error: listError } = await supabase
+        const { data: offices, error: listError } = await supabase
       .from('offices')
       .select(
-        'id, slug, name, level, office_number, mandate, facilities, tagline, theme_slug, status, display_order'
+        'id, slug, name, level, office_number, mandate, facilities, tagline, theme_slug, status, display_order, division_id'
       )
       .order('display_order', { ascending: true });
 

@@ -303,6 +303,31 @@ export default function OfficeDesk() {
   const [followerActionId, setFollowerActionId] = useState<string | null>(null);
   const [followerFilter, setFollowerFilter] = useState<string>('CONFIRMED');
 
+    // Career role map
+  type CareerRoleRow = {
+    id: string;
+    role_title: string;
+    division_id: string;
+    display_order: number;
+    notes: string | null;
+    updated_at: string;
+  };
+
+  type DivisionOption = {
+    id: string;
+    slug: string;
+    name: string;
+    icon: string | null;
+  };
+
+  const [careerRoles, setCareerRoles] = useState<CareerRoleRow[]>([]);
+  const [careerDivisions, setCareerDivisions] = useState<DivisionOption[]>([]);
+  const [careerRolesLoading, setCareerRolesLoading] = useState(false);
+  const [careerRolesError, setCareerRolesError] = useState('');
+  const [careerRoleActionId, setCareerRoleActionId] = useState<string | null>(null);
+  const [careerRoleFilter, setCareerRoleFilter] = useState<string>('ALL');
+  const [careerRoleSearch, setCareerRoleSearch] = useState('');
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -386,6 +411,26 @@ export default function OfficeDesk() {
       setCampusError(err instanceof Error ? err.message : 'Failed to load campus.');
     } finally {
       setCampusLoading(false);
+    }
+  }, []);
+
+    const loadCareerRoles = useCallback(async () => {
+    setCareerRolesLoading(true);
+    setCareerRolesError('');
+    try {
+      const res = await fetch('/api/admin/careers/role-division-map', {
+        cache: 'no-store',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setCareerRoles(json.roles ?? []);
+      setCareerDivisions(json.divisions ?? []);
+    } catch (err) {
+      setCareerRolesError(
+        err instanceof Error ? err.message : 'Failed to load career roles.'
+      );
+    } finally {
+      setCareerRolesLoading(false);
     }
   }, []);
 
@@ -524,10 +569,11 @@ export default function OfficeDesk() {
     }
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     void loadOffices();
     void loadCampus();
-  }, [loadOffices, loadCampus]);
+    void loadCareerRoles();
+  }, [loadOffices, loadCampus, loadCareerRoles]);
 
     useEffect(() => {
     if (selectedSlug) {
@@ -748,6 +794,24 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setFollowerActionId(null);
+    }
+  }
+
+    async function updateCareerRole(id: string, patch: Record<string, unknown>) {
+    setCareerRoleActionId(id);
+    try {
+      const res = await fetch('/api/admin/careers/role-division-map', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadCareerRoles();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setCareerRoleActionId(null);
     }
   }
 
@@ -2383,6 +2447,103 @@ export default function OfficeDesk() {
               >
                 Send Test Digest Now
               </button>
+            </div>
+          </div>
+
+                  {/* Career Roles → Division */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Career Roles → Division
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  How the 147 institutional career titles map to organisational
+                  divisions.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadCareerRoles()}
+                disabled={careerRolesLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {careerRolesLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {careerRolesError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {careerRolesError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                value={careerRoleSearch}
+                onChange={(e) => setCareerRoleSearch(e.target.value)}
+                placeholder="Search role title…"
+                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <select
+                value={careerRoleFilter}
+                onChange={(e) => setCareerRoleFilter(e.target.value)}
+                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              >
+                <option value="ALL">All divisions</option>
+                {careerDivisions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.icon ? `${d.icon} ` : ''}{d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1">
+              {careerRoles
+                .filter((r) => {
+                  if (careerRoleFilter !== 'ALL' && r.division_id !== careerRoleFilter) return false;
+                  if (
+                    careerRoleSearch.trim() &&
+                    !r.role_title.toLowerCase().includes(careerRoleSearch.toLowerCase())
+                  ) {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((r) => {
+                  const div = careerDivisions.find((d) => d.id === r.division_id);
+                  return (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between gap-2 rounded border border-gray-800 bg-[#070b19] px-2.5 py-1.5"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-[11px] text-gray-200 truncate block">
+                          {r.role_title}
+                        </span>
+                        {div && (
+                          <span className="text-[9px] text-gray-500">
+                            {div.icon ? `${div.icon} ` : ''}{div.name}
+                          </span>
+                        )}
+                      </div>
+                      <select
+                        value={r.division_id}
+                        onChange={(e) =>
+                          void updateCareerRole(r.id, { division_id: e.target.value })
+                        }
+                        disabled={careerRoleActionId === r.id}
+                        className="shrink-0 bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                      >
+                        {careerDivisions.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 
