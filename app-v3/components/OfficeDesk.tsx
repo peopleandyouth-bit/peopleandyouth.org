@@ -264,6 +264,13 @@ export default function OfficeDesk() {
   const [metaSubmitting, setMetaSubmitting] = useState(false);
   const [metaMessage, setMetaMessage] = useState('');
 
+    // Office appearance form
+  const [appearanceHeroImage, setAppearanceHeroImage] = useState('');
+  const [appearanceEmblem, setAppearanceEmblem] = useState('');
+  const [appearanceHeroQuote, setAppearanceHeroQuote] = useState('');
+  const [appearanceSubmitting, setAppearanceSubmitting] = useState(false);
+  const [appearanceMessage, setAppearanceMessage] = useState('');
+
   const loadOffices = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -452,12 +459,23 @@ export default function OfficeDesk() {
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
-  useEffect(() => {
+    useEffect(() => {
     if (!selected) return;
     setMetaName(selected.name);
     setMetaMandate(selected.mandate ?? '');
     setMetaTagline(selected.tagline ?? '');
     setMetaTheme(selected.theme_slug);
+
+    // Appearance fields — these are on the office row but not in the
+    // OfficeRow type yet, so read them defensively.
+    const o = selected as unknown as {
+      hero_image_url?: string | null;
+      emblem_url?: string | null;
+      hero_quote?: string | null;
+    };
+    setAppearanceHeroImage(o.hero_image_url ?? '');
+    setAppearanceEmblem(o.emblem_url ?? '');
+    setAppearanceHeroQuote(o.hero_quote ?? '');
   }, [selected]);
 
   async function submitNote(e: React.FormEvent) {
@@ -522,6 +540,32 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setArticleSubmitting(false);
+    }
+  }
+
+    async function submitAppearance(e: React.FormEvent) {
+    e.preventDefault();
+    setAppearanceSubmitting(true);
+    setAppearanceMessage('');
+    try {
+      const res = await fetch('/api/admin/office', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: selectedSlug,
+          hero_image_url: appearanceHeroImage.trim() || null,
+          emblem_url: appearanceEmblem.trim() || null,
+          hero_quote: appearanceHeroQuote.trim() || null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setAppearanceMessage('Appearance saved.');
+      await loadOffices();
+    } catch (err) {
+      setAppearanceMessage(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setAppearanceSubmitting(false);
     }
   }
 
@@ -897,6 +941,67 @@ export default function OfficeDesk() {
             </button>
           </form>
 
+                    {/* Office appearance */}
+          <form
+            onSubmit={submitAppearance}
+            className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-4"
+          >
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                Office Appearance
+              </h3>
+              <p className="mt-1 text-[11px] text-gray-400">
+                Visual identity for the public office page. Paste image URLs — no upload yet.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Hero Image URL (banner)" full>
+                <input
+                  type="url"
+                  value={appearanceHeroImage}
+                  onChange={(e) => setAppearanceHeroImage(e.target.value)}
+                  placeholder="https://images.example.com/banner.jpg"
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+
+              <Field label="Emblem URL (crest)">
+                <input
+                  type="url"
+                  value={appearanceEmblem}
+                  onChange={(e) => setAppearanceEmblem(e.target.value)}
+                  placeholder="https://images.example.com/crest.svg"
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+
+              <Field label="Hero Quote">
+                <input
+                  type="text"
+                  value={appearanceHeroQuote}
+                  onChange={(e) => setAppearanceHeroQuote(e.target.value)}
+                  placeholder="e.g. Ideas become consequential only when built."
+                  className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+              </Field>
+            </div>
+
+            {appearanceMessage && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                {appearanceMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={appearanceSubmitting}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+            >
+              {appearanceSubmitting ? 'Saving…' : 'Save Appearance'}
+            </button>
+          </form>
+            
           {/* Appointments */}
           <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">

@@ -291,6 +291,27 @@ export default function OfficePage() {
         </div>
       </div>
 
+      {/* Hero image banner */}
+      {data.office.hero_image_url && (
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ height: '260px', backgroundColor: theme.surface }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.office.hero_image_url}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-60"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to bottom, ${theme.bg}00, ${theme.bg} 85%)`,
+            }}
+          />
+        </div>
+      )}
+
       {/* Hero */}
       <header
         className="border-b"
@@ -330,12 +351,23 @@ export default function OfficePage() {
 
             {/* Office identity */}
             <div>
-              <p
-                className="text-[10px] font-bold uppercase tracking-[0.32em] mb-3"
-                style={{ color: theme.accent }}
-              >
-                {data.office.name}
-              </p>
+              <div className="flex items-center gap-3 mb-3">
+                {data.office.emblem_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={data.office.emblem_url}
+                    alt=""
+                    className="h-8 w-8 object-contain"
+                    style={{ filter: 'drop-shadow(0 0 6px rgba(0,0,0,0.4))' }}
+                  />
+                )}
+                <p
+                  className="text-[10px] font-bold uppercase tracking-[0.32em]"
+                  style={{ color: theme.accent }}
+                >
+                  {data.office.name}
+                </p>
+              </div>
 
               {isVacant ? (
                 <>
@@ -386,6 +418,18 @@ export default function OfficePage() {
                 >
                   &ldquo;{data.office.tagline}&rdquo;
                 </p>
+              )}
+
+              {data.office.hero_quote && (
+                <blockquote
+                  className="mt-4 border-l-2 pl-4 text-base sm:text-lg font-serif italic max-w-2xl"
+                  style={{
+                    borderColor: theme.accent,
+                    color: theme.heading,
+                  }}
+                >
+                  &ldquo;{data.office.hero_quote}&rdquo;
+                </blockquote>
               )}
 
               {data.office.mandate && (
