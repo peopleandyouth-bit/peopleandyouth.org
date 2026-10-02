@@ -228,6 +228,34 @@ export default function OfficeDesk() {
   const [campusActionId, setCampusActionId] = useState<string | null>(null);
   const [expandedZoneId, setExpandedZoneId] = useState<string | null>(null);
 
+  // Digest
+  type DigestPreferences = {
+    id: string;
+    frequency: string;
+    recipient_email: string | null;
+    include_appointments: boolean;
+    include_correspondence: boolean;
+    include_audit_summary: boolean;
+    last_sent_at: string | null;
+  };
+
+  type DigestLogRow = {
+    id: string;
+    frequency: string;
+    recipient_email: string;
+    pending_appointments: number;
+    unread_correspondence: number;
+    status: string;
+    sent_at: string;
+  };
+
+  const [digestPrefs, setDigestPrefs] = useState<DigestPreferences | null>(null);
+  const [digestLog, setDigestLog] = useState<DigestLogRow[]>([]);
+  const [digestLoading, setDigestLoading] = useState(false);
+  const [digestError, setDigestError] = useState('');
+  const [digestSaving, setDigestSaving] = useState(false);
+  const [digestMessage, setDigestMessage] = useState('');
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -304,6 +332,25 @@ export default function OfficeDesk() {
       setCampusError(err instanceof Error ? err.message : 'Failed to load campus.');
     } finally {
       setCampusLoading(false);
+    }
+  }, []);
+
+  const loadDigest = useCallback(async (slug: string) => {
+    setDigestLoading(true);
+    setDigestError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/digest?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setDigestPrefs(json.preferences ?? null);
+      setDigestLog(json.recent_log ?? []);
+    } catch (err) {
+      setDigestError(err instanceof Error ? err.message : 'Failed to load digest preferences.');
+    } finally {
+      setDigestLoading(false);
     }
   }, []);
 
@@ -399,8 +446,9 @@ export default function OfficeDesk() {
       void loadMembers(selectedSlug);
       void loadPermissions(selectedSlug);
       void loadAudit(selectedSlug, auditFilter || undefined);
+      void loadDigest(selectedSlug);
     }
-  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit]);
+  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -536,6 +584,27 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+
+  async function saveDigestPreferences(patch: Record<string, unknown>) {
+    setDigestSaving(true);
+    setDigestMessage('');
+    try {
+      const res = await fetch('/api/admin/office/digest', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ office_slug: selectedSlug, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setDigestPrefs(json.preferences);
+      setDigestMessage('Preferences saved.');
+      await loadDigest(selectedSlug);
+    } catch (err) {
+      setDigestMessage(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setDigestSaving(false);
     }
   }
 
@@ -1434,7 +1503,6 @@ export default function OfficeDesk() {
               </div>
             )}
 
-            {/* Office → Division assignment */}
             <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Assign office to a division
@@ -1473,7 +1541,6 @@ export default function OfficeDesk() {
               </div>
             </div>
 
-            {/* Zone tree */}
             <div className="space-y-2">
               {campusZones.map((z) => {
                 const zBuildings = campusBuildings.filter((b) => b.zone_id === z.id);
@@ -1601,6 +1668,159 @@ export default function OfficeDesk() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Digest */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Notifications Digest
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Email summary of pending items for this office.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadDigest(selectedSlug)}
+                disabled={digestLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {digestLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {digestError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {digestError}
+              </div>
+            )}
+
+            {digestPrefs && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Field label="Frequency">
+                  <select
+                    value={digestPrefs.frequency}
+                    onChange={(e) => void saveDigestPreferences({ frequency: e.target.value })}
+                    disabled={digestSaving}
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  >
+                    <option value="OFF">Off — no digest emails</option>
+                    <option value="DAILY">Daily</option>
+                    <option value="WEEKLY">Weekly</option>
+                  </select>
+                </Field>
+
+                <Field label="Recipient email (override)">
+                  <input
+                    type="email"
+                    defaultValue={digestPrefs.recipient_email ?? ''}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      if (v !== (digestPrefs.recipient_email ?? '')) {
+                        void saveDigestPreferences({ recipient_email: v || null });
+                      }
+                    }}
+                    placeholder="Leave empty to use officeholder email"
+                    className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+                  />
+                </Field>
+
+                <Field label="Include appointments" full>
+                  <label className="flex items-center gap-2 text-xs text-gray-300">
+                    <input
+                      type="checkbox"
+                      defaultChecked={digestPrefs.include_appointments}
+                      onChange={(e) => void saveDigestPreferences({ include_appointments: e.target.checked })}
+                      disabled={digestSaving}
+                    />
+                    Show pending appointment requests
+                  </label>
+                </Field>
+
+                <Field label="Include correspondence" full>
+                  <label className="flex items-center gap-2 text-xs text-gray-300">
+                    <input
+                      type="checkbox"
+                      defaultChecked={digestPrefs.include_correspondence}
+                      onChange={(e) => void saveDigestPreferences({ include_correspondence: e.target.checked })}
+                      disabled={digestSaving}
+                    />
+                    Show unread correspondence
+                  </label>
+                </Field>
+              </div>
+            )}
+
+            {digestMessage && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                {digestMessage}
+              </div>
+            )}
+
+            {digestPrefs?.last_sent_at && (
+              <p className="text-[10px] text-gray-500">
+                Last sent: {new Date(digestPrefs.last_sent_at).toLocaleString()}
+              </p>
+            )}
+
+            {digestLog.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-gray-800">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Recent sends
+                </p>
+                {digestLog.map((l) => (
+                  <div
+                    key={l.id}
+                    className="flex items-center justify-between gap-3 rounded border border-gray-800 bg-[#070b19] px-2.5 py-1.5 text-[10px]"
+                  >
+                    <span className="text-gray-400 truncate">
+                      {new Date(l.sent_at).toLocaleString()} · {l.recipient_email}
+                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-gray-500">
+                        {l.pending_appointments} appt · {l.unread_correspondence} corr
+                      </span>
+                      <span
+                        className={`font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                          l.status === 'SENT'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                            : l.status === 'FAILED'
+                              ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                              : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                        }`}
+                      >
+                        {l.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-gray-800">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">
+                Manual trigger (for testing)
+              </p>
+              <button
+                onClick={async () => {
+                  if (!confirm('Send a digest for this office right now? It will ignore the due check.')) return;
+                  const res = await fetch(
+                    `/api/cron/office-digest?office_slug=${encodeURIComponent(selectedSlug)}&force=true`
+                  );
+                  const json = await res.json();
+                  if (res.ok && json.success) {
+                    alert('Triggered. Check the response in DevTools Network tab.');
+                    await loadDigest(selectedSlug);
+                  } else {
+                    alert(json?.error ?? 'Failed to trigger.');
+                  }
+                }}
+                className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase hover:bg-amber-500/30"
+              >
+                Send Test Digest Now
+              </button>
             </div>
           </div>
 
