@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import AppointmentRequestModal from '@/components/AppointmentRequestModal';
 import CorrespondenceModal from '@/components/CorrespondenceModal';
+import FollowOfficeModal from '@/components/FollowOfficeModal';
 
 // ---------------------------------------------------------------------------
 // The 10 approved institutional themes, defined in one place so the public
@@ -206,6 +207,8 @@ export default function OfficePage() {
   const [notFound, setNotFound] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showCorrespondenceModal, setShowCorrespondenceModal] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followerCount, setFollowerCount] = useState<number>(0);
 
   useEffect(() => {
     async function load() {
@@ -233,6 +236,23 @@ export default function OfficePage() {
       }
     }
     void load();
+  }, [slug]);
+
+  useEffect(() => {
+    async function loadCount() {
+      if (!slug) return;
+      try {
+        const res = await fetch(
+          `/api/office/follow/count?office_slug=${encodeURIComponent(slug)}`,
+          { cache: 'no-store' }
+        );
+        const json = await res.json();
+        if (res.ok && json.success) setFollowerCount(json.follower_count ?? 0);
+      } catch {
+        // ignore — follower count is best-effort
+      }
+    }
+    void loadCount();
   }, [slug]);
 
   if (loading) {
@@ -364,7 +384,7 @@ export default function OfficePage() {
 
             {/* Office identity */}
             <div>
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
                 {data.office.emblem_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -380,6 +400,14 @@ export default function OfficePage() {
                 >
                   {data.office.name}
                 </p>
+                {followerCount > 0 && (
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider"
+                    style={{ color: theme.textMuted }}
+                  >
+                    · {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
+                  </span>
+                )}
               </div>
 
               {isVacant ? (
@@ -474,6 +502,16 @@ export default function OfficePage() {
                   }}
                 >
                   Contact the Office
+                </button>
+                <button
+                  onClick={() => setShowFollowModal(true)}
+                  className="rounded-lg px-5 py-2.5 text-xs font-bold uppercase tracking-wider border"
+                  style={{
+                    borderColor: theme.border,
+                    color: theme.text,
+                  }}
+                >
+                  Follow Office
                 </button>
                 <Link
                   href="/leadership-network"
@@ -671,7 +709,7 @@ export default function OfficePage() {
           </section>
         )}
 
-                {/* Projects — Current Work */}
+        {/* Projects — Current Work */}
         {data.projects && data.projects.length > 0 && (
           <section>
             <SectionHeading theme={theme} eyebrow="Current Work">
@@ -827,6 +865,22 @@ export default function OfficePage() {
           textMuted={theme.textMuted}
           bg={theme.bg}
           onClose={() => setShowCorrespondenceModal(false)}
+        />
+      )}
+
+      {showFollowModal && (
+        <FollowOfficeModal
+          officeSlug={data.office.slug}
+          officeName={data.office.name}
+          accent={theme.accent}
+          accentSoft={theme.accentSoft}
+          border={theme.border}
+          surface={theme.surface}
+          heading={theme.heading}
+          text={theme.text}
+          textMuted={theme.textMuted}
+          bg={theme.bg}
+          onClose={() => setShowFollowModal(false)}
         />
       )}
     </main>

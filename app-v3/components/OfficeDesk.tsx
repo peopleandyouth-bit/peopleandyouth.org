@@ -283,6 +283,26 @@ export default function OfficeDesk() {
   const [newProjectCollaborators, setNewProjectCollaborators] = useState('');
   const [newProjectSubmitting, setNewProjectSubmitting] = useState(false);
 
+    // Followers
+  type FollowerRow = {
+    id: string;
+    full_name: string;
+    email: string;
+    district: string;
+    organization: string | null;
+    designation: string | null;
+    interests: string[] | null;
+    status: string;
+    created_at: string;
+    confirmed_at: string | null;
+  };
+
+  const [followers, setFollowers] = useState<FollowerRow[]>([]);
+  const [followersLoading, setFollowersLoading] = useState(false);
+  const [followersError, setFollowersError] = useState('');
+  const [followerActionId, setFollowerActionId] = useState<string | null>(null);
+  const [followerFilter, setFollowerFilter] = useState<string>('CONFIRMED');
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -366,6 +386,25 @@ export default function OfficeDesk() {
       setCampusError(err instanceof Error ? err.message : 'Failed to load campus.');
     } finally {
       setCampusLoading(false);
+    }
+  }, []);
+
+    const loadFollowers = useCallback(async (slug: string, status?: string) => {
+    setFollowersLoading(true);
+    setFollowersError('');
+    try {
+      const params = new URLSearchParams({ office_slug: slug });
+      if (status && status !== 'ALL') params.set('status', status);
+      const res = await fetch(`/api/admin/office/followers?${params.toString()}`, {
+        cache: 'no-store',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setFollowers(json.followers ?? []);
+    } catch (err) {
+      setFollowersError(err instanceof Error ? err.message : 'Failed to load followers.');
+    } finally {
+      setFollowersLoading(false);
     }
   }, []);
 
@@ -490,7 +529,7 @@ export default function OfficeDesk() {
     void loadCampus();
   }, [loadOffices, loadCampus]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
@@ -500,8 +539,9 @@ export default function OfficeDesk() {
       void loadAudit(selectedSlug, auditFilter || undefined);
       void loadDigest(selectedSlug);
       void loadProjects(selectedSlug);
+      void loadFollowers(selectedSlug, followerFilter);
     }
-  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects]);
+  }, [selectedSlug, auditFilter, followerFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects, loadFollowers]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -672,6 +712,42 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+
+    async function resendConfirmation(id: string) {
+    setFollowerActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/followers', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'resend_confirmation' }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      alert('Confirmation email resent.');
+      await loadFollowers(selectedSlug, followerFilter);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setFollowerActionId(null);
+    }
+  }
+
+  async function removeFollower(id: string) {
+    if (!confirm('Remove this follower permanently?')) return;
+    setFollowerActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/followers?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadFollowers(selectedSlug, followerFilter);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setFollowerActionId(null);
     }
   }
 
@@ -2048,6 +2124,106 @@ export default function OfficeDesk() {
                           className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
                         >
                           Delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+                    {/* Followers */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Followers ({followers.filter((f) => f.status === 'CONFIRMED').length} confirmed / {followers.length} shown)
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Public subscribers to this office. Receive a weekly digest.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={followerFilter}
+                  onChange={(e) => setFollowerFilter(e.target.value)}
+                  className="bg-[#070b19] border border-gray-800 p-1.5 text-[10px] rounded text-white"
+                >
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="UNSUBSCRIBED">Unsubscribed</option>
+                  <option value="ALL">All</option>
+                </select>
+                <button
+                  onClick={() => void loadFollowers(selectedSlug, followerFilter)}
+                  disabled={followersLoading}
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+                >
+                  {followersLoading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+            </div>
+
+            {followersError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {followersError}
+              </div>
+            )}
+
+            {followers.length === 0 ? (
+              <p className="text-xs text-gray-500">No followers in this category.</p>
+            ) : (
+              <ul className="space-y-2">
+                {followers.map((f) => (
+                  <li
+                    key={f.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">{f.full_name}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              f.status === 'CONFIRMED'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : f.status === 'PENDING'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {f.status}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-[10px] text-gray-500 truncate">
+                          {f.email}
+                          {f.district ? ` · ${f.district}` : ''}
+                          {f.organization ? ` · ${f.organization}` : ''}
+                        </p>
+                        {f.interests && f.interests.length > 0 && (
+                          <p className="mt-1 text-[10px] text-gray-400">
+                            Interests: {f.interests.join(' · ')}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        {f.status === 'PENDING' && (
+                          <button
+                            onClick={() => void resendConfirmation(f.id)}
+                            disabled={followerActionId === f.id}
+                            className="px-2 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded text-[10px] font-bold uppercase hover:bg-cyan-500/30 disabled:opacity-40"
+                          >
+                            Resend
+                          </button>
+                        )}
+                        <button
+                          onClick={() => void removeFollower(f.id)}
+                          disabled={followerActionId === f.id}
+                          className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                        >
+                          Remove
                         </button>
                       </div>
                     </div>
