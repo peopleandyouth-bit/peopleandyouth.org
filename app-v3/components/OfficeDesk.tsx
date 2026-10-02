@@ -256,6 +256,33 @@ export default function OfficeDesk() {
   const [digestSaving, setDigestSaving] = useState(false);
   const [digestMessage, setDigestMessage] = useState('');
 
+  // Projects
+  type ProjectRow = {
+    id: string;
+    office_id: string;
+    title: string;
+    description: string | null;
+    status: string;
+    collaborators: string[] | null;
+    visibility: string;
+    started_at: string | null;
+    completed_at: string | null;
+    display_order: number;
+    created_at: string;
+  };
+
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsError, setProjectsError] = useState('');
+  const [projectActionId, setProjectActionId] = useState<string | null>(null);
+
+  const [newProjectTitle, setNewProjectTitle] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [newProjectStatus, setNewProjectStatus] = useState<'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED'>('ACTIVE');
+  const [newProjectVisibility, setNewProjectVisibility] = useState<'PUBLIC' | 'INTERNAL' | 'RESTRICTED'>('PUBLIC');
+  const [newProjectCollaborators, setNewProjectCollaborators] = useState('');
+  const [newProjectSubmitting, setNewProjectSubmitting] = useState(false);
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -264,7 +291,7 @@ export default function OfficeDesk() {
   const [metaSubmitting, setMetaSubmitting] = useState(false);
   const [metaMessage, setMetaMessage] = useState('');
 
-    // Office appearance form
+  // Office appearance form
   const [appearanceHeroImage, setAppearanceHeroImage] = useState('');
   const [appearanceEmblem, setAppearanceEmblem] = useState('');
   const [appearanceHeroQuote, setAppearanceHeroQuote] = useState('');
@@ -339,6 +366,24 @@ export default function OfficeDesk() {
       setCampusError(err instanceof Error ? err.message : 'Failed to load campus.');
     } finally {
       setCampusLoading(false);
+    }
+  }, []);
+
+  const loadProjects = useCallback(async (slug: string) => {
+    setProjectsLoading(true);
+    setProjectsError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/projects?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setProjects(json.projects ?? []);
+    } catch (err) {
+      setProjectsError(err instanceof Error ? err.message : 'Failed to load projects.');
+    } finally {
+      setProjectsLoading(false);
     }
   }, []);
 
@@ -454,20 +499,19 @@ export default function OfficeDesk() {
       void loadPermissions(selectedSlug);
       void loadAudit(selectedSlug, auditFilter || undefined);
       void loadDigest(selectedSlug);
+      void loadProjects(selectedSlug);
     }
-  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest]);
+  }, [selectedSlug, auditFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
-    useEffect(() => {
+  useEffect(() => {
     if (!selected) return;
     setMetaName(selected.name);
     setMetaMandate(selected.mandate ?? '');
     setMetaTagline(selected.tagline ?? '');
     setMetaTheme(selected.theme_slug);
 
-    // Appearance fields — these are on the office row but not in the
-    // OfficeRow type yet, so read them defensively.
     const o = selected as unknown as {
       hero_image_url?: string | null;
       emblem_url?: string | null;
@@ -543,32 +587,6 @@ export default function OfficeDesk() {
     }
   }
 
-    async function submitAppearance(e: React.FormEvent) {
-    e.preventDefault();
-    setAppearanceSubmitting(true);
-    setAppearanceMessage('');
-    try {
-      const res = await fetch('/api/admin/office', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug: selectedSlug,
-          hero_image_url: appearanceHeroImage.trim() || null,
-          emblem_url: appearanceEmblem.trim() || null,
-          hero_quote: appearanceHeroQuote.trim() || null,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
-      setAppearanceMessage('Appearance saved.');
-      await loadOffices();
-    } catch (err) {
-      setAppearanceMessage(err instanceof Error ? err.message : 'Failed.');
-    } finally {
-      setAppearanceSubmitting(false);
-    }
-  }
-
   async function submitMeta(e: React.FormEvent) {
     e.preventDefault();
     setMetaSubmitting(true);
@@ -593,6 +611,32 @@ export default function OfficeDesk() {
       setMetaMessage(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setMetaSubmitting(false);
+    }
+  }
+
+  async function submitAppearance(e: React.FormEvent) {
+    e.preventDefault();
+    setAppearanceSubmitting(true);
+    setAppearanceMessage('');
+    try {
+      const res = await fetch('/api/admin/office', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: selectedSlug,
+          hero_image_url: appearanceHeroImage.trim() || null,
+          emblem_url: appearanceEmblem.trim() || null,
+          hero_quote: appearanceHeroQuote.trim() || null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setAppearanceMessage('Appearance saved.');
+      await loadOffices();
+    } catch (err) {
+      setAppearanceMessage(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setAppearanceSubmitting(false);
     }
   }
 
@@ -628,6 +672,80 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setAppointmentActionId(null);
+    }
+  }
+
+  async function createProject() {
+    if (!newProjectTitle.trim()) {
+      alert('Title is required.');
+      return;
+    }
+    setNewProjectSubmitting(true);
+    try {
+      const collaborators = newProjectCollaborators
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean);
+
+      const res = await fetch('/api/admin/office/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          title: newProjectTitle.trim(),
+          description: newProjectDescription.trim() || null,
+          status: newProjectStatus,
+          visibility: newProjectVisibility,
+          collaborators,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNewProjectTitle('');
+      setNewProjectDescription('');
+      setNewProjectStatus('ACTIVE');
+      setNewProjectVisibility('PUBLIC');
+      setNewProjectCollaborators('');
+      await loadProjects(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNewProjectSubmitting(false);
+    }
+  }
+
+  async function updateProject(id: string, patch: Record<string, unknown>) {
+    setProjectActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadProjects(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setProjectActionId(null);
+    }
+  }
+
+  async function deleteProject(id: string) {
+    if (!confirm('Delete this project?')) return;
+    setProjectActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/projects?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadProjects(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setProjectActionId(null);
     }
   }
 
@@ -941,7 +1059,7 @@ export default function OfficeDesk() {
             </button>
           </form>
 
-                    {/* Office appearance */}
+          {/* Office appearance */}
           <form
             onSubmit={submitAppearance}
             className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-4"
@@ -971,7 +1089,7 @@ export default function OfficeDesk() {
                   type="url"
                   value={appearanceEmblem}
                   onChange={(e) => setAppearanceEmblem(e.target.value)}
-                  placeholder="https://images.example.com/crest.svg"
+                  placeholder="https://images.example.com/crest.png"
                   className="w-full bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
                 />
               </Field>
@@ -1001,7 +1119,7 @@ export default function OfficeDesk() {
               {appearanceSubmitting ? 'Saving…' : 'Save Appearance'}
             </button>
           </form>
-            
+
           {/* Appointments */}
           <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -1270,6 +1388,7 @@ export default function OfficeDesk() {
                   <option value="">All events</option>
                   <option value="CONTENT_CREATED">Content created</option>
                   <option value="CONTENT_DELETED">Content deleted</option>
+                  <option value="CONTENT_UPDATED">Content updated</option>
                   <option value="GRANT_CREATED">Grant created</option>
                   <option value="GRANT_REVOKED">Grant revoked</option>
                   <option value="MEMBER_ADDED">Member added</option>
@@ -1774,6 +1893,168 @@ export default function OfficeDesk() {
                 );
               })}
             </div>
+          </div>
+
+          {/* Projects */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Projects ({projects.filter((p) => p.status === 'ACTIVE').length} active / {projects.length} total)
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Institutional project portfolio for this office.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadProjects(selectedSlug)}
+                disabled={projectsLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {projectsLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {projectsError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {projectsError}
+              </div>
+            )}
+
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                New project
+              </p>
+              <input
+                value={newProjectTitle}
+                onChange={(e) => setNewProjectTitle(e.target.value)}
+                placeholder="Project title *"
+                className="w-full bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <textarea
+                value={newProjectDescription}
+                onChange={(e) => setNewProjectDescription(e.target.value)}
+                rows={2}
+                placeholder="Description"
+                className="w-full bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <input
+                value={newProjectCollaborators}
+                onChange={(e) => setNewProjectCollaborators(e.target.value)}
+                placeholder="Collaborators (comma separated, optional)"
+                className="w-full bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <select
+                  value={newProjectStatus}
+                  onChange={(e) =>
+                    setNewProjectStatus(e.target.value as 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED')
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="PAUSED">PAUSED</option>
+                  <option value="COMPLETED">COMPLETED</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
+                </select>
+                <select
+                  value={newProjectVisibility}
+                  onChange={(e) =>
+                    setNewProjectVisibility(e.target.value as 'PUBLIC' | 'INTERNAL' | 'RESTRICTED')
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="PUBLIC">PUBLIC</option>
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="RESTRICTED">RESTRICTED</option>
+                </select>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => void createProject()}
+                  disabled={newProjectSubmitting || !newProjectTitle.trim()}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+                >
+                  {newProjectSubmitting ? 'Creating…' : 'Create Project'}
+                </button>
+              </div>
+            </div>
+
+            {projects.length === 0 ? (
+              <p className="text-xs text-gray-500">No projects yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {projects.map((p) => (
+                  <li
+                    key={p.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">{p.title}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              p.status === 'ACTIVE'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : p.status === 'PAUSED'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : p.status === 'COMPLETED'
+                                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                    : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              p.visibility === 'PUBLIC'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : p.visibility === 'INTERNAL'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-red-500/20 text-red-300 border-red-500/40'
+                            }`}
+                          >
+                            {p.visibility}
+                          </span>
+                        </div>
+                        {p.description && (
+                          <p className="mt-1 text-[11px] text-gray-400 line-clamp-2">
+                            {p.description}
+                          </p>
+                        )}
+                        {p.collaborators && p.collaborators.length > 0 && (
+                          <p className="mt-1 text-[10px] text-gray-500">
+                            Collaborators: {p.collaborators.join(', ')}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <select
+                          value={p.status}
+                          onChange={(e) => void updateProject(p.id, { status: e.target.value })}
+                          disabled={projectActionId === p.id}
+                          className="bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                        >
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="PAUSED">PAUSED</option>
+                          <option value="COMPLETED">COMPLETED</option>
+                          <option value="ARCHIVED">ARCHIVED</option>
+                        </select>
+                        <button
+                          onClick={() => void deleteProject(p.id)}
+                          disabled={projectActionId === p.id}
+                          className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Digest */}

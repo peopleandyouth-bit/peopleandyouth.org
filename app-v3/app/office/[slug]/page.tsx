@@ -176,12 +176,25 @@ type ContentRow = {
   published_at: string | null;
 };
 
+type ProjectRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  collaborators: string[] | null;
+  visibility: string;
+  started_at: string | null;
+  completed_at: string | null;
+  display_order: number;
+};
+
 type ApiResponse = {
   success: boolean;
   office: Office;
   assignment: Assignment | null;
   author: Author | null;
   content: ContentRow[];
+  projects?: ProjectRow[];
 };
 
 export default function OfficePage() {
@@ -652,6 +665,69 @@ export default function OfficePage() {
                     <span>{n.published_at ? new Date(n.published_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Draft'}</span>
                     {n.tags && n.tags.length > 0 && <span>{n.tags.join(' · ')}</span>}
                   </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+                {/* Projects — Current Work */}
+        {data.projects && data.projects.length > 0 && (
+          <section>
+            <SectionHeading theme={theme} eyebrow="Current Work">
+              Projects
+            </SectionHeading>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.projects.map((p) => (
+                <article
+                  key={p.id}
+                  className="rounded-lg border p-5 flex flex-col"
+                  style={{
+                    borderColor: theme.border,
+                    backgroundColor: theme.surface,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <h3
+                      className="text-base font-bold"
+                      style={{ color: theme.heading }}
+                    >
+                      {p.title}
+                    </h3>
+                    <span
+                      className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
+                      style={{
+                        borderColor:
+                          p.status === 'ACTIVE'
+                            ? theme.accent
+                            : p.status === 'COMPLETED'
+                              ? theme.accent
+                              : theme.border,
+                        color: theme.accent,
+                        backgroundColor: theme.accentSoft,
+                      }}
+                    >
+                      {p.status}
+                    </span>
+                  </div>
+
+                  {p.description && (
+                    <p
+                      className="text-xs leading-relaxed flex-1 mb-3"
+                      style={{ color: theme.text }}
+                    >
+                      {p.description}
+                    </p>
+                  )}
+
+                  {p.collaborators && p.collaborators.length > 0 && (
+                    <div
+                      className="mt-2 pt-2 border-t text-[10px]"
+                      style={{ borderColor: theme.border, color: theme.textMuted }}
+                    >
+                      Collaborators: {p.collaborators.join(' · ')}
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
