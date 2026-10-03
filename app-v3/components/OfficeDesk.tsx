@@ -368,6 +368,49 @@ export default function OfficeDesk() {
   const [newResearchDoi, setNewResearchDoi] = useState('');
   const [newResearchSubmitting, setNewResearchSubmitting] = useState(false);
 
+  // Library
+  type LibraryRow = {
+    id: string;
+    office_id: string;
+    title: string;
+    author: string | null;
+    publisher: string | null;
+    year: number | null;
+    isbn: string | null;
+    description: string | null;
+    cover_image_url: string | null;
+    item_type: string;
+    external_url: string | null;
+    document_url: string | null;
+    category: string | null;
+    recommendation_note: string | null;
+    classification: string;
+    featured: boolean;
+    display_order: number;
+    created_at: string;
+  };
+
+  const [library, setLibrary] = useState<LibraryRow[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryError, setLibraryError] = useState('');
+  const [libraryActionId, setLibraryActionId] = useState<string | null>(null);
+
+  const [newLibraryTitle, setNewLibraryTitle] = useState('');
+  const [newLibraryAuthor, setNewLibraryAuthor] = useState('');
+  const [newLibraryYear, setNewLibraryYear] = useState('');
+  const [newLibraryIsbn, setNewLibraryIsbn] = useState('');
+  const [newLibraryPublisher, setNewLibraryPublisher] = useState('');
+  const [newLibraryDescription, setNewLibraryDescription] = useState('');
+  const [newLibraryCoverUrl, setNewLibraryCoverUrl] = useState('');
+  const [newLibraryType, setNewLibraryType] = useState<'BOOK' | 'PAPER' | 'REPORT' | 'DOCUMENT' | 'RESOURCE' | 'READING_LIST'>('BOOK');
+  const [newLibraryExternalUrl, setNewLibraryExternalUrl] = useState('');
+  const [newLibraryDocumentUrl, setNewLibraryDocumentUrl] = useState('');
+  const [newLibraryCategory, setNewLibraryCategory] = useState('');
+  const [newLibraryRecommendationNote, setNewLibraryRecommendationNote] = useState('');
+  const [newLibraryClassification, setNewLibraryClassification] = useState<'PUBLIC' | 'INTERNAL' | 'PRIVATE'>('PUBLIC');
+  const [newLibraryFeatured, setNewLibraryFeatured] = useState(false);
+  const [newLibrarySubmitting, setNewLibrarySubmitting] = useState(false);
+
   // Office metadata form
   const [metaName, setMetaName] = useState('');
   const [metaMandate, setMetaMandate] = useState('');
@@ -511,6 +554,24 @@ export default function OfficeDesk() {
     }
   }, []);
 
+  const loadLibrary = useCallback(async (slug: string) => {
+    setLibraryLoading(true);
+    setLibraryError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/library?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setLibrary(json.library ?? []);
+    } catch (err) {
+      setLibraryError(err instanceof Error ? err.message : 'Failed to load library.');
+    } finally {
+      setLibraryLoading(false);
+    }
+  }, []);
+
   const loadResearch = useCallback(async (slug: string) => {
     setResearchLoading(true);
     setResearchError('');
@@ -645,8 +706,9 @@ export default function OfficeDesk() {
       void loadProjects(selectedSlug);
       void loadFollowers(selectedSlug, followerFilter);
       void loadResearch(selectedSlug);
+      void loadLibrary(selectedSlug);
     }
-  }, [selectedSlug, auditFilter, followerFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects, loadFollowers, loadResearch]);
+  }, [selectedSlug, auditFilter, followerFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects, loadFollowers, loadResearch, loadLibrary]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -945,6 +1007,93 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setProjectActionId(null);
+    }
+  }
+
+  async function createLibraryItem() {
+    if (!newLibraryTitle.trim()) {
+      alert('Title is required.');
+      return;
+    }
+    setNewLibrarySubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          title: newLibraryTitle.trim(),
+          author: newLibraryAuthor.trim() || null,
+          publisher: newLibraryPublisher.trim() || null,
+          year: newLibraryYear ? Number(newLibraryYear) : null,
+          isbn: newLibraryIsbn.trim() || null,
+          description: newLibraryDescription.trim() || null,
+          cover_image_url: newLibraryCoverUrl.trim() || null,
+          item_type: newLibraryType,
+          external_url: newLibraryExternalUrl.trim() || null,
+          document_url: newLibraryDocumentUrl.trim() || null,
+          category: newLibraryCategory.trim() || null,
+          recommendation_note: newLibraryRecommendationNote.trim() || null,
+          classification: newLibraryClassification,
+          featured: newLibraryFeatured,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNewLibraryTitle('');
+      setNewLibraryAuthor('');
+      setNewLibraryPublisher('');
+      setNewLibraryYear('');
+      setNewLibraryIsbn('');
+      setNewLibraryDescription('');
+      setNewLibraryCoverUrl('');
+      setNewLibraryType('BOOK');
+      setNewLibraryExternalUrl('');
+      setNewLibraryDocumentUrl('');
+      setNewLibraryCategory('');
+      setNewLibraryRecommendationNote('');
+      setNewLibraryClassification('PUBLIC');
+      setNewLibraryFeatured(false);
+      await loadLibrary(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNewLibrarySubmitting(false);
+    }
+  }
+
+  async function updateLibraryItem(id: string, patch: Record<string, unknown>) {
+    setLibraryActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/library', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadLibrary(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setLibraryActionId(null);
+    }
+  }
+
+  async function deleteLibraryItem(id: string) {
+    if (!confirm('Delete this library item?')) return;
+    setLibraryActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/library?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadLibrary(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setLibraryActionId(null);
     }
   }
 
@@ -2542,6 +2691,249 @@ export default function OfficeDesk() {
                         <button
                           onClick={() => void deleteResearch(r.id)}
                           disabled={researchActionId === r.id}
+                          className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Library */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Library ({library.filter((l) => l.featured).length} featured / {library.length} total)
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Books, papers, and resources for this office.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadLibrary(selectedSlug)}
+                disabled={libraryLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {libraryLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {libraryError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {libraryError}
+              </div>
+            )}
+
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                New library item
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  value={newLibraryTitle}
+                  onChange={(e) => setNewLibraryTitle(e.target.value)}
+                  placeholder="Title *"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white sm:col-span-2"
+                />
+                <input
+                  value={newLibraryAuthor}
+                  onChange={(e) => setNewLibraryAuthor(e.target.value)}
+                  placeholder="Author"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newLibraryPublisher}
+                  onChange={(e) => setNewLibraryPublisher(e.target.value)}
+                  placeholder="Publisher"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="number"
+                  value={newLibraryYear}
+                  onChange={(e) => setNewLibraryYear(e.target.value)}
+                  placeholder="Year"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newLibraryIsbn}
+                  onChange={(e) => setNewLibraryIsbn(e.target.value)}
+                  placeholder="ISBN"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <select
+                  value={newLibraryType}
+                  onChange={(e) =>
+                    setNewLibraryType(
+                      e.target.value as 'BOOK' | 'PAPER' | 'REPORT' | 'DOCUMENT' | 'RESOURCE' | 'READING_LIST'
+                    )
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="BOOK">BOOK</option>
+                  <option value="PAPER">PAPER</option>
+                  <option value="REPORT">REPORT</option>
+                  <option value="DOCUMENT">DOCUMENT</option>
+                  <option value="RESOURCE">RESOURCE</option>
+                  <option value="READING_LIST">READING_LIST</option>
+                </select>
+                <select
+                  value={newLibraryClassification}
+                  onChange={(e) =>
+                    setNewLibraryClassification(e.target.value as 'PUBLIC' | 'INTERNAL' | 'PRIVATE')
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="PUBLIC">PUBLIC</option>
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="PRIVATE">PRIVATE</option>
+                </select>
+                <input
+                  type="url"
+                  value={newLibraryCoverUrl}
+                  onChange={(e) => setNewLibraryCoverUrl(e.target.value)}
+                  placeholder="Cover image URL"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="url"
+                  value={newLibraryExternalUrl}
+                  onChange={(e) => setNewLibraryExternalUrl(e.target.value)}
+                  placeholder="External URL (Goodreads, etc.)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="url"
+                  value={newLibraryDocumentUrl}
+                  onChange={(e) => setNewLibraryDocumentUrl(e.target.value)}
+                  placeholder="Document URL (PDF)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newLibraryCategory}
+                  onChange={(e) => setNewLibraryCategory(e.target.value)}
+                  placeholder="Category"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <label className="flex items-center gap-2 text-xs text-gray-300 sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={newLibraryFeatured}
+                    onChange={(e) => setNewLibraryFeatured(e.target.checked)}
+                  />
+                  Featured item
+                </label>
+                <textarea
+                  value={newLibraryDescription}
+                  onChange={(e) => setNewLibraryDescription(e.target.value)}
+                  rows={2}
+                  placeholder="Description"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white sm:col-span-2"
+                />
+                <textarea
+                  value={newLibraryRecommendationNote}
+                  onChange={(e) => setNewLibraryRecommendationNote(e.target.value)}
+                  rows={2}
+                  placeholder="Recommendation note (why this is on the shelf)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white sm:col-span-2"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => void createLibraryItem()}
+                  disabled={newLibrarySubmitting || !newLibraryTitle.trim()}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+                >
+                  {newLibrarySubmitting ? 'Creating…' : 'Add to Library'}
+                </button>
+              </div>
+            </div>
+
+            {library.length === 0 ? (
+              <p className="text-xs text-gray-500">No library items yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {library.map((l) => (
+                  <li
+                    key={l.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">{l.title}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              l.item_type === 'BOOK'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : l.item_type === 'PAPER'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {l.item_type}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              l.classification === 'PUBLIC'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : l.classification === 'INTERNAL'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : 'bg-red-500/20 text-red-300 border-red-500/40'
+                            }`}
+                          >
+                            {l.classification}
+                          </span>
+                          {l.featured && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                        {l.author && (
+                          <p className="mt-1 text-[10px] text-gray-500">
+                            {l.author}
+                            {l.year ? ` · ${l.year}` : ''}
+                            {l.publisher ? ` · ${l.publisher}` : ''}
+                          </p>
+                        )}
+                        {l.category && (
+                          <p className="mt-0.5 text-[10px] text-gray-400">
+                            Category: {l.category}
+                          </p>
+                        )}
+                        {l.recommendation_note && (
+                          <p className="mt-1 text-[11px] text-gray-400 italic line-clamp-2">
+                            {l.recommendation_note}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <select
+                          value={l.classification}
+                          onChange={(e) => void updateLibraryItem(l.id, { classification: e.target.value })}
+                          disabled={libraryActionId === l.id}
+                          className="bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                        >
+                          <option value="PUBLIC">PUBLIC</option>
+                          <option value="INTERNAL">INTERNAL</option>
+                          <option value="PRIVATE">PRIVATE</option>
+                        </select>
+                        <button
+                          onClick={() => void updateLibraryItem(l.id, { featured: !l.featured })}
+                          disabled={libraryActionId === l.id}
+                          className="px-2 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold uppercase hover:bg-amber-500/30 disabled:opacity-40"
+                        >
+                          {l.featured ? 'Unfeature' : 'Feature'}
+                        </button>
+                        <button
+                          onClick={() => void deleteLibraryItem(l.id)}
+                          disabled={libraryActionId === l.id}
                           className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
                         >
                           Delete

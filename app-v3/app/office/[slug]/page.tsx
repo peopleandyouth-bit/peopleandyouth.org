@@ -205,6 +205,24 @@ type ResearchRow = {
   display_order: number;
 };
 
+type LibraryRow = {
+  id: string;
+  title: string;
+  author: string | null;
+  publisher: string | null;
+  year: number | null;
+  isbn: string | null;
+  description: string | null;
+  cover_image_url: string | null;
+  item_type: string;
+  external_url: string | null;
+  document_url: string | null;
+  category: string | null;
+  recommendation_note: string | null;
+  featured: boolean;
+  display_order: number;
+};
+
 type ApiResponse = {
   success: boolean;
   office: Office;
@@ -213,6 +231,7 @@ type ApiResponse = {
   content: ContentRow[];
   projects?: ProjectRow[];
   research?: ResearchRow[];
+  library?: LibraryRow[];
 };
 
 export default function OfficePage() {
@@ -888,6 +907,119 @@ export default function OfficePage() {
                       Read paper →
                     </a>
                   )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+                {/* Library */}
+        {data.library && data.library.length > 0 && (
+          <section>
+            <SectionHeading theme={theme} eyebrow="The Office Library">
+              Books &amp; Resources
+            </SectionHeading>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {data.library.map((item) => (
+                <article
+                  key={item.id}
+                  className="rounded-lg border flex flex-col overflow-hidden"
+                  style={{
+                    borderColor: theme.border,
+                    backgroundColor: theme.surface,
+                  }}
+                >
+                  {/* Cover */}
+                  <div
+                    className="relative w-full aspect-[2/3] flex items-center justify-center"
+                    style={{ backgroundColor: theme.accentSoft }}
+                  >
+                    {item.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.cover_image_url}
+                        alt={item.title}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        className="text-[10px] uppercase tracking-[0.2em] text-center px-3"
+                        style={{ color: theme.textMuted }}
+                      >
+                        {item.item_type}
+                      </span>
+                    )}
+                    {item.featured && (
+                      <span
+                        className="absolute top-2 right-2 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                        style={{
+                          backgroundColor: theme.accent,
+                          color: theme.bg,
+                        }}
+                      >
+                        Featured
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Meta */}
+                  <div className="p-3 flex-1 flex flex-col">
+                    <h3
+                      className="text-xs font-bold leading-snug mb-1 line-clamp-2"
+                      style={{ color: theme.heading }}
+                    >
+                      {item.title}
+                    </h3>
+                    {item.author && (
+                      <p className="text-[10px] mb-1" style={{ color: theme.textMuted }}>
+                        {item.author}
+                        {item.year ? ` · ${item.year}` : ''}
+                      </p>
+                    )}
+                    {item.category && (
+                      <span
+                        className="self-start text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border mb-2"
+                        style={{
+                          borderColor: theme.border,
+                          color: theme.accent,
+                          backgroundColor: theme.accentSoft,
+                        }}
+                      >
+                        {item.category}
+                      </span>
+                    )}
+                    {item.recommendation_note && (
+                      <p
+                        className="text-[10px] leading-relaxed flex-1 line-clamp-3"
+                        style={{ color: theme.text }}
+                      >
+                        {item.recommendation_note}
+                      </p>
+                    )}
+                    <div className="mt-2 pt-2 border-t" style={{ borderColor: theme.border }}>
+                      {item.external_url ? (
+                        <a
+                          href={item.external_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] font-bold uppercase tracking-wider"
+                          style={{ color: theme.accent }}
+                        >
+                          View resource →
+                        </a>
+                      ) : item.document_url ? (
+                        <a
+                          href={item.document_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] font-bold uppercase tracking-wider"
+                          style={{ color: theme.accent }}
+                        >
+                          Read document →
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
                 </article>
               ))}
             </div>
