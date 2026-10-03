@@ -283,7 +283,7 @@ export default function OfficeDesk() {
   const [newProjectCollaborators, setNewProjectCollaborators] = useState('');
   const [newProjectSubmitting, setNewProjectSubmitting] = useState(false);
 
-    // Followers
+  // Followers
   type FollowerRow = {
     id: string;
     full_name: string;
@@ -303,7 +303,7 @@ export default function OfficeDesk() {
   const [followerActionId, setFollowerActionId] = useState<string | null>(null);
   const [followerFilter, setFollowerFilter] = useState<string>('CONFIRMED');
 
-    // Career role map
+  // Career role map
   type CareerRoleRow = {
     id: string;
     role_title: string;
@@ -327,6 +327,46 @@ export default function OfficeDesk() {
   const [careerRoleActionId, setCareerRoleActionId] = useState<string | null>(null);
   const [careerRoleFilter, setCareerRoleFilter] = useState<string>('ALL');
   const [careerRoleSearch, setCareerRoleSearch] = useState('');
+
+  // Research
+  type ResearchRow = {
+    id: string;
+    office_id: string;
+    title: string;
+    abstract: string | null;
+    authors: string[] | null;
+    keywords: string[] | null;
+    category: string | null;
+    document_url: string | null;
+    cover_image_url: string | null;
+    pages: number | null;
+    doi: string | null;
+    status: string;
+    classification: string;
+    version: string;
+    published_at: string | null;
+    archived_at: string | null;
+    display_order: number;
+    created_at: string;
+  };
+
+  const [research, setResearch] = useState<ResearchRow[]>([]);
+  const [researchLoading, setResearchLoading] = useState(false);
+  const [researchError, setResearchError] = useState('');
+  const [researchActionId, setResearchActionId] = useState<string | null>(null);
+
+  const [newResearchTitle, setNewResearchTitle] = useState('');
+  const [newResearchAbstract, setNewResearchAbstract] = useState('');
+  const [newResearchAuthors, setNewResearchAuthors] = useState('');
+  const [newResearchKeywords, setNewResearchKeywords] = useState('');
+  const [newResearchCategory, setNewResearchCategory] = useState('');
+  const [newResearchDocumentUrl, setNewResearchDocumentUrl] = useState('');
+  const [newResearchStatus, setNewResearchStatus] = useState<'WORKING_PAPER' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>('WORKING_PAPER');
+  const [newResearchClassification, setNewResearchClassification] = useState<'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED'>('PUBLIC');
+  const [newResearchVersion, setNewResearchVersion] = useState('1.0');
+  const [newResearchPages, setNewResearchPages] = useState('');
+  const [newResearchDoi, setNewResearchDoi] = useState('');
+  const [newResearchSubmitting, setNewResearchSubmitting] = useState(false);
 
   // Office metadata form
   const [metaName, setMetaName] = useState('');
@@ -414,7 +454,7 @@ export default function OfficeDesk() {
     }
   }, []);
 
-    const loadCareerRoles = useCallback(async () => {
+  const loadCareerRoles = useCallback(async () => {
     setCareerRolesLoading(true);
     setCareerRolesError('');
     try {
@@ -434,7 +474,7 @@ export default function OfficeDesk() {
     }
   }, []);
 
-    const loadFollowers = useCallback(async (slug: string, status?: string) => {
+  const loadFollowers = useCallback(async (slug: string, status?: string) => {
     setFollowersLoading(true);
     setFollowersError('');
     try {
@@ -468,6 +508,24 @@ export default function OfficeDesk() {
       setProjectsError(err instanceof Error ? err.message : 'Failed to load projects.');
     } finally {
       setProjectsLoading(false);
+    }
+  }, []);
+
+  const loadResearch = useCallback(async (slug: string) => {
+    setResearchLoading(true);
+    setResearchError('');
+    try {
+      const res = await fetch(
+        `/api/admin/office/research?office_slug=${encodeURIComponent(slug)}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setResearch(json.research ?? []);
+    } catch (err) {
+      setResearchError(err instanceof Error ? err.message : 'Failed to load research.');
+    } finally {
+      setResearchLoading(false);
     }
   }, []);
 
@@ -569,13 +627,13 @@ export default function OfficeDesk() {
     }
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     void loadOffices();
     void loadCampus();
     void loadCareerRoles();
   }, [loadOffices, loadCampus, loadCareerRoles]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (selectedSlug) {
       void loadContent(selectedSlug);
       void loadAppointments(selectedSlug);
@@ -586,8 +644,9 @@ export default function OfficeDesk() {
       void loadDigest(selectedSlug);
       void loadProjects(selectedSlug);
       void loadFollowers(selectedSlug, followerFilter);
+      void loadResearch(selectedSlug);
     }
-  }, [selectedSlug, auditFilter, followerFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects, loadFollowers]);
+  }, [selectedSlug, auditFilter, followerFilter, loadContent, loadAppointments, loadCorrespondence, loadMembers, loadPermissions, loadAudit, loadDigest, loadProjects, loadFollowers, loadResearch]);
 
   const selected = offices.find((o) => o.slug === selectedSlug) ?? null;
 
@@ -761,7 +820,7 @@ export default function OfficeDesk() {
     }
   }
 
-    async function resendConfirmation(id: string) {
+  async function resendConfirmation(id: string) {
     setFollowerActionId(id);
     try {
       const res = await fetch('/api/admin/office/followers', {
@@ -797,7 +856,7 @@ export default function OfficeDesk() {
     }
   }
 
-    async function updateCareerRole(id: string, patch: Record<string, unknown>) {
+  async function updateCareerRole(id: string, patch: Record<string, unknown>) {
     setCareerRoleActionId(id);
     try {
       const res = await fetch('/api/admin/careers/role-division-map', {
@@ -886,6 +945,93 @@ export default function OfficeDesk() {
       alert(err instanceof Error ? err.message : 'Failed.');
     } finally {
       setProjectActionId(null);
+    }
+  }
+
+  async function createResearch() {
+    if (!newResearchTitle.trim()) {
+      alert('Title is required.');
+      return;
+    }
+    setNewResearchSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/office/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          office_slug: selectedSlug,
+          title: newResearchTitle.trim(),
+          abstract: newResearchAbstract.trim() || null,
+          authors: newResearchAuthors
+            .split(',')
+            .map((a) => a.trim())
+            .filter(Boolean),
+          keywords: newResearchKeywords
+            .split(',')
+            .map((k) => k.trim())
+            .filter(Boolean),
+          category: newResearchCategory.trim() || null,
+          document_url: newResearchDocumentUrl.trim() || null,
+          pages: newResearchPages ? Number(newResearchPages) : null,
+          doi: newResearchDoi.trim() || null,
+          status: newResearchStatus,
+          classification: newResearchClassification,
+          version: newResearchVersion.trim() || '1.0',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      setNewResearchTitle('');
+      setNewResearchAbstract('');
+      setNewResearchAuthors('');
+      setNewResearchKeywords('');
+      setNewResearchCategory('');
+      setNewResearchDocumentUrl('');
+      setNewResearchStatus('WORKING_PAPER');
+      setNewResearchClassification('PUBLIC');
+      setNewResearchVersion('1.0');
+      setNewResearchPages('');
+      setNewResearchDoi('');
+      await loadResearch(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setNewResearchSubmitting(false);
+    }
+  }
+
+  async function updateResearch(id: string, patch: Record<string, unknown>) {
+    setResearchActionId(id);
+    try {
+      const res = await fetch('/api/admin/office/research', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadResearch(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setResearchActionId(null);
+    }
+  }
+
+  async function deleteResearch(id: string) {
+    if (!confirm('Delete this research paper?')) return;
+    setResearchActionId(id);
+    try {
+      const res = await fetch(`/api/admin/office/research?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json?.error ?? 'Failed.');
+      await loadResearch(selectedSlug);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed.');
+    } finally {
+      setResearchActionId(null);
     }
   }
 
@@ -2197,7 +2343,218 @@ export default function OfficeDesk() {
             )}
           </div>
 
-                    {/* Followers */}
+          {/* Research */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Research ({research.filter((r) => r.status === 'PUBLISHED').length} published / {research.length} total)
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Research papers, working papers, and reports.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadResearch(selectedSlug)}
+                disabled={researchLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {researchLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {researchError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {researchError}
+              </div>
+            )}
+
+            <div className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                New research
+              </p>
+              <input
+                value={newResearchTitle}
+                onChange={(e) => setNewResearchTitle(e.target.value)}
+                placeholder="Title *"
+                className="w-full bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <textarea
+                value={newResearchAbstract}
+                onChange={(e) => setNewResearchAbstract(e.target.value)}
+                rows={3}
+                placeholder="Abstract"
+                className="w-full bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  value={newResearchAuthors}
+                  onChange={(e) => setNewResearchAuthors(e.target.value)}
+                  placeholder="Authors (comma separated)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newResearchKeywords}
+                  onChange={(e) => setNewResearchKeywords(e.target.value)}
+                  placeholder="Keywords (comma separated)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newResearchCategory}
+                  onChange={(e) => setNewResearchCategory(e.target.value)}
+                  placeholder="Category (e.g. Governance)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="url"
+                  value={newResearchDocumentUrl}
+                  onChange={(e) => setNewResearchDocumentUrl(e.target.value)}
+                  placeholder="Document URL (optional)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  value={newResearchPages}
+                  onChange={(e) => setNewResearchPages(e.target.value)}
+                  placeholder="Pages"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newResearchDoi}
+                  onChange={(e) => setNewResearchDoi(e.target.value)}
+                  placeholder="DOI (optional)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <input
+                  value={newResearchVersion}
+                  onChange={(e) => setNewResearchVersion(e.target.value)}
+                  placeholder="Version (e.g. 1.0)"
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                />
+                <select
+                  value={newResearchStatus}
+                  onChange={(e) =>
+                    setNewResearchStatus(
+                      e.target.value as 'WORKING_PAPER' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'
+                    )
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="WORKING_PAPER">WORKING_PAPER</option>
+                  <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+                  <option value="PUBLISHED">PUBLISHED</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
+                </select>
+                <select
+                  value={newResearchClassification}
+                  onChange={(e) =>
+                    setNewResearchClassification(
+                      e.target.value as 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED'
+                    )
+                  }
+                  className="bg-[#030611] border border-gray-800 p-2 text-xs rounded text-white"
+                >
+                  <option value="PUBLIC">PUBLIC</option>
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+                  <option value="RESTRICTED">RESTRICTED</option>
+                </select>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => void createResearch()}
+                  disabled={newResearchSubmitting || !newResearchTitle.trim()}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider rounded"
+                >
+                  {newResearchSubmitting ? 'Creating…' : 'Create Research'}
+                </button>
+              </div>
+            </div>
+
+            {research.length === 0 ? (
+              <p className="text-xs text-gray-500">No research yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {research.map((r) => (
+                  <li
+                    key={r.id}
+                    className="rounded-lg border border-gray-800 bg-[#070b19] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white">{r.title}</span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              r.status === 'PUBLISHED'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : r.status === 'UNDER_REVIEW'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : r.status === 'WORKING_PAPER'
+                                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                    : 'bg-gray-500/20 text-gray-300 border-gray-500/40'
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                              r.classification === 'PUBLIC'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : r.classification === 'INTERNAL'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                                  : r.classification === 'CONFIDENTIAL'
+                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                    : 'bg-red-500/20 text-red-300 border-red-500/40'
+                            }`}
+                          >
+                            {r.classification}
+                          </span>
+                          <span className="text-[9px] font-mono uppercase text-gray-500">
+                            v{r.version}
+                          </span>
+                        </div>
+                        {r.abstract && (
+                          <p className="mt-1 text-[11px] text-gray-400 line-clamp-2">
+                            {r.abstract}
+                          </p>
+                        )}
+                        {r.authors && r.authors.length > 0 && (
+                          <p className="mt-1 text-[10px] text-gray-500">
+                            {r.authors.join(' · ')}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <select
+                          value={r.status}
+                          onChange={(e) => void updateResearch(r.id, { status: e.target.value })}
+                          disabled={researchActionId === r.id}
+                          className="bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                        >
+                          <option value="WORKING_PAPER">WORKING_PAPER</option>
+                          <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+                          <option value="PUBLISHED">PUBLISHED</option>
+                          <option value="ARCHIVED">ARCHIVED</option>
+                        </select>
+                        <button
+                          onClick={() => void deleteResearch(r.id)}
+                          disabled={researchActionId === r.id}
+                          className="px-2 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded text-[10px] font-bold uppercase hover:bg-red-500/30 disabled:opacity-40"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Followers */}
           <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
@@ -2295,6 +2652,103 @@ export default function OfficeDesk() {
                 ))}
               </ul>
             )}
+          </div>
+
+          {/* Career Roles → Division */}
+          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                  Career Roles → Division
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  How the 147 institutional career titles map to organisational
+                  divisions.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadCareerRoles()}
+                disabled={careerRolesLoading}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
+              >
+                {careerRolesLoading ? 'Loading…' : 'Refresh'}
+              </button>
+            </div>
+
+            {careerRolesError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                {careerRolesError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                value={careerRoleSearch}
+                onChange={(e) => setCareerRoleSearch(e.target.value)}
+                placeholder="Search role title…"
+                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              />
+              <select
+                value={careerRoleFilter}
+                onChange={(e) => setCareerRoleFilter(e.target.value)}
+                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
+              >
+                <option value="ALL">All divisions</option>
+                {careerDivisions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.icon ? `${d.icon} ` : ''}{d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1">
+              {careerRoles
+                .filter((r) => {
+                  if (careerRoleFilter !== 'ALL' && r.division_id !== careerRoleFilter) return false;
+                  if (
+                    careerRoleSearch.trim() &&
+                    !r.role_title.toLowerCase().includes(careerRoleSearch.toLowerCase())
+                  ) {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((r) => {
+                  const div = careerDivisions.find((d) => d.id === r.division_id);
+                  return (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between gap-2 rounded border border-gray-800 bg-[#070b19] px-2.5 py-1.5"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-[11px] text-gray-200 truncate block">
+                          {r.role_title}
+                        </span>
+                        {div && (
+                          <span className="text-[9px] text-gray-500">
+                            {div.icon ? `${div.icon} ` : ''}{div.name}
+                          </span>
+                        )}
+                      </div>
+                      <select
+                        value={r.division_id}
+                        onChange={(e) =>
+                          void updateCareerRole(r.id, { division_id: e.target.value })
+                        }
+                        disabled={careerRoleActionId === r.id}
+                        className="shrink-0 bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
+                      >
+                        {careerDivisions.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
 
           {/* Digest */}
@@ -2447,103 +2901,6 @@ export default function OfficeDesk() {
               >
                 Send Test Digest Now
               </button>
-            </div>
-          </div>
-
-                  {/* Career Roles → Division */}
-          <div className="rounded-xl border border-white/10 bg-[#030611] p-5 space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
-                  Career Roles → Division
-                </h3>
-                <p className="mt-1 text-[11px] text-gray-400">
-                  How the 147 institutional career titles map to organisational
-                  divisions.
-                </p>
-              </div>
-              <button
-                onClick={() => void loadCareerRoles()}
-                disabled={careerRolesLoading}
-                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-wider text-gray-200 hover:bg-white/10 disabled:opacity-40"
-              >
-                {careerRolesLoading ? 'Loading…' : 'Refresh'}
-              </button>
-            </div>
-
-            {careerRolesError && (
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
-                {careerRolesError}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input
-                value={careerRoleSearch}
-                onChange={(e) => setCareerRoleSearch(e.target.value)}
-                placeholder="Search role title…"
-                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-              />
-              <select
-                value={careerRoleFilter}
-                onChange={(e) => setCareerRoleFilter(e.target.value)}
-                className="bg-[#070b19] border border-gray-800 p-2 text-xs rounded text-white"
-              >
-                <option value="ALL">All divisions</option>
-                {careerDivisions.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.icon ? `${d.icon} ` : ''}{d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1">
-              {careerRoles
-                .filter((r) => {
-                  if (careerRoleFilter !== 'ALL' && r.division_id !== careerRoleFilter) return false;
-                  if (
-                    careerRoleSearch.trim() &&
-                    !r.role_title.toLowerCase().includes(careerRoleSearch.toLowerCase())
-                  ) {
-                    return false;
-                  }
-                  return true;
-                })
-                .map((r) => {
-                  const div = careerDivisions.find((d) => d.id === r.division_id);
-                  return (
-                    <div
-                      key={r.id}
-                      className="flex items-center justify-between gap-2 rounded border border-gray-800 bg-[#070b19] px-2.5 py-1.5"
-                    >
-                      <div className="min-w-0">
-                        <span className="text-[11px] text-gray-200 truncate block">
-                          {r.role_title}
-                        </span>
-                        {div && (
-                          <span className="text-[9px] text-gray-500">
-                            {div.icon ? `${div.icon} ` : ''}{div.name}
-                          </span>
-                        )}
-                      </div>
-                      <select
-                        value={r.division_id}
-                        onChange={(e) =>
-                          void updateCareerRole(r.id, { division_id: e.target.value })
-                        }
-                        disabled={careerRoleActionId === r.id}
-                        className="shrink-0 bg-[#030611] border border-gray-800 p-1 text-[10px] rounded text-white"
-                      >
-                        {careerDivisions.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  );
-                })}
             </div>
           </div>
 

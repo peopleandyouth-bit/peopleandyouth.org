@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         .eq('status', 'PUBLISHED')
         .order('published_at', { ascending: false });
 
-      const { data: projects } = await supabase
+            const { data: projects } = await supabase
         .from('office_projects')
         .select(
           'id, title, description, status, collaborators, visibility, started_at, completed_at, display_order'
@@ -88,6 +88,17 @@ export async function GET(request: NextRequest) {
         .order('status', { ascending: true })
         .order('display_order', { ascending: true });
 
+      const { data: research } = await supabase
+        .from('office_research')
+        .select(
+          'id, title, abstract, authors, keywords, category, document_url, cover_image_url, pages, doi, version, published_at, display_order'
+        )
+        .eq('office_id', office.id)
+        .eq('status', 'PUBLISHED')
+        .eq('classification', 'PUBLIC')
+        .order('display_order', { ascending: true })
+        .order('published_at', { ascending: false });
+
       return NextResponse.json({
         success: true,
         office,
@@ -95,6 +106,7 @@ export async function GET(request: NextRequest) {
         author,
         content: content ?? [],
         projects: projects ?? [],
+        research: research ?? [],
       });
     }
 

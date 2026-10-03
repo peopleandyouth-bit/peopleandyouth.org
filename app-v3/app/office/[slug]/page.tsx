@@ -189,6 +189,22 @@ type ProjectRow = {
   display_order: number;
 };
 
+type ResearchRow = {
+  id: string;
+  title: string;
+  abstract: string | null;
+  authors: string[] | null;
+  keywords: string[] | null;
+  category: string | null;
+  document_url: string | null;
+  cover_image_url: string | null;
+  pages: number | null;
+  doi: string | null;
+  version: string;
+  published_at: string | null;
+  display_order: number;
+};
+
 type ApiResponse = {
   success: boolean;
   office: Office;
@@ -196,6 +212,7 @@ type ApiResponse = {
   author: Author | null;
   content: ContentRow[];
   projects?: ProjectRow[];
+  research?: ResearchRow[];
 };
 
 export default function OfficePage() {
@@ -249,7 +266,7 @@ export default function OfficePage() {
         const json = await res.json();
         if (res.ok && json.success) setFollowerCount(json.follower_count ?? 0);
       } catch {
-        // ignore — follower count is best-effort
+        // ignore
       }
     }
     void loadCount();
@@ -532,7 +549,7 @@ export default function OfficePage() {
       {/* Body */}
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-16">
 
-        {/* Mandate statement from assignment */}
+        {/* Mandate statement */}
         {data.assignment?.mandate_statement && !isVacant && (
           <section
             className="rounded-lg border p-6 sm:p-8"
@@ -580,7 +597,7 @@ export default function OfficePage() {
           </section>
         )}
 
-        {/* About — long bio */}
+        {/* About */}
         {!isVacant && (data.author!.long_bio || data.author!.bio) && (
           <section>
             <SectionHeading theme={theme} eyebrow="About">
@@ -772,6 +789,111 @@ export default function OfficePage() {
           </section>
         )}
 
+        {/* Research */}
+        {data.research && data.research.length > 0 && (
+          <section>
+            <SectionHeading theme={theme} eyebrow="Research">
+              Published Research
+            </SectionHeading>
+            <div className="space-y-4">
+              {data.research.map((r) => (
+                <article
+                  key={r.id}
+                  className="rounded-lg border p-5 sm:p-6"
+                  style={{
+                    borderColor: theme.border,
+                    backgroundColor: theme.surface,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+                    <h3
+                      className="text-base font-bold flex-1"
+                      style={{ color: theme.heading }}
+                    >
+                      {r.title}
+                    </h3>
+                    <span
+                      className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border"
+                      style={{
+                        borderColor: theme.accent,
+                        color: theme.accent,
+                        backgroundColor: theme.accentSoft,
+                      }}
+                    >
+                      {r.category || 'Research'}
+                    </span>
+                  </div>
+
+                  {r.authors && r.authors.length > 0 && (
+                    <p
+                      className="text-xs mb-3"
+                      style={{ color: theme.textMuted }}
+                    >
+                      By {r.authors.join(' · ')}
+                    </p>
+                  )}
+
+                  {r.abstract && (
+                    <p
+                      className="text-xs leading-relaxed mb-3"
+                      style={{ color: theme.text }}
+                    >
+                      {r.abstract}
+                    </p>
+                  )}
+
+                  <div
+                    className="flex flex-wrap gap-3 text-[10px] font-mono uppercase tracking-wider pt-3 border-t"
+                    style={{ borderColor: theme.border, color: theme.textMuted }}
+                  >
+                    <span>v{r.version}</span>
+                    {r.pages && <span>{r.pages} pages</span>}
+                    {r.published_at && (
+                      <span>
+                        {new Date(r.published_at).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    )}
+                    {r.doi && <span>DOI: {r.doi}</span>}
+                  </div>
+
+                  {r.keywords && r.keywords.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {r.keywords.map((k) => (
+                        <span
+                          key={k}
+                          className="rounded-full px-2.5 py-1 text-[10px]"
+                          style={{
+                            backgroundColor: theme.accentSoft,
+                            color: theme.accent,
+                          }}
+                        >
+                          {k}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {r.document_url && (
+                    <a
+                      href={r.document_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block mt-4 text-xs font-bold uppercase tracking-wider underline"
+                      style={{ color: theme.accent }}
+                    >
+                      Read paper →
+                    </a>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Articles */}
         {articles.length > 0 && (
           <ContentSection theme={theme} title="Articles" eyebrow="Long-form" items={articles} />
@@ -792,12 +914,12 @@ export default function OfficePage() {
           <ContentSection theme={theme} title="Speeches" eyebrow="Public Addresses" items={speeches} />
         )}
 
-        {/* Other content types */}
+        {/* Other content */}
         {others.length > 0 && (
           <ContentSection theme={theme} title="Letters & Statements" eyebrow="Institutional Correspondence" items={others} />
         )}
 
-        {/* Empty state for a vacant office */}
+        {/* Vacant office */}
         {isVacant && (
           <section
             className="rounded-lg border p-8 text-center space-y-3"
@@ -888,7 +1010,7 @@ export default function OfficePage() {
 }
 
 // ---------------------------------------------------------------------------
-// Small presentational helpers
+// Presentational helpers
 // ---------------------------------------------------------------------------
 
 function SectionHeading({
@@ -1030,11 +1152,6 @@ function ContentSection({
     </section>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Produces the footer label for an office, avoiding the "Office of the
-// Founder's Office" redundancy.
-// ---------------------------------------------------------------------------
 
 function officeFooterLabel(name: string): string {
   if (/^office of the /i.test(name)) {
